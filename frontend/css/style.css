@@ -914,6 +914,18 @@ button {
 }
 
 
+    /* Ссылка на карточку договора */
+    .contract-link {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .contract-link:hover {
+        color: var(--color-primary);
+        text-decoration: underline;
+    }
+
 /* -----------------------------------------------------------------
    10.2 Заголовки колонок
    ----------------------------------------------------------------- */

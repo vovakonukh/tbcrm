@@ -105,8 +105,8 @@ export class ContractsTable extends BaseTable {
                     const value = cell.getValue();
                     const rowData = cell.getRow().getData();
 
-                    // Создаем контейнер с текстом и кнопкой
-                    return `<span class="cell-content">${value || ''}</span>
+                    // Создаем контейнер со ссылкой и кнопкой удаления
+                    return `<span class="cell-content"><a href="contract.php?id=${rowData.id}" class="contract-link">${value || ''}</a></span>
                             <button class="delete-row-btn" data-id="${rowData.id}" title="Удалить запись">🗑️</button>`;
                 }
             },
@@ -595,6 +595,16 @@ export class ContractsTable extends BaseTable {
                 width: 100,
                 sorter: "number",
                 editable: false,
+                visible: false
+            },
+
+            {
+                title: "Adesk Project ID",
+                field: "adesk_project_id",
+                width: 130,
+                sorter: "number",
+                editor: "number",
+                editable: true,
                 visible: false
             },
 
