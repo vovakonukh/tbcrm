@@ -14,6 +14,7 @@ if (function_exists('getCurrentUserName')) {
         <a href="contracts.php">Договора</a>
         <a href="stages.php">Этапы работ</a>
         <a href="brigades.php">Бригады</a>
+        <a href="adesk.php">Adesk</a>
         <a href="settings.php">Настройки</a>
     </nav>
     
@@ -45,6 +46,7 @@ if (function_exists('getCurrentUserName')) {
         <a href="contracts.php">Договора</a>
         <a href="stages.php">Этапы работ</a>
         <a href="brigades.php">Бригады</a>
+        <a href="adesk.php">Adesk</a>
         <a href="settings.php">Настройки</a>
     </nav>
     
