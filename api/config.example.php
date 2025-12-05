@@ -3,10 +3,10 @@
 // Этот файл отвечает только за подключение к базе данных.
 
 // Данные для доступа к БД
-$host = 'vh352.timeweb.ru';
-$dbname = 'cq38442_contract';
-$username = 'cq38442_contract';
-$password = '5KWbuZM1';
+$host = '';
+$dbname = '';
+$username = '';
+$password = '';
 
 try {
     // Создаем новое подключение PDO
