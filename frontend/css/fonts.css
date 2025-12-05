@@ -1,0 +1,70 @@
+/**
+ * Подключение шрифта Circe
+ * Файл: css/fonts.css
+ */
+
+/* Circe Light */
+@font-face {
+    font-family: 'Circe';
+    src: url('../fonts/Circe-Light.woff2') format('woff2'),
+         url('../fonts/Circe-Light.woff') format('woff'),
+         url('../fonts/Circe-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Circe Regular */
+@font-face {
+    font-family: 'Circe';
+    src: url('../fonts/Circe-Regular.woff2') format('woff2'),
+         url('../fonts/Circe-Regular.woff') format('woff'),
+         url('../fonts/Circe-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Circe Bold */
+@font-face {
+    font-family: 'Circe';
+    src: url('../fonts/Circe-Bold.woff2') format('woff2'),
+         url('../fonts/Circe-Bold.woff') format('woff'),
+         url('../fonts/Circe-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Circe ExtraBold */
+@font-face {
+    font-family: 'Circe';
+    src: url('../fonts/Circe-ExtraBold.woff2') format('woff2'),
+         url('../fonts/Circe-ExtraBold.woff') format('woff'),
+         url('../fonts/Circe-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Circe Thin (опционально, если нужен) */
+@font-face {
+    font-family: 'Circe';
+    src: url('../fonts/Circe-Thin.woff2') format('woff2'),
+         url('../fonts/Circe-Thin.woff') format('woff'),
+         url('../fonts/Circe-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Circe ExtraLight (опционально) */
+@font-face {
+    font-family: 'Circe';
+    src: url('../fonts/Circe-ExtraLight.woff2') format('woff2'),
+         url('../fonts/Circe-ExtraLight.woff') format('woff'),
+         url('../fonts/Circe-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}

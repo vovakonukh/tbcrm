@@ -1,0 +1,1458 @@
+/**
+ * =================================================================
+ * TABULATOR PROJECT - MAIN STYLESHEET
+ * =================================================================
+ * 
+ * ОГЛАВЛЕНИЕ:
+ * 
+ * 1. CSS-переменные (цвета, шрифты, отступы)
+ * 2. Базовые стили (сброс, body, контейнеры)
+ * 3. Типографика (заголовки, текст)
+ * 4. Шапка сайта (header, навигация)
+ * 5. Кнопки (базовые стили, модификаторы)
+ * 6. Формы (инпуты, чекбоксы)
+ * 7. Панель управления (controls)
+ * 8. Фильтры (date-filters, filter-btn)
+ * 9. Модальные окна (базовые стили)
+ *    9.1 Модалка выбора колонок
+ *    9.2 Модалка фильтра по дате
+ *    9.3 Модалка выпадающего фильтра
+ *    9.4 Модалка подтверждения удаления
+ * 10. Tabulator - переопределение стилей
+ *    10.1 Базовые стили таблицы
+ *    10.2 Заголовки колонок
+ *    10.3 Ячейки
+ *    10.4 Редактирование
+ *    10.5 Группировка
+ * 11. Кнопки удаления в ячейках
+ * 12. Страница настроек (settings)
+ * 13. Уведомления (notifications)
+ * 14. Анимации
+ * 15. Мобильное меню
+ * 
+ * =================================================================
+ */
+
+
+/* =================================================================
+   1. CSS-ПЕРЕМЕННЫЕ
+   ================================================================= */
+
+:root {
+    /* Шрифты */
+    --font-family: 'Circe', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    
+    /* Основные цвета */
+    --color-primary: #339af0;
+    --color-primary-hover: #228be6;
+    --color-success: #28a745;
+    --color-success-hover: #218838;
+    --color-danger: #fa5252;
+    --color-danger-hover: #e03131;
+    --color-secondary: #6c757d;
+    --color-secondary-hover: #5a6268;
+    
+    /* Цвета текста */
+    --color-text: #333;
+    --color-text-secondary: #495057;
+    --color-text-muted: #868e96;
+    --color-text-light: #adb5bd;
+    
+    /* Цвета фона */
+    --color-bg: #f5f5f5;
+    --color-bg-white: #fff;
+    --color-bg-light: #f8f9fa;
+    --color-bg-hover: #eee;
+    
+    /* Границы */
+    --color-border: #e9ecef;
+    --color-border-dark: #ced4da;
+    --color-border-light: #f1f3f5;
+    --color-border-input: #dce1e6;
+    
+    /* Цвета для состояний фильтров */
+    --color-filter-active-bg: #E1EDE8;
+    --color-filter-active-text: #10935B;
+    --color-filter-active-border: #18AE79;
+    
+    /* Цвета для группировки */
+    --color-group-bg: #B7D7A8;
+    
+    /* Тени */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 10px 40px rgba(0, 0, 0, 0.2);
+    
+    /* Скругления */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-pill: 50px;
+    
+    /* Переходы */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.2s ease;
+    --transition-slow: 0.3s ease;
+}
+
+
+/* =================================================================
+   2. БАЗОВЫЕ СТИЛИ
+   ================================================================= */
+
+body {
+    font-family: var(--font-family);
+    font-weight: var(--font-weight-normal);
+    margin: 0;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+.container {
+    padding: 0 20px 10px 20px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 5px 5px 5px;
+    }
+}
+
+
+/* =================================================================
+   3. ТИПОГРАФИКА
+   ================================================================= */
+
+h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+
+/* =================================================================
+   4. ШАПКА САЙТА
+   ================================================================= */
+
+header {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    background-color: var(--color-bg-white);
+    padding: 7px 20px;
+    margin-bottom: 20px;
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+}
+
+/* Десктопная навигация */
+.desktop-nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+header a,
+.desktop-nav a {
+    display: block;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    transition-duration: var(--transition-slow);
+    text-decoration: none;
+    color: var(--color-text);
+    font-weight: var(--font-weight-bold);
+}
+
+header a:hover,
+.desktop-nav a:hover {
+    background-color: var(--color-bg-hover);
+}
+
+
+/* =================================================================
+   5. КНОПКИ
+   ================================================================= */
+
+/* Базовые стили для всех кнопок */
+button {
+    font-family: var(--font-family);
+    font-size: 15px;
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+/* Кнопка по умолчанию (светлая) */
+.btn,
+.controls button {
+    background-color: var(--color-bg-white);
+    color: var(--color-text);
+    border: 1px solid var(--color-border-input);
+    padding: 10px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn:hover,
+.controls button:hover {
+    background-color: var(--color-bg-light);
+    border-color: #cdd4da;
+}
+
+/* Кнопка primary (синяя) */
+.btn-primary,
+#add-contract-btn,
+#add-stage-btn,
+#add-brigade-btn,
+#apply-columns-btn,
+#apply-date-filter {
+    background-color: var(--color-primary);
+    color: var(--color-bg-white);
+    border: none;
+}
+
+/* Кнопка Применить в настройках колонок */
+#apply-columns-btn {
+    padding: 6px 12px;
+}
+
+.btn-primary:hover,
+#add-contract-btn:hover,
+#add-stage-btn:hover,
+#add-brigade-btn:hover,
+#apply-columns-btn:hover,
+#apply-date-filter:hover {
+    background-color: var(--color-primary-hover);
+}
+
+/* Кнопка success (зеленая) */
+.btn-success,
+#save-all-btn {
+    background-color: var(--color-success);
+    color: var(--color-bg-white);
+    border: none;
+}
+
+.btn-success:hover,
+#save-all-btn:hover {
+    background-color: var(--color-success-hover);
+}
+
+/* Кнопка danger (красная) */
+.btn-danger,
+.danger-btn {
+    background-color: var(--color-danger);
+    color: var(--color-bg-white);
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+}
+
+.btn-danger:hover,
+.danger-btn:hover {
+    background-color: var(--color-danger-hover);
+}
+
+/* Кнопка secondary (серая) */
+.btn-secondary,
+.secondary-btn,
+#debug-btn {
+    background-color: var(--color-secondary);
+    color: var(--color-bg-white);
+    border: none;
+    padding: 6px 12px;
+}
+
+.btn-secondary:hover,
+.secondary-btn:hover,
+#debug-btn:hover {
+    background-color: var(--color-secondary-hover);
+}
+
+/* Кнопка отмены */
+#cancel-delete-btn,
+#clear-date-filter {
+    background-color: var(--color-bg-white);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-dark);
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+}
+
+#cancel-delete-btn:hover,
+#clear-date-filter:hover {
+    background-color: var(--color-bg-light);
+    border-color: var(--color-text-light);
+}
+
+
+/* =================================================================
+   6. ФОРМЫ
+   ================================================================= */
+
+/* Инпут даты */
+.date-input {
+    padding: 10px 12px;
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--radius-md);
+    font-family: var(--font-family);
+    font-size: 15px;
+    color: var(--color-text-secondary);
+    transition: border-color var(--transition-normal);
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(51, 154, 240, 0.1);
+}
+
+/* Чекбоксы */
+.checkbox-item {
+    padding: 5px 0;
+}
+
+.checkbox-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+}
+
+.checkbox-item input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+
+/* =================================================================
+   7. ПАНЕЛЬ УПРАВЛЕНИЯ
+   ================================================================= */
+
+.controls {
+    margin-bottom: 25px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+
+/* =================================================================
+   8. ФИЛЬТРЫ
+   ================================================================= */
+
+.date-filters {
+    margin-bottom: 25px;
+}
+
+.filter-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Кнопка фильтра (базовая) */
+.filter-btn {
+    padding: 4px 14px;
+    border: none;
+    border-radius: var(--radius-pill);
+    background-color: #78819529;
+    color: #475266;
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: 15px;
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-btn:hover {
+    background-color: #78819550;
+}
+
+/* Кнопка фильтра с активным значением */
+.filter-btn.has-filter {
+    background-color: var(--color-filter-active-bg);
+    color: var(--color-filter-active-text);
+    border: 1px solid var(--color-filter-active-border);
+    padding-right: 32px;
+    position: relative;
+}
+
+.filter-btn.has-filter::after {
+    content: '×';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    font-weight: var(--font-weight-light);
+    opacity: 0.8;
+}
+
+.filter-btn.has-filter:hover::after {
+    opacity: 1;
+}
+
+.filter-btn-select.has-filter span {
+    font-weight: var(--font-weight-normal);
+    margin-left: 4px;
+}
+
+/* Быстрые кнопки выбора дат */
+.quick-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 15px;
+}
+
+.quick-date-btn {
+    padding: 3px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    background-color: var(--color-bg-light);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: var(--font-weight-normal);
+    transition: all var(--transition-normal);
+}
+
+.quick-date-btn:hover {
+    background-color: var(--color-border);
+    color: #212529;
+}
+
+.quick-date-btn[data-clear="true"] {
+    color: var(--color-text-muted);
+    background: none;
+    border: none;
+    margin-left: auto;
+    padding-right: 0;
+}
+
+.quick-date-btn[data-clear="true"]:hover {
+    color: var(--color-danger);
+    background: none;
+}
+
+
+/* =================================================================
+   9. МОДАЛЬНЫЕ ОКНА - БАЗОВЫЕ СТИЛИ
+   ================================================================= */
+
+.modal {
+    position: fixed;
+    z-index: 500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background-color: var(--color-bg-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-bg-light);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.modal .close {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: var(--color-text-light);
+    transition: color var(--transition-normal);
+    line-height: 1;
+}
+
+.modal .close:hover {
+    color: var(--color-text-secondary);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-actions {
+    padding: 20px;
+    background-color: var(--color-bg-light);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+
+/* -----------------------------------------------------------------
+   9.1 Модалка выбора колонок
+   ----------------------------------------------------------------- */
+
+#column-selector-modal .modal-content {
+    margin: 5% auto;
+    padding: 0;
+    width: 90%;
+    max-width: 400px;
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#column-selector-modal .modal-header {
+    background-color: var(--color-bg-white);
+    border-bottom: none;
+    padding: 20px 20px 10px 20px;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+#column-selector-modal .modal-body {
+    padding: 10px 0 0 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+#column-selector-modal .columns-list {
+/*    border: 1px solid var(--color-border);*/
+    background-color: var(--color-bg-white);
+    padding: 10px 15px;
+    border-radius: var(--radius-lg);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#column-selector-modal .checkbox-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+#column-selector-modal .checkbox-item:last-child {
+    border-bottom: none;
+}
+
+#column-selector-modal .checkbox-item label {
+    font-size: 15px;
+}
+
+#column-selector-modal .modal-actions {
+    background-color: var(--color-bg-white);
+    border-top: 1px solid var(--color-border);
+    padding: 15px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+#column-selector-modal .modal-actions-left {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#column-selector-modal .modal-actions-right {
+    display: flex;
+    gap: 8px;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 480px) {
+    #column-selector-modal .modal-content {
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+        height: 85vh;
+        max-height: 85vh;
+        border-radius: 0;
+    }
+    
+    #column-selector-modal .modal-header {
+        border-radius: 0;
+    }
+    
+    #column-selector-modal .columns-list {
+        max-height: calc(100vh - 250px);
+    }
+    
+    #column-selector-modal .modal-actions {
+        flex-direction: column;
+        border-radius: 0;
+    }
+    
+    #column-selector-modal .modal-actions-left,
+    #column-selector-modal .modal-actions-right {
+        width: 100%;
+        justify-content: stretch;
+    }
+    
+    #column-selector-modal .modal-actions button {
+        flex: 1;
+    }
+}
+
+
+/* -----------------------------------------------------------------
+   9.2 Модалка фильтра по дате (попап без затемнения)
+   ----------------------------------------------------------------- */
+
+#date-filter-modal {
+    background-color: transparent;
+    backdrop-filter: none;
+    z-index: 1000 ;
+}
+
+#date-filter-modal .modal-content {
+    position: absolute;
+    margin: 0;
+    width: 370px;
+}
+
+#date-filter-modal .modal-header,
+#date-filter-modal .close {
+    display: none;
+}
+
+.date-range-picker {
+    margin-bottom: 20px;
+}
+
+.date-inputs {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}
+
+.date-input-group {
+    display: flex;
+    width: 50%;
+    flex-direction: column;
+}
+
+.date-input-group label {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: var(--font-weight-normal);
+    color: var(--color-text-muted);
+}
+
+#date-filter-modal .modal-actions {
+    padding: 0;
+    border: none;
+    background: transparent;
+    flex-direction: column;
+}
+
+#date-filter-modal .modal-actions button {
+    width: 100%;
+    padding: 8px 16px;
+}
+
+@media (max-width: 768px) {
+    #date-filter-modal {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
+    }
+    
+    #date-filter-modal .modal-content {
+        position: relative;
+        top: auto !important;
+        left: auto !important;
+        width: calc(100% - 40px);
+        max-width: 350px;
+        margin: 20px;
+    }
+    
+    #date-filter-modal .date-inputs {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    #date-filter-modal .date-input-group {
+        width: 100%;
+    }
+    
+    #date-filter-modal .date-input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    #date-filter-modal .quick-dates {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+}
+
+
+/* -----------------------------------------------------------------
+   9.3 Модалка выпадающего фильтра (попап без затемнения)
+   ----------------------------------------------------------------- */
+
+#select-filter-modal {
+    background-color: transparent;
+    backdrop-filter: none;
+    z-index: 1000;
+}
+
+#select-filter-modal .modal-content {
+    position: absolute;
+    margin: 0;
+    width: 250px;
+    max-height: 400px;
+    overflow: hidden;
+}
+
+#select-filter-modal .modal-header,
+#select-filter-modal .close {
+    display: none;
+}
+
+#select-filter-modal .modal-body {
+    padding: 0;
+}
+
+.select-filter-list {
+    max-height: 400px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.select-filter-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    transition: background-color var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.select-filter-item:hover {
+    background-color: var(--color-bg-light);
+}
+
+.select-filter-item.selected {
+    background-color: var(--color-filter-active-bg);
+    color: var(--color-filter-active-text);
+}
+
+.select-filter-item.selected::before {
+    content: '✔';
+    font-weight: bold;
+    color: var(--color-filter-active-text);
+}
+
+.select-filter-item.clear-option {
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 4px;
+}
+
+.select-filter-item.clear-option:hover {
+    color: var(--color-danger);
+    background-color: #fff5f5;
+}
+
+/* Поле поиска в выпадающем фильтре */
+.select-filter-search {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    background: var(--color-bg-white);
+    z-index: 1;
+}
+
+.select-filter-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--radius-md);
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    box-sizing: border-box;
+    transition: border-color var(--transition-normal);
+}
+
+.select-filter-search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(51, 154, 240, 0.1);
+}
+
+.select-filter-search-input::placeholder {
+    color: var(--color-text-light);
+}
+
+.select-filter-items {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+
+/* -----------------------------------------------------------------
+   9.4 Модалка подтверждения удаления
+   ----------------------------------------------------------------- */
+
+#delete-confirm-modal {
+    z-index: 10001;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#delete-confirm-modal .modal-content {
+    position: relative;
+    margin: 15% auto;
+    padding: 0;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: var(--shadow-xl);
+    animation: modalFadeIn 0.3s ease;
+}
+
+#delete-confirm-modal .modal-header {
+    padding: 20px 24px;
+}
+
+#delete-confirm-modal .modal-body {
+    padding: 24px;
+}
+
+#delete-confirm-modal .modal-body p {
+    margin: 0 0 12px 0;
+    font-size: 17px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+#delete-confirm-modal .modal-body p:last-child {
+    margin-bottom: 0;
+}
+
+.delete-warning {
+    color: var(--color-danger) !important;
+}
+
+#delete-confirm-modal .modal-actions {
+    padding: 16px 24px;
+}
+
+
+/* =================================================================
+   10. TABULATOR - ПЕРЕОПРЕДЕЛЕНИЕ СТИЛЕЙ
+   ================================================================= */
+
+/* -----------------------------------------------------------------
+   10.1 Базовые стили таблицы
+   ----------------------------------------------------------------- */
+
+#contracts-table,
+#stages-table,
+#brigades-table {
+    margin: 20px 0 0 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow-x: auto; /* Горизонтальный скролл */
+    overflow-y: visible; /* Вертикальный скролл отключен */
+}
+
+.tabulator {
+    font-size: 14px;
+    border: none;
+    background-color: var(--color-bg-white) !important;
+}
+
+/* Sticky header при скролле страницы */
+.tabulator .tabulator-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--color-bg-white);
+    border-bottom: 2px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+}
+
+
+/* -----------------------------------------------------------------
+   10.2 Заголовки колонок
+   ----------------------------------------------------------------- */
+
+.tabulator .tabulator-header .tabulator-col {
+    background-color: var(--color-bg-light);
+    border-right: 1px solid var(--color-border);
+}
+
+.tabulator-col {
+    justify-content: center !important;
+}
+
+.tabulator-col-title {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    text-align: center !important;
+    vertical-align: center !important;
+    line-height: 1.2;
+}
+
+
+/* -----------------------------------------------------------------
+   10.3 Ячейки
+   ----------------------------------------------------------------- */
+
+.tabulator-row {
+    border-bottom: 1px solid var(--color-border-light);
+    min-height: 30px !important;
+}
+
+.tabulator-row:hover {
+    background-color: var(--color-bg-light) !important;
+}
+
+.tabulator-row.tabulator-selected {
+    background-color: #e7f5ff !important;
+}
+
+.tabulator-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    vertical-align: middle !important;
+    padding: 4px 6px !important;
+}
+
+/* Ячейки с многострочным текстом */
+.tabulator-cell.cell-multiline,
+.tabulator-cell[tabulator-field="comment"],
+.tabulator-cell[tabulator-field="description"],
+.tabulator-cell[tabulator-field="site_address"],
+.tabulator-cell[tabulator-field="foundation"],
+.tabulator-cell[tabulator-field="temporary_building"] {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow: visible;
+    text-overflow: unset;
+}
+
+.tabulator-cell textarea {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+}
+
+/* Выравнивание текста */
+.cell-text-left {
+    text-align: left !important;
+}
+
+.tabulator-cell-contract-name {
+    text-align: left !important;
+}
+
+/* Ячейка с кнопкой удаления */
+.cell-with-delete {
+    position: relative;
+    padding-right: 40px !important;
+}
+
+.cell-content {
+    display: inline-block;
+    width: calc(100% - 35px);
+    vertical-align: middle;
+}
+
+
+/* -----------------------------------------------------------------
+   10.4 Редактирование
+   ----------------------------------------------------------------- */
+
+.tabulator-cell.editable:hover::after {
+    content: '✎';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-light);
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.tabulator-cell.editing {
+    background-color: var(--color-bg-white) !important;
+    padding: 0 !important;
+}
+
+.tabulator-editor {
+    border: none !important;
+    padding: 8px 12px !important;
+    font-family: inherit;
+    font-size: 15px;
+}
+
+/* Инпуты внутри ячеек */
+.tabulator-cell input,
+.tabulator-cell textarea,
+.tabulator-cell select {
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 4px !important;
+    width: 100%;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+/* Активная ячейка редактирования */
+.tabulator-cell.tabulator-editing {
+    background-color: var(--color-bg-white) !important;
+    outline: 2px solid var(--color-primary) !important;
+    box-shadow: var(--shadow-md) !important;
+    z-index: 100;
+    overflow: visible !important;
+}
+
+
+/* -----------------------------------------------------------------
+   10.5 Группировка
+   ----------------------------------------------------------------- */
+
+.tabulator-group {
+    background-color: var(--color-group-bg) !important;
+    border-bottom: 2px solid #dee2e6 !important;
+}
+
+.tabulator-group-header {
+    padding: 10px 15px !important;
+    font-size: 15px;
+    color: var(--color-text);
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+}
+
+.tabulator-row.tabulator-group span {
+    color: var(--color-text) !important;
+}
+
+.tabulator-group-header::before {
+    content: '▼';
+    margin-right: 10px;
+    font-size: 10px;
+    color: var(--color-text-muted);
+    transition: transform var(--transition-normal);
+}
+
+.tabulator-group.tabulator-group-minimized .tabulator-group-header::before {
+    transform: rotate(-90deg);
+}
+
+.tabulator-group:hover {
+    background-color: rgba(183, 215, 168, 0.8) !important;
+}
+
+/* -----------------------------------------------------------------
+   10.6 Адаптивность таблицы
+   ----------------------------------------------------------------- */
+
+/* На мобильных убираем визуальные эффекты frozen */
+@media (max-width: 768px) {
+    .tabulator .tabulator-frozen {
+        position: relative !important;
+        left: auto !important;
+    }
+    
+    .tabulator .tabulator-frozen-left {
+        border-right: none !important;
+        box-shadow: none !important;
+    }
+    
+    .tabulator-row .tabulator-frozen {
+        position: relative !important;
+        left: auto !important;
+    }
+}
+
+/* Убираем фиксированную высоту для таблиц */
+.tabulator .tabulator-tableholder {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+
+/* =================================================================
+   11. КНОПКИ УДАЛЕНИЯ В ЯЧЕЙКАХ
+   ================================================================= */
+
+/* Кнопка удаления строки в таблице */
+.delete-row-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-bg-white);
+    color: #666;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    z-index: 10;
+    transition: all var(--transition-normal);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.delete-row-btn:hover {
+    background: #ddd;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.tabulator-cell:hover .delete-row-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Кнопка удаления в справочниках */
+.delete-ref-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    opacity: 0.5;
+    transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.delete-ref-btn:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+
+/* =================================================================
+   12. СТРАНИЦА НАСТРОЕК
+   ================================================================= */
+
+.settings-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.reference-table-wrapper {
+    background: var(--color-bg-white);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.reference-table-wrapper h2 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.table-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.table-controls button {
+    background-color: var(--color-primary);
+    color: var(--color-bg-white);
+    border: none;
+    padding: 5px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: var(--font-weight-medium);
+    transition: background-color var(--transition-normal);
+}
+
+.table-controls button:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.reference-table {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.reference-table .tabulator-cell {
+    padding: 6px 10px !important;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 900px) {
+    .settings-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* =================================================================
+   13. УВЕДОМЛЕНИЯ
+   ================================================================= */
+
+.notification {
+    font-size: 14px;
+    font-weight: var(--font-weight-medium);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
+}
+
+/* Сообщение об ошибке */
+.error-message {
+    background-color: #fff5f5;
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    margin: 10px 0;
+}
+
+
+/* =================================================================
+   14. АНИМАЦИИ
+   ================================================================= */
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =================================================================
+   15. МОБИЛЬНОЕ МЕНЮ
+   ================================================================= */
+
+/* Кнопка-гамбургер */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    z-index: 400;
+}
+
+.mobile-menu-toggle img {
+    width: 28px;
+    height: 28px;
+}
+
+/* Мобильное меню (оверлей) */
+.mobile-menu {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-bg-white);
+    z-index: 1010;
+    flex-direction: column;
+    padding: 10px 20px 20px 20px;
+}
+
+.mobile-menu.active {
+    display: flex;
+}
+
+/* Шапка мобильного меню */
+.mobile-menu-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 40px;
+}
+
+.mobile-menu-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    padding: 8px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+}
+
+.mobile-menu-close img {
+    width: 20px;
+    height: 20px;
+}
+
+.mobile-menu-close:hover {
+    color: var(--color-text);
+}
+
+/* Навигация в мобильном меню */
+.mobile-menu-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.mobile-menu-nav a {
+    display: block;
+    padding: 16px 20px;
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    text-decoration: none;
+    border-radius: var(--radius-lg);
+    transition: background-color var(--transition-normal);
+}
+
+.mobile-menu-nav a:hover {
+    background-color: var(--color-bg-light);
+}
+
+/* Футер мобильного меню (пользователь и выход) */
+.mobile-menu-footer {
+    border-top: 1px solid var(--color-border);
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mobile-menu-user {
+    color: var(--color-text-muted);
+    font-size: 14px;
+    padding: 0 20px;
+}
+
+.mobile-menu-logout {
+    display: block;
+    padding: 14px 20px;
+    background-color: var(--color-danger);
+    color: white !important;
+    text-align: center;
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: var(--font-weight-medium);
+    transition: background-color var(--transition-normal);
+}
+
+.mobile-menu-logout:hover {
+    background-color: var(--color-danger-hover);
+}
+
+/* Адаптивность: показываем мобильное меню на экранах <= 768px */
+@media (max-width: 768px) {
+    /* Скрываем десктопные элементы шапки */
+    .desktop-nav {
+        display: none !important;
+    }
+    
+    .desktop-user {
+        display: none !important;
+    }
+    
+    /* Показываем кнопку-гамбургер */
+    .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+    }
+    
+    /* Скрываем гамбургер когда меню открыто */
+    body.mobile-menu-open .mobile-menu-toggle {
+        visibility: hidden;
+    }
+}
+
+/* =================================================================
+   16. ДОПОЛНИТЕЛЬНЫЕ СТИЛИ КНОПОК
+   ================================================================= */
+
+/* Кнопка с красной обводкой (danger outline) */
+.danger-outline-btn {
+    background-color: transparent !important;
+    color: var(--color-danger) !important;
+    border: 1px solid var(--color-danger) !important;
+}
+
+.danger-outline-btn:hover {
+    background-color: var(--color-danger) !important;
+    color: var(--color-bg-white) !important;
+}
+

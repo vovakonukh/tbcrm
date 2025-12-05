@@ -1,0 +1,29 @@
+<?php
+// generate_password.php - Генератор хеша пароля (удалить после использования)
+
+//admin
+//UG&gY77g7fr6rFY^R
+//
+//p.smorodin
+//G6tr$g)n6fre
+//
+//
+
+$username = 'p.smorodin';
+$password = 'G6tr$g)n6fre';
+$hash = password_hash($password, PASSWORD_DEFAULT);
+
+echo "Пароль: " . $password . "<br>";
+echo "Хеш: " . $hash . "<br><br>";
+
+echo "<b>SQL для обновления:</b><br>";
+echo "<pre>";
+echo "UPDATE users SET password = '" . $hash . "'" . " WHERE username = '$username';";
+echo "</pre>";
+
+echo "<b>SQL для добавления:</b><br>";
+echo "<pre>";
+echo "INSERT INTO users ('username', 'password', 'is_active')
+VALUES ('$username', '" . $hash . "'," . "'1')";
+echo "</pre>";
+?>
