@@ -221,7 +221,7 @@ function requireRole($allowedRoles) {
     requireAuth();
     
     if (!hasRole($allowedRoles)) {
-        header('Location: /frontend/index.html?error=access_denied');
+        header('Location: /contracts.php?error=access_denied');
         exit;
     }
 }
