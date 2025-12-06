@@ -99,15 +99,16 @@ export class ContractsTable extends BaseTable {
                 sorter: "string", 
                 editor: "input", 
                 editable: true, 
-                frozen:true,
-                cssClass: "tabulator-cell-contract-name cell-with-delete",
+                frozen: true,
+                cssClass: "tabulator-cell-contract-name cell-with-action",
                 formatter: (cell) => {
                     const value = cell.getValue();
                     const rowData = cell.getRow().getData();
 
-                    // Создаем контейнер со ссылкой и кнопкой удаления
-                    return `<span class="cell-content"><a href="contract.php?id=${rowData.id}" class="contract-link">${value || ''}</a></span>
-                            <button class="delete-row-btn" data-id="${rowData.id}" title="Удалить запись">🗑️</button>`;
+                    return `<span class="cell-content">${value || ''}</span>
+                            <button class="open-contract-btn" data-id="${rowData.id}" title="Открыть договор">
+                                <img src="/assets/arrow-right.svg" alt="Открыть"/>
+                            </button>`;
                 }
             },
 

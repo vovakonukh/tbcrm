@@ -469,6 +469,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                 <div class="card-actions">
                     <a href="contracts.php" class="btn-back">← Назад к списку</a>
                     <a href="contracts.php?edit=<?= $contract['id'] ?>" class="btn-edit">✎ Редактировать</a>
+                    <button class="btn-delete" id="delete-contract-btn" data-id="<?= $contract['id'] ?>">🗑️ Удалить</button>
                 </div>
             </div>
             
@@ -780,8 +781,26 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div id="delete-confirm-modal" class="modal" style="display: none;">
+        <div class="modal-content delete-confirm-content">
+            <div class="modal-header">
+                <h2>Удаление договора</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить договор <strong><?= htmlspecialchars($contract['contract_name']) ?></strong>?</p>
+                <p class="delete-warning">Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="confirm-delete-btn" class="danger-btn">Удалить</button>
+                <button id="cancel-delete-btn" class="secondary-btn">Отмена</button>
+            </div>
+        </div>
+    </div>
     
-    <script>
+    <!--<script>
     /* Копирование в буфер обмена */
     document.querySelectorAll('.copy-btn').forEach(btn => {
         btn.addEventListener('click', async function() {
@@ -795,6 +814,58 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             }
         });
     });
+    </script>-->
+
+    <script src="frontend/js/config.js"></script>
+    <script>
+        /* Копирование в буфер обмена */
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const text = this.dataset.copy;
+                try {
+                    await navigator.clipboard.writeText(text);
+                    this.classList.add('copied');
+                    setTimeout(() => this.classList.remove('copied'), 1500);
+                } catch (err) {
+                    console.error('Не удалось скопировать:', err);
+                }
+            });
+        });
+
+        /* Удаление договора */
+        const deleteBtn = document.getElementById('delete-contract-btn');
+        const modal = document.getElementById('delete-confirm-modal');
+        const closeBtn = modal.querySelector('.close');
+        const cancelBtn = document.getElementById('cancel-delete-btn');
+        const confirmBtn = document.getElementById('confirm-delete-btn');
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        deleteBtn.addEventListener('click', () => modal.style.display = 'block');
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+        confirmBtn.addEventListener('click', async function() {
+            const contractId = deleteBtn.dataset.id;
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.CONTRACTS}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: contractId })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = '/contracts.php?deleted=1';
+                } else {
+                    alert('Ошибка удаления: ' + result.error);
+                }
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+            }
+        });
     </script>
 </body>
 </html>

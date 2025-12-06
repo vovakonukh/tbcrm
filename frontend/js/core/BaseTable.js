@@ -586,14 +586,7 @@ export default class BaseTable {
     bindTableEvents() {
         const tableElement = document.querySelector(this.getTableSelector());
         if (tableElement) {
-/*            tableElement.addEventListener('focusout', (e) => {
-            // Небольшая задержка, чтобы убедиться, что фокус действительно ушел
-                setTimeout(() => {
-                    this.saveAllEditedCells();
-                }, 200);
-            });*/
-
-        // Обработчик для кнопок удаления
+            // Обработчик для кнопок удаления
             tableElement.addEventListener('click', (e) => {
                 if (e.target.classList.contains('delete-row-btn')) {
                     e.stopPropagation();
@@ -602,12 +595,19 @@ export default class BaseTable {
                         this.showDeleteConfirm(id);
                     }
                 }
+            
+                // Обработчик для кнопки открытия договора
+                const openBtn = e.target.closest('.open-contract-btn');
+                if (openBtn) {
+                    e.stopPropagation();
+                    const id = openBtn.getAttribute('data-id');
+                    if (id) {
+                        window.location.href = `/contract.php?id=${id}`;
+                    }
+                }
             });
         }
     }
-
-    // --- ЛОГИКА ФИЛЬТРОВ ПО ДАТЕ ---
-
     // --- ЛОГИКА ФИЛЬТРОВ ПО ДАТЕ ---
 
     bindDateFilterEvents() {

@@ -296,6 +296,26 @@ button {
     border-color: var(--color-text-light);
 }
 
+.btn-delete {
+    background-color: white;
+    color: #c92a2a;
+    border: 1px solid #c92a2a;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-family);
+}
+
+.btn-delete:hover {
+    background-color: #c92a2a;
+    color: white;
+}
+
 
 /* =================================================================
    6. ФОРМЫ
@@ -1181,6 +1201,50 @@ button {
 .delete-ref-btn:hover {
     opacity: 1;
     transform: scale(1.2);
+}
+/* Кнопка открытия договора в таблице */
+.open-contract-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-bg-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 5px 5px;
+    cursor: pointer;
+    z-index: 10;
+    transition: all var(--transition-normal);
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.open-contract-btn img {
+    width: 14px;
+    height: 14px;
+}
+
+.open-contract-btn:hover {
+    background: var(--color-bg-light);
+    border-color: var(--color-primary);
+}
+
+.open-contract-btn:hover img {
+    filter: brightness(0) saturate(100%) invert(45%) sepia(98%) saturate(1000%) hue-rotate(190deg);
+}
+
+.tabulator-cell:hover .open-contract-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Ячейка с кнопкой действия */
+.cell-with-action {
+    position: relative;
+    padding-right: 40px !important;
 }
 
 
