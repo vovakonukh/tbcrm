@@ -1075,6 +1075,7 @@ export default class BaseTable {
         const deselectAllBtn = document.getElementById('deselect-all-btn');
         const resetBtn = document.getElementById('reset-columns-btn');
         const resetAllBtn = document.getElementById('reset-all-btn');
+        const searchInput = document.getElementById('column-search-input');
 
         closeBtn.onclick = () => modal.style.display = 'none';
         
@@ -1088,11 +1089,17 @@ export default class BaseTable {
         };
         
         selectAllBtn.onclick = () => {
-            document.querySelectorAll('#column-selector-modal input[type="checkbox"]').forEach(checkbox => checkbox.checked = true);
+            document.querySelectorAll('#column-selector-modal .column-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            this.updateAllGroupCheckboxes();
         };
         
         deselectAllBtn.onclick = () => {
-            document.querySelectorAll('#column-selector-modal input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+            document.querySelectorAll('#column-selector-modal .column-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            this.updateAllGroupCheckboxes();
         };
         
         resetBtn.onclick = () => {
@@ -1100,13 +1107,20 @@ export default class BaseTable {
             modal.style.display = 'none';
         };
         
-        // Новая кнопка: сброс ВСЕХ настроек (видимость, ширина, порядок)
         resetAllBtn.onclick = () => {
             if (confirm('Сбросить все настройки таблицы (порядок, ширину и видимость колонок)?')) {
                 this.resetAllTableSettings();
                 modal.style.display = 'none';
             }
         };
+
+        /* Поиск по колонкам — ищем внутри modal, а не по глобальному ID */
+        searchInput = modal.querySelector('#column-search-input');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterColumnsList(e.target.value);
+            });
+        }
     }
     
     showColumnSelector() {
@@ -1117,19 +1131,269 @@ export default class BaseTable {
     
     populateColumnSelector() {
         const columnsContainer = document.getElementById('columns-list');
+        const searchInput = document.getElementById('column-search-input');
         columnsContainer.innerHTML = '';
+        if (searchInput) searchInput.value = '';
         
         const columns = this.table.getColumns();
+        const columnGroups = this.getColumnGroups ? this.getColumnGroups() : null;
         
-        columns.forEach(column => {
-            const field = column.getField();
-            const title = column.getDefinition().title;
-            
-            // Пропускаем колонки без field (например, колонки-группы)
-            if (!field) return;
-            
-            this.createCheckbox(column, columnsContainer);
+        /* Создаём карту колонок для быстрого доступа */
+        const columnMap = new Map();
+        columns.forEach(col => {
+            const field = col.getField();
+            if (field) {
+                columnMap.set(field, col);
+            }
         });
+
+        if (columnGroups && columnGroups.length > 0) {
+            /* Режим с группами */
+            const usedFields = new Set();
+            
+            columnGroups.forEach((group, groupIndex) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'column-group';
+                groupDiv.setAttribute('data-group-index', groupIndex);
+                
+                /* Заголовок группы с чекбоксом */
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'column-group-header';
+                groupHeader.innerHTML = `
+                    <label class="group-label">
+                        <input type="checkbox" class="group-checkbox" data-group-index="${groupIndex}">
+                        <span class="group-name">${group.name}</span>
+                    </label>
+                `;
+                groupDiv.appendChild(groupHeader);
+                
+                /* Список колонок в группе */
+                const groupColumns = document.createElement('div');
+                groupColumns.className = 'column-group-items';
+                
+                group.fields.forEach(field => {
+                    const column = columnMap.get(field);
+                    if (column) {
+                        usedFields.add(field);
+                        const title = column.getDefinition().title;
+                        const isVisible = column.isVisible();
+                        
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'checkbox-item';
+                        itemDiv.setAttribute('data-field', field);
+                        itemDiv.setAttribute('data-title', title.toLowerCase());
+                        itemDiv.innerHTML = `
+                            <label>
+                                <input type="checkbox" class="column-checkbox" value="${field}" data-group-index="${groupIndex}" ${isVisible ? 'checked' : ''}>
+                                ${title}
+                            </label>
+                        `;
+                        groupColumns.appendChild(itemDiv);
+                    }
+                });
+                
+                /* Добавляем группу только если в ней есть колонки */
+                if (groupColumns.children.length > 0) {
+                    groupDiv.appendChild(groupColumns);
+                    columnsContainer.appendChild(groupDiv);
+                }
+            });
+            
+            /* Добавляем колонки, которые не попали ни в одну группу */
+            const ungroupedColumns = [];
+            columns.forEach(col => {
+                const field = col.getField();
+                if (field && !usedFields.has(field)) {
+                    ungroupedColumns.push(col);
+                }
+            });
+            
+            if (ungroupedColumns.length > 0) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'column-group';
+                groupDiv.setAttribute('data-group-index', 'ungrouped');
+                
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'column-group-header';
+                groupHeader.innerHTML = `
+                    <label class="group-label">
+                        <input type="checkbox" class="group-checkbox" data-group-index="ungrouped">
+                        <span class="group-name">Прочее</span>
+                    </label>
+                `;
+                groupDiv.appendChild(groupHeader);
+                
+                const groupColumns = document.createElement('div');
+                groupColumns.className = 'column-group-items';
+                
+                ungroupedColumns.forEach(column => {
+                    const field = column.getField();
+                    const title = column.getDefinition().title;
+                    const isVisible = column.isVisible();
+                    
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'checkbox-item';
+                    itemDiv.setAttribute('data-field', field);
+                    itemDiv.setAttribute('data-title', title.toLowerCase());
+                    itemDiv.innerHTML = `
+                        <label>
+                            <input type="checkbox" class="column-checkbox" value="${field}" data-group-index="ungrouped" ${isVisible ? 'checked' : ''}>
+                            ${title}
+                        </label>
+                    `;
+                    groupColumns.appendChild(itemDiv);
+                });
+                
+                groupDiv.appendChild(groupColumns);
+                columnsContainer.appendChild(groupDiv);
+            }
+            
+            /* Привязываем события для групповых чекбоксов */
+            this.bindGroupCheckboxEvents();
+            
+            /* Обновляем состояние групповых чекбоксов */
+            this.updateAllGroupCheckboxes();
+            
+        } else {
+            /* Режим без групп (для обратной совместимости) */
+            columns.forEach(column => {
+                const field = column.getField();
+                const title = column.getDefinition().title;
+                if (!field) return;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'checkbox-item';
+                itemDiv.setAttribute('data-field', field);
+                itemDiv.setAttribute('data-title', title.toLowerCase());
+                itemDiv.innerHTML = `
+                    <label>
+                        <input type="checkbox" class="column-checkbox" value="${field}" ${column.isVisible() ? 'checked' : ''}>
+                        ${title}
+                    </label>
+                `;
+                columnsContainer.appendChild(itemDiv);
+            });
+        }
+    }
+
+    /**
+     * Привязка событий для чекбоксов групп
+     */
+    bindGroupCheckboxEvents() {
+        /* Клик по чекбоксу группы — выбрать/снять все колонки в группе */
+        document.querySelectorAll('#column-selector-modal .group-checkbox').forEach(groupCheckbox => {
+            groupCheckbox.addEventListener('change', (e) => {
+                const groupIndex = e.target.getAttribute('data-group-index');
+                const isChecked = e.target.checked;
+                
+                document.querySelectorAll(`#column-selector-modal .column-checkbox[data-group-index="${groupIndex}"]`).forEach(checkbox => {
+                    /* Выбираем только видимые (не скрытые поиском) */
+                    const item = checkbox.closest('.checkbox-item');
+                    if (!item.classList.contains('hidden-by-search')) {
+                        checkbox.checked = isChecked;
+                    }
+                });
+            });
+        });
+        
+        /* Клик по чекбоксу колонки — обновить состояние группы */
+        document.querySelectorAll('#column-selector-modal .column-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const groupIndex = e.target.getAttribute('data-group-index');
+                this.updateGroupCheckbox(groupIndex);
+            });
+        });
+    }
+
+    /**
+     * Обновление состояния чекбокса группы (checked/unchecked/indeterminate)
+     */
+    updateGroupCheckbox(groupIndex) {
+        const groupCheckbox = document.querySelector(`#column-selector-modal .group-checkbox[data-group-index="${groupIndex}"]`);
+        if (!groupCheckbox) return;
+        
+        const columnCheckboxes = document.querySelectorAll(`#column-selector-modal .column-checkbox[data-group-index="${groupIndex}"]`);
+        
+        /* Считаем только видимые чекбоксы */
+        let total = 0;
+        let checked = 0;
+        
+        columnCheckboxes.forEach(cb => {
+            const item = cb.closest('.checkbox-item');
+            if (!item.classList.contains('hidden-by-search')) {
+                total++;
+                if (cb.checked) checked++;
+            }
+        });
+        
+        if (total === 0) {
+            groupCheckbox.checked = false;
+            groupCheckbox.indeterminate = false;
+        } else if (checked === 0) {
+            groupCheckbox.checked = false;
+            groupCheckbox.indeterminate = false;
+        } else if (checked === total) {
+            groupCheckbox.checked = true;
+            groupCheckbox.indeterminate = false;
+        } else {
+            groupCheckbox.checked = false;
+            groupCheckbox.indeterminate = true;
+        }
+    }
+
+    /**
+     * Обновление всех групповых чекбоксов
+     */
+    updateAllGroupCheckboxes() {
+        document.querySelectorAll('#column-selector-modal .group-checkbox').forEach(groupCheckbox => {
+            const groupIndex = groupCheckbox.getAttribute('data-group-index');
+            this.updateGroupCheckbox(groupIndex);
+        });
+    }
+
+    /**
+     * Фильтрация списка колонок по поисковому запросу
+     */
+    filterColumnsList(searchTerm) {
+        const term = searchTerm.toLowerCase().trim();
+        const groups = document.querySelectorAll('#column-selector-modal .column-group');
+        
+        groups.forEach(group => {
+            const items = group.querySelectorAll('.checkbox-item');
+            let visibleCount = 0;
+            
+            items.forEach(item => {
+                const title = item.getAttribute('data-title') || '';
+                const field = item.getAttribute('data-field') || '';
+                
+                if (term === '' || title.includes(term) || field.includes(term)) {
+                    item.classList.remove('hidden-by-search');
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.classList.add('hidden-by-search');
+                    item.style.display = 'none';
+                }
+            });
+            
+            /* Скрываем группу, если в ней нет видимых колонок */
+            if (visibleCount === 0) {
+                group.style.display = 'none';
+            } else {
+                group.style.display = '';
+            }
+        });
+        
+        /* Обновляем состояние групповых чекбоксов с учётом фильтра */
+        this.updateAllGroupCheckboxes();
+    }
+
+    /**
+     * Базовый метод getColumnGroups — возвращает null
+     * Дочерние классы могут переопределить
+     */
+    getColumnGroups() {
+        return null;
     }
     
     createCheckbox(column, container) {

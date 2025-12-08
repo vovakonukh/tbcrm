@@ -624,8 +624,173 @@ export class ContractsTable extends BaseTable {
                 sorter: "number",
                 editable: false,
                 visible: false
+            },
+            {
+                title: "ID",
+                field: "id",
+                width: 80,
+                sorter: "number",
+                editable: false,
+                visible: false
+            },
+            {
+                title: "СОП",
+                field: "sop_id",
+                width: 120,
+                sorter: "number",
+                formatter: "lookup",
+                formatterParams: this.lookups.managers,
+                editor: "list",
+                editorParams: listEditorParams(this.lookups.managers),
+                visible: false
+            },
+            {
+                title: "% менеджера",
+                field: "manager_percent",
+                width: 100,
+                sorter: "number",
+                editor: "number",
+                editorParams: { min: 0, max: 100, step: 0.1 },
+                editable: true,
+                visible: false,
+                formatter: (cell) => {
+                    const value = cell.getValue();
+                    return value !== null && value !== '' ? value + '%' : '';
+                }
+            },
+            {
+                title: "ЗП менеджера",
+                field: "manager_zp",
+                width: 120,
+                sorter: "number",
+                editor: "number",
+                editable: true,
+                visible: false,
+                formatter: "money",
+                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+            },
+            {
+                title: "Выплачено менеджеру",
+                field: "manager_paid",
+                width: 140,
+                sorter: "number",
+                editor: "number",
+                editable: true,
+                visible: false,
+                formatter: "money",
+                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+            },
+            {
+                title: "Остаток менеджеру",
+                field: "manager_balance",
+                width: 140,
+                sorter: "number",
+                editor: "number",
+                editable: true,
+                visible: false,
+                formatter: "money",
+                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+            },
+            {
+                title: "% СОП",
+                field: "sop_percent",
+                width: 100,
+                sorter: "number",
+                editor: "number",
+                editorParams: { min: 0, max: 100, step: 0.1 },
+                editable: true,
+                visible: false,
+                formatter: (cell) => {
+                    const value = cell.getValue();
+                    return value !== null && value !== '' ? value + '%' : '';
+                }
+            },
+            {
+                title: "ЗП СОП",
+                field: "sop_zp",
+                width: 120,
+                sorter: "number",
+                editor: "number",
+                editable: true,
+                visible: false,
+                formatter: "money",
+                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+            },
+            {
+                title: "Выплачено СОП",
+                field: "sop_paid",
+                width: 130,
+                sorter: "number",
+                editor: "number",
+                editable: true,
+                visible: false,
+                formatter: "money",
+                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+            },
+            {
+                title: "Остаток СОП",
+                field: "sop_balance",
+                width: 130,
+                sorter: "number",
+                editor: "number",
+                editable: true,
+                visible: false,
+                formatter: "money",
+                formatterParams: { thousand: " ", precision: 0, decimal: "," }
             }
         ];
         
+    }
+
+    /**
+     * Возвращает конфигурацию групп колонок для селектора
+     */
+    getColumnGroups() {
+        return [
+            {
+                name: 'ID',
+                fields: ['id', 'adesk_project_id']
+            },
+            {
+                name: 'Основное',
+                fields: ['contract_name', 'source_id', 'manager_id', 'sop_id', 'comment', 'is_active']
+            },
+            {
+                name: 'Финансы',
+                fields: ['contract_amount', 'final_amount', 'profit', 'margin_percent']
+            },
+            {
+                name: 'Ипотека',
+                fields: ['payment_type_id', 'escrow_agent_id']
+            },
+            {
+                name: 'Даты',
+                fields: ['lead_date', 'contract_date', 'construction_start_date', 'delivery_date', 'contract_duration']
+            },
+            {
+                name: 'Участок',
+                fields: ['site_address', 'site_coordinates', 'site_map_link', 'cadastral_number']
+            },
+            {
+                name: 'Заказчик',
+                fields: ['customer_name', 'customer_phone']
+            },
+            {
+                name: 'Строительство',
+                fields: ['ar_ready', 'kr_ready', 'estimate_ready', 'foundation', 'project_id', 'complectation_id', 'brigade_id']
+            },
+            {
+                name: 'ЗП менеджер',
+                fields: ['manager_percent', 'manager_zp', 'manager_paid', 'manager_balance']
+            },
+            {
+                name: 'ЗП СОП',
+                fields: ['sop_percent', 'sop_zp', 'sop_paid', 'sop_balance']
+            },
+            {
+                name: 'Разное',
+                fields: ['custom_field_1', 'custom_field_2', 'custom_field_3', 'created_by', 'updated_by', 'created_at', 'updated_at']
+            }
+        ];
     }
 }
