@@ -42,10 +42,10 @@ if ($method == 'GET') {
             "payment_types" => getDictionary($pdo, 'payment_types'),
             "managers"      => getDictionary($pdo, 'managers'),
             "escrow_agents" => getDictionary($pdo, 'escrow_agents'),
-            "brigades"      => getDictionary($pdo, 'brigades'),
             "projects"      => getDictionary($pdo, 'projects'),
             "complectation" => getDictionary($pdo, 'complectation'),
-            "sources"       => getDictionary($pdo, 'sources')
+            "sources"       => getDictionary($pdo, 'sources'),
+            "ipoteka_status" => getDictionary($pdo, 'ipoteka_status')
         ];
         
         echo json_encode([

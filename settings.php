@@ -178,6 +178,15 @@ requireRole('admin');
                 </div>
                 <div id="stage_types-table" class="reference-table"></div>
             </div>
+
+            <!-- Статусы ипотеки -->
+            <div class="reference-table-wrapper">
+                <h2>Статусы ипотеки</h2>
+                <div class="table-controls">
+                    <button id="add-ipoteka_status-btn">+ Добавить</button>
+                </div>
+                <div id="ipoteka_status-table" class="reference-table"></div>
+            </div>
         </div>
 
         <div id="loading" style="display: none;">Загрузка данных...</div>

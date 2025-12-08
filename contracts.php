@@ -27,6 +27,7 @@
                 <button class="filter-btn filter-btn-select" data-field="is_active" data-filter-type="select">В работе</button>
                 <button class="filter-btn filter-btn-select" data-field="complectation_id" data-filter-type="select">Комплектация</button>
                 <button class="filter-btn filter-btn-select" data-field="payment_type_id" data-filter-type="select">Тип оплаты</button>
+                <button class="filter-btn filter-btn-select" data-field="ipoteka_status_id" data-filter-type="select">Статус ипотеки</button>
                 <button class="filter-btn filter-btn-select" data-field="source_id" data-filter-type="select">Источник</button>
                 <button class="filter-btn filter-btn-select" data-field="manager_id" data-filter-type="select">Менеджер</button>
                 <button class="filter-btn" data-field="lead_date">Дата лида</button>

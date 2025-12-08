@@ -19,18 +19,18 @@ try {
             pt.name as payment_type_name,
             ea.name as escrow_agent_name,
             s.name as source_name,
-            b.name as brigade_name,
             p.name as project_name,
-            comp.name as complectation_name
+            comp.name as complectation_name,
+            ist.name as ipoteka_status_name
         FROM contracts c
         LEFT JOIN managers m ON c.manager_id = m.id
         LEFT JOIN managers sop ON c.sop_id = sop.id
         LEFT JOIN payment_types pt ON c.payment_type_id = pt.id
         LEFT JOIN escrow_agents ea ON c.escrow_agent_id = ea.id
         LEFT JOIN sources s ON c.source_id = s.id
-        LEFT JOIN brigades b ON c.brigade_id = b.id
         LEFT JOIN projects p ON c.project_id = p.id
         LEFT JOIN complectation comp ON c.complectation_id = comp.id
+        LEFT JOIN ipoteka_status ist ON c.ipoteka_status_id = ist.id
         WHERE c.id = ?
     ");
     $stmt->execute([$contractId]);
@@ -459,17 +459,17 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                         </button>
                     </h1>
                     <div class="card-subtitle">
-                        ID: <?= $contract['id'] ?> · 
-                        Создан: <?= formatDateTime($contract['created_at']) ?>
+                        
+                        Создан: <?= formatDateTime($contract['created_at']) ?><br>
                         <?php if ($contract['updated_at']): ?>
-                            · Обновлён: <?= formatDateTime($contract['updated_at']) ?>
+                            Обновлён: <?= formatDateTime($contract['updated_at']) ?>
                         <?php endif; ?>
                     </div>
                 </div>
                 <div class="card-actions">
                     <a href="contracts.php" class="btn-back">← Назад к списку</a>
                     <!-- <a href="contracts.php?edit=<?= $contract['id'] ?>" class="btn-edit">✎ Редактировать</a> -->
-                    <button class="btn-delete" id="delete-contract-btn" data-id="<?= $contract['id'] ?>">🗑️ Удалить</button>
+                    <button class="btn-delete" id="delete-contract-btn" data-id="<?= $contract['id'] ?>">Удалить</button>
                 </div>
             </div>
             
@@ -550,7 +550,8 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                 </div>
                
             </div>
-
+            
+            <div class="two-columns">
             <!-- Заказчик -->
             <div class="card-section">
                 <h2 class="section-title">Заказчик</h2>
@@ -574,6 +575,40 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                 </div>
             </div>
 
+            <!-- Ипотека -->
+            <div class="card-section">
+                <h2 class="section-title">Ипотека</h2> 
+
+                <div class="data-grid">
+                    
+                    <div class="data-item">
+                        <div class="data-label">Тип оплаты</div>
+                        <div class="data-value"><?= displayValue($contract['payment_type_name']) ?></div>
+                    </div>
+
+                    <div class="data-item">
+                        <div class="data-label">Статус ипотеки</div>
+                        <div class="data-value"><?= displayValue($contract['ipoteka_status_name']) ?></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Эскроу агент</div>
+                        <div class="data-value"><?= displayValue($contract['escrow_agent_name']) ?></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Номер эскроу счёта</div>
+                        <div class="data-value">
+                            <?= displayValue($contract['escrow_number']) ?>
+                            <?php if ($contract['escrow_number']): ?>
+                                <button class="copy-btn" data-copy="<?= htmlspecialchars($contract['escrow_number']) ?>" title="Копировать номер">
+                                    <img src="/assets/copy.svg" alt="Копировать">
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            </div>
             
             
             <!-- Финансы -->
@@ -605,23 +640,6 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                             <?= $marginPercent !== null ? $marginPercent . '%' : '—' ?>
                         </div>
                     </div>
-                </div>
-
-                <div class="data-grid">
-                    
-                    <div class="data-item">
-                        <div class="data-label">Тип оплаты</div>
-                        <div class="data-value"><?= displayValue($contract['payment_type_name']) ?></div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-label">Эскроу агент</div>
-                        <div class="data-value"><?= displayValue($contract['escrow_agent_name']) ?></div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-label">Номер эскроу счета</div>
-                        <div class="data-value"><?= displayValue($contract['escrow_agent_name']) ?></div>
-                    </div>
-                    
                 </div>
             </div>
             

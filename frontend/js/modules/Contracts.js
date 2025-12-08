@@ -48,6 +48,11 @@ export class ContractsTable extends BaseTable {
                 label: 'Тип оплаты',
                 options: this.lookups.payment_types || {}
             },
+
+            ipoteka_status_id: {
+                label: 'Статус ипотеки',
+                options: this.lookups.ipoteka_status || {}
+            },
             source_id: {
                 label: 'Источник',
                 options: this.lookups.sources || {},
@@ -180,6 +185,17 @@ export class ContractsTable extends BaseTable {
             },
 
             {
+                title: "Статус ипотеки",
+                field: "ipoteka_status_id",
+                width: 150,
+                sorter: "number",
+                formatter: "lookup",
+                formatterParams: this.lookups.ipoteka_status,
+                editor: "list",
+                editorParams: listEditorParams(this.lookups.ipoteka_status)
+            },
+
+            {
                 title: "Эскроу агент",
                 field: "escrow_agent_id",
                 width: 150,
@@ -189,6 +205,15 @@ export class ContractsTable extends BaseTable {
                 editor: "list",
                 editorParams: listEditorParams(this.lookups.escrow_agents)
             }, 
+
+            {
+                title: "Номер эскроу",
+                field: "escrow_number",
+                width: 150,
+                sorter: "string",
+                editor: "input",
+                editable: true
+            },
 
             {
                 title: "Источник",
@@ -410,20 +435,16 @@ export class ContractsTable extends BaseTable {
             },
 
             {
-                title: "AR готов",
+                title: "АР КР готовность",
                 field: "ar_ready",
-                width: 90,
+                width: 150,
                 sorter: "string",
-                editor: "list",
-                editorParams: {
-                    values: {
-                        "да": "да",
-                        "нет": "нет",
-                        "в процессе": "в процессе"
-                    }
-                },
+                editor: "textarea",
+                editorParams: textareaParams,
+                formatter: "textarea",
                 editable: true,
-                visible: false
+                visible: false,
+                cssClass: "cell-text-left"
             },
 
             {
@@ -467,19 +488,6 @@ export class ContractsTable extends BaseTable {
                 sorter: "string",
                 editor: "input",
                 editable: true
-            },
-
-
-            {
-                title: "Бригада",
-                field: "brigade_id",
-                width: 150,
-                sorter: "number",
-                formatter: "lookup",
-                formatterParams: this.lookups.brigades,
-                editor: "list",
-                editorParams: listEditorParams(this.lookups.brigades),
-                visible: false
             },
 
             {

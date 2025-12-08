@@ -20,7 +20,8 @@ class SettingsPage {
             { tableName: 'complectation', selector: '#complectation-table', addButtonId: 'add-complectation-btn', title: 'Типы комплектаций' },
             { tableName: 'sources', selector: '#sources-table', addButtonId: 'add-sources-btn', title: 'Источники' },
             { tableName: 'prorabs', selector: '#prorabs-table', addButtonId: 'add-prorabs-btn', title: 'Прорабы' },
-            { tableName: 'stage_types', selector: '#stage_types-table', addButtonId: 'add-stage_types-btn', title: 'Типы этапов' }
+            { tableName: 'stage_types', selector: '#stage_types-table', addButtonId: 'add-stage_types-btn', title: 'Типы этапов' },
+            { tableName: 'ipoteka_status', selector: '#ipoteka_status-table', addButtonId: 'add-ipoteka_status-btn', title: 'Статусы ипотеки' }
         ];
         
         this.init();

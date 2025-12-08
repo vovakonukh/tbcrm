@@ -30,7 +30,8 @@ $allowedTables = [
     'complectation',
     'stage_types',
     'contractors',
-    'prorabs'
+    'prorabs',
+    'ipoteka_status'
 ];
 
 // GET запрос - получить данные справочников
@@ -77,6 +78,10 @@ if ($method == 'GET') {
         // Типы этапов
         $stmt = $pdo->query("SELECT id, name, is_active FROM stage_types ORDER BY name");
         $data['stage_types'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Статусы ипотеки
+        $stmt = $pdo->query("SELECT id, name, is_active FROM ipoteka_status ORDER BY name");
+        $data['ipoteka_status'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         echo json_encode([
             "success" => true,
