@@ -468,7 +468,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                 </div>
                 <div class="card-actions">
                     <a href="contracts.php" class="btn-back">← Назад к списку</a>
-                    <a href="contracts.php?edit=<?= $contract['id'] ?>" class="btn-edit">✎ Редактировать</a>
+                    <!-- <a href="contracts.php?edit=<?= $contract['id'] ?>" class="btn-edit">✎ Редактировать</a> -->
                     <button class="btn-delete" id="delete-contract-btn" data-id="<?= $contract['id'] ?>">🗑️ Удалить</button>
                 </div>
             </div>
@@ -481,11 +481,105 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                     <span class="card-status inactive">○ Завершён</span>
                 <?php endif; ?>
             </div>
+
+            <!-- Объект -->
+            <div class="card-section">
+                <h2 class="section-title">Объект</h2>
+                <div class="two-columns">
+                    <!-- Параметры строительства -->
+                    <div>
+                        <h3 style="font-size: 14px; color: #495057; margin: 0 0 16px 0;">Параметры строительства</h3>
+                        <div class="data-grid" style="grid-template-columns: 1fr;">
+                            <div class="data-item">
+                                <div class="data-label">Проект</div>
+                                <div class="data-value"><?= displayValue($contract['project_name']) ?></div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Комплектация</div>
+                                <div class="data-value"><?= displayValue($contract['complectation_name']) ?></div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Фундамент</div>
+                                <div class="data-value"><?= displayValue($contract['foundation']) ?></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Участок -->
+                    <div>
+                        <h3 style="font-size: 14px; color: #495057; margin: 0 0 16px 0;">Участок</h3>
+                        <div class="data-grid" style="grid-template-columns: 1fr;">
+                            <div class="data-item">
+                                <div class="data-label">Адрес объекта</div>
+                                <div class="data-value"><?= displayValue($contract['site_address']) ?></div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Координаты</div>
+                                <div class="data-value">
+                                    <?= displayValue($contract['site_coordinates']) ?>
+                                    <?php if ($contract['site_coordinates']): ?>
+                                        <button class="copy-btn" data-copy="<?= htmlspecialchars($contract['site_coordinates']) ?>" title="Копировать координаты">
+                                            <img src="/assets/copy.svg" alt="Копировать">
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Ссылка на карту</div>
+                                <div class="data-value">
+                                    <?php if ($contract['site_map_link']): ?>
+                                        <a href="<?= htmlspecialchars($contract['site_map_link']) ?>" target="_blank" class="data-link">Открыть карту ↗</a>
+                                    <?php else: ?>
+                                        —
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Кадастровый номер</div>
+                                <div class="data-value">
+                                    <?= displayValue($contract['cadastral_number']) ?>
+                                    <?php if ($contract['cadastral_number']): ?>
+                                        <button class="copy-btn" data-copy="<?= htmlspecialchars($contract['cadastral_number']) ?>" title="Копировать кадастровый номер">
+                                            <img src="/assets/copy.svg" alt="Копировать">
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               
+            </div>
+
+            <!-- Заказчик -->
+            <div class="card-section">
+                <h2 class="section-title">Заказчик</h2>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <div class="data-label">Имя заказчика</div>
+                        <div class="data-value"><?= displayValue($contract['customer_name']) ?></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Телефон заказчика</div>
+                        <div class="data-value">
+                            <?= displayValue($contract['customer_phone']) ?>
+                            <?php if ($contract['customer_phone']): ?>
+                                <button class="copy-btn" data-copy="<?= htmlspecialchars($contract['customer_phone']) ?>" title="Копировать телефон">
+                                    <img src="/assets/copy.svg" alt="Копировать">
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <!-- Сюда добавить кнопку Позвонить, "tel:..."-->
+                </div>
+            </div>
+
+            
             
             <!-- Финансы -->
             <div class="card-section">
                 <h2 class="section-title">Финансы</h2>
-                <div class="finance-grid">
+                <div class="finance-grid" style="margin-bottom: 20px;">
                     <div class="finance-item">
                         <div class="finance-label">Сумма договора</div>
                         <div class="finance-value" style="display: flex; align-items: center; gap: 8px;">
@@ -512,131 +606,54 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                         </div>
                     </div>
                 </div>
+
+                <div class="data-grid">
+                    
+                    <div class="data-item">
+                        <div class="data-label">Тип оплаты</div>
+                        <div class="data-value"><?= displayValue($contract['payment_type_name']) ?></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Эскроу агент</div>
+                        <div class="data-value"><?= displayValue($contract['escrow_agent_name']) ?></div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Номер эскроу счета</div>
+                        <div class="data-value"><?= displayValue($contract['escrow_agent_name']) ?></div>
+                    </div>
+                    
+                </div>
             </div>
             
-            <div class="two-columns">
-                <!-- Основная информация -->
-                <div class="card-section">
-                    <h2 class="section-title">Основная информация</h2>
-                    <div class="data-grid" style="grid-template-columns: 1fr;">
-                        <div class="data-item">
-                            <div class="data-label">Комплектация</div>
-                            <div class="data-value"><?= displayValue($contract['complectation_name']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Тип оплаты</div>
-                            <div class="data-value"><?= displayValue($contract['payment_type_name']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Эскроу агент</div>
-                            <div class="data-value"><?= displayValue($contract['escrow_agent_name']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Источник</div>
-                            <div class="data-value"><?= displayValue($contract['source_name']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Проект</div>
-                            <div class="data-value"><?= displayValue($contract['project_name']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Бригада</div>
-                            <div class="data-value"><?= displayValue($contract['brigade_name']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Фундамент</div>
-                            <div class="data-value"><?= displayValue($contract['foundation']) ?></div>
-                        </div>
-                    </div>
-                </div>
                 
-                <!-- Даты -->
-                <div class="card-section">
-                    <h2 class="section-title">Даты</h2>
-                    <div class="data-grid" style="grid-template-columns: 1fr;">
-                        <div class="data-item">
-                            <div class="data-label">Дата лида</div>
-                            <div class="data-value"><?= formatDate($contract['lead_date']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Дата договора</div>
-                            <div class="data-value"><?= formatDate($contract['contract_date']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Дата заезда</div>
-                            <div class="data-value"><?= formatDate($contract['construction_start_date']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Дата сдачи</div>
-                            <div class="data-value"><?= formatDate($contract['delivery_date']) ?></div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Срок по договору</div>
-                            <div class="data-value"><?= $contract['contract_duration'] ? $contract['contract_duration'] . ' дней' : '—' ?></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Заказчик и объект -->
+            <!-- Даты -->
             <div class="card-section">
-                <h2 class="section-title">Заказчик и объект</h2>
+                <h2 class="section-title">Даты</h2>
                 <div class="data-grid">
                     <div class="data-item">
-                        <div class="data-label">Имя заказчика</div>
-                        <div class="data-value"><?= displayValue($contract['customer_name']) ?></div>
+                        <div class="data-label">Дата лида</div>
+                        <div class="data-value"><?= formatDate($contract['lead_date']) ?></div>
                     </div>
                     <div class="data-item">
-                        <div class="data-label">Телефон заказчика</div>
-                        <div class="data-value">
-                            <?= displayValue($contract['customer_phone']) ?>
-                            <?php if ($contract['customer_phone']): ?>
-                                <button class="copy-btn" data-copy="<?= htmlspecialchars($contract['customer_phone']) ?>" title="Копировать телефон">
-                                    <img src="/assets/copy.svg" alt="Копировать">
-                                </button>
-                            <?php endif; ?>
-                        </div>
+                        <div class="data-label">Дата договора</div>
+                        <div class="data-value"><?= formatDate($contract['contract_date']) ?></div>
                     </div>
                     <div class="data-item">
-                        <div class="data-label">Адрес объекта</div>
-                        <div class="data-value"><?= displayValue($contract['site_address']) ?></div>
+                        <div class="data-label">Дата заезда</div>
+                        <div class="data-value"><?= formatDate($contract['construction_start_date']) ?></div>
                     </div>
                     <div class="data-item">
-                    <div class="data-label">Координаты</div>
-                    <div class="data-value">
-                        <?= displayValue($contract['site_coordinates']) ?>
-                        <?php if ($contract['site_coordinates']): ?>
-                            <button class="copy-btn" data-copy="<?= htmlspecialchars($contract['site_coordinates']) ?>" title="Копировать координаты">
-                                <img src="/assets/copy.svg" alt="Копировать">
-                            </button>
-                        <?php endif; ?>
+                        <div class="data-label">Дата сдачи</div>
+                        <div class="data-value"><?= formatDate($contract['delivery_date']) ?></div>
                     </div>
-                </div>
-                <div class="data-item">
-                    <div class="data-label">Кадастровый номер</div>
-                    <div class="data-value">
-                        <?= displayValue($contract['cadastral_number']) ?>
-                        <?php if ($contract['cadastral_number']): ?>
-                            <button class="copy-btn" data-copy="<?= htmlspecialchars($contract['cadastral_number']) ?>" title="Копировать кадастровый номер">
-                                <img src="/assets/copy.svg" alt="Копировать">
-                            </button>
-                        <?php endif; ?>
-                    </div>
-                </div>
                     <div class="data-item">
-                        <div class="data-label">Ссылка на карту</div>
-                        <div class="data-value">
-                            <?php if ($contract['site_map_link']): ?>
-                                <a href="<?= htmlspecialchars($contract['site_map_link']) ?>" target="_blank" class="data-link">Открыть карту ↗</a>
-                            <?php else: ?>
-                                —
-                            <?php endif; ?>
-                        </div>
+                        <div class="data-label">Срок по договору</div>
+                        <div class="data-value"><?= $contract['contract_duration'] ? $contract['contract_duration'] . ' дней' : '—' ?></div>
                     </div>
                 </div>
             </div>
             
-            <!-- Готовность документации -->
+            <!-- Готовность документации 
             <div class="card-section">
                 <h2 class="section-title">Готовность документации</h2>
                 <div class="data-grid">
@@ -653,7 +670,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                         <div class="data-value"><?= formatStatus($contract['estimate_ready']) ?></div>
                     </div>
                 </div>
-            </div>
+            </div>-->
             
             <!-- Менеджеры -->
             <div class="card-section">
@@ -714,13 +731,13 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                 </div>
             </div>
             
-            <!-- Комментарий -->
+            <!-- Комментарий
             <?php if ($contract['comment']): ?>
             <div class="card-section">
                 <h2 class="section-title">Комментарий</h2>
                 <div class="comment-text"><?= nl2br(htmlspecialchars($contract['comment'])) ?></div>
             </div>
-            <?php endif; ?>
+            <?php endif; ?>-->
             
             <!-- Этапы работ -->
             <div class="card-section">
@@ -752,33 +769,6 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                     -->
                 </div>
             </div>
-            
-            <!-- Дополнительные поля -->
-            <?php if ($contract['custom_field_1'] || $contract['custom_field_2'] || $contract['custom_field_3']): ?>
-            <div class="card-section">
-                <h2 class="section-title">Дополнительные поля</h2>
-                <div class="data-grid">
-                    <?php if ($contract['custom_field_1']): ?>
-                    <div class="data-item">
-                        <div class="data-label">Доп. поле 1</div>
-                        <div class="data-value"><?= htmlspecialchars($contract['custom_field_1']) ?></div>
-                    </div>
-                    <?php endif; ?>
-                    <?php if ($contract['custom_field_2']): ?>
-                    <div class="data-item">
-                        <div class="data-label">Доп. поле 2</div>
-                        <div class="data-value"><?= htmlspecialchars($contract['custom_field_2']) ?></div>
-                    </div>
-                    <?php endif; ?>
-                    <?php if ($contract['custom_field_3']): ?>
-                    <div class="data-item">
-                        <div class="data-label">Доп. поле 3</div>
-                        <div class="data-value"><?= htmlspecialchars($contract['custom_field_3']) ?></div>
-                    </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <?php endif; ?>
         </div>
     </div>
 
