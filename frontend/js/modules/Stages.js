@@ -240,8 +240,16 @@ export class StagesTable extends BaseTable {
                 editor: "list", editorParams: listEditorParams(this.lookups.projects)
             },
             {
-                title: "АР готов (Договор)", field: "ar_ready", width: 90, sorter: "string", visible: false,
-                editor: "list", editorParams: { values: { "да": "да", "нет": "нет", "в процессе": "в процессе" } }
+                title: "АР готов (Договор)", 
+                field: "ar_ready", 
+                width: 150, 
+                sorter: "string", 
+                visible: false,
+                editor: "textarea",
+                editorParams: textareaEditorParams,
+                formatter: "textarea",
+                editable: true,
+                cssClass: "cell-text-left"
             },
             {
                 title: "КР готов (Договор)", field: "kr_ready", width: 90, sorter: "string", visible: false,
