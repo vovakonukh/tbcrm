@@ -7,10 +7,14 @@
 //p.smorodin
 //G6tr$g)n6fre
 //
-//
+//o.oplesnina
+//G8grHgy&$g
 
-$username = 'p.smorodin';
-$password = 'G6tr$g)n6fre';
+//e.romanova
+//H&yFR$Rdset
+
+$username = 'e.romanova';
+$password = 'H&yFR$Rdset';
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
 echo "Пароль: " . $password . "<br>";
@@ -23,7 +27,7 @@ echo "</pre>";
 
 echo "<b>SQL для добавления:</b><br>";
 echo "<pre>";
-echo "INSERT INTO users ('username', 'password', 'is_active')
+echo "INSERT INTO users (`username`, `password`, `is_active`)
 VALUES ('$username', '" . $hash . "'," . "'1')";
 echo "</pre>";
 ?>
