@@ -748,47 +748,47 @@ export class ContractsTable extends BaseTable {
     getColumnGroups() {
         return [
             {
-                name: 'ID',
+                title: 'ID',
                 fields: ['id', 'adesk_project_id']
             },
             {
-                name: 'Основное',
+                title: 'Основное',
                 fields: ['contract_name', 'source_id', 'manager_id', 'sop_id', 'comment', 'is_active']
             },
             {
-                name: 'Финансы',
+                title: 'Финансы',
                 fields: ['contract_amount', 'final_amount', 'profit', 'margin_percent']
             },
             {
-                name: 'Ипотека',
+                title: 'Ипотека',
                 fields: ['payment_type_id', 'escrow_agent_id']
             },
             {
-                name: 'Даты',
+                title: 'Даты',
                 fields: ['lead_date', 'contract_date', 'construction_start_date', 'delivery_date', 'contract_duration']
             },
             {
-                name: 'Участок',
+                title: 'Участок',
                 fields: ['site_address', 'site_coordinates', 'site_map_link', 'cadastral_number']
             },
             {
-                name: 'Заказчик',
+                title: 'Заказчик',
                 fields: ['customer_name', 'customer_phone']
             },
             {
-                name: 'Строительство',
+                title: 'Строительство',
                 fields: ['ar_ready', 'kr_ready', 'estimate_ready', 'foundation', 'project_id', 'complectation_id', 'brigade_id']
             },
             {
-                name: 'ЗП менеджер',
+                title: 'ЗП менеджер',
                 fields: ['manager_percent', 'manager_zp', 'manager_paid', 'manager_balance']
             },
             {
-                name: 'ЗП СОП',
+                title: 'ЗП СОП',
                 fields: ['sop_percent', 'sop_zp', 'sop_paid', 'sop_balance']
             },
             {
-                name: 'Разное',
+                title: 'Разное',
                 fields: ['custom_field_1', 'custom_field_2', 'custom_field_3', 'created_by', 'updated_by', 'created_at', 'updated_at']
             }
         ];

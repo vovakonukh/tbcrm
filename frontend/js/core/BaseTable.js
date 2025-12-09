@@ -78,6 +78,15 @@ export default class BaseTable {
     }
 
     /**
+     * Возвращает группировку колонок для селектора.
+     * Дочерние классы могут переопределить этот метод.
+     * Формат: [{ title: 'Название группы', fields: ['field1', 'field2'] }]
+     */
+    getColumnGroups() {
+        return null; /* По умолчанию без группировки */
+    }
+
+    /**
      * Возвращает конфигурацию выпадающих фильтров.
      * Дочерние классы должны переопределить этот метод.
      * Формат: { field: { label: 'Название', options: {id: name} или [{value, label}] } }
@@ -1036,245 +1045,368 @@ export default class BaseTable {
     // --- МОДАЛКА ВЫБОРА КОЛОНОК ---
 
     createColumnSelectorModal() {
-        const existingModal = document.getElementById('column-selector-modal');
-        if (existingModal) existingModal.remove();
+    const existingModal = document.getElementById('column-selector-modal');
+    if (existingModal) existingModal.remove();
 
-        const modalHTML = `
-            <div id="column-selector-modal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>Выбор колонок</h2>
-                        <span class="close">&times;</span>
+    const modalHTML = `
+        <div id="column-selector-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="columns-quick-actions">
+                        <span id="select-all-columns">Все</span>
+                        <span class="separator">/</span>
+                        <span id="deselect-all-columns">Ничего</span>
+                        <span class="separator">/</span>
+                        <span id="reset-columns-visibility">По умолчанию</span>
                     </div>
-                    <div class="modal-body">
-                        <div id="columns-list" class="columns-list"></div>
+                    <div class="columns-search">
+                        <input type="text" class="columns-search-input" placeholder="Поиск колонок..." autocomplete="off">
                     </div>
-                    <div class="modal-actions">
-                        <div class="modal-actions-left">
-                            <button id="select-all-btn" class="secondary-btn">Все</button>
-                            <button id="deselect-all-btn" class="secondary-btn">Ничего</button>
-                            <button id="reset-columns-btn" class="secondary-btn">По умолчанию</button>
-                            <button id="reset-all-btn" class="secondary-btn danger-outline-btn">Сбросить всё</button>
-                        </div>
-                        <div class="modal-actions-right">
-                            <button id="apply-columns-btn">Применить</button>
-                        </div>
-                    </div>
+                    <div id="columns-list" class="columns-list"></div>
                 </div>
             </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        this.bindModalEvents();
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    this.bindColumnSelectorEvents();
+}
+    
+    bindColumnSelectorEvents() {
+    const modal = document.getElementById('column-selector-modal');
+    const content = modal.querySelector('.modal-content');
+    
+    /* Закрытие по клику вне контента */
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    /* Останавливаем всплытие кликов внутри контента */
+    if (content) {
+        content.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
     }
     
-    bindModalEvents() {
-        const modal = document.getElementById('column-selector-modal');
-        const closeBtn = modal.querySelector('.close');
-        const applyBtn = document.getElementById('apply-columns-btn');
-        const selectAllBtn = document.getElementById('select-all-btn');
-        const deselectAllBtn = document.getElementById('deselect-all-btn');
-        const resetBtn = document.getElementById('reset-columns-btn');
-        const resetAllBtn = document.getElementById('reset-all-btn');
-        const searchInput = document.getElementById('column-search-input');
-
-        closeBtn.onclick = () => modal.style.display = 'none';
+    /* Быстрые действия */
+    document.getElementById('select-all-columns').onclick = () => {
+        modal.querySelectorAll('.checkbox-item:not(.hidden) input[type="checkbox"]').forEach(cb => {
+            if (!cb.checked) {
+                cb.checked = true;
+                this.toggleColumnVisibility(cb.value, true);
+            }
+        });
+    };
+    
+    document.getElementById('deselect-all-columns').onclick = () => {
+        modal.querySelectorAll('.checkbox-item:not(.hidden) input[type="checkbox"]').forEach(cb => {
+            if (cb.checked) {
+                cb.checked = false;
+                this.toggleColumnVisibility(cb.value, false);
+            }
+        });
+    };
+    
+    document.getElementById('reset-columns-visibility').onclick = () => {
+        this.resetColumnVisibility();
+        this.populateColumnSelector();
+    };
+    
+    /* Поиск по колонкам */
+    const searchInput = modal.querySelector('.columns-search-input');
+    searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
         
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) modal.style.display = 'none';
+        modal.querySelectorAll('.columns-group').forEach(group => {
+            let hasVisibleItems = false;
+            
+            group.querySelectorAll('.checkbox-item').forEach(item => {
+                const label = item.querySelector('label').textContent.toLowerCase();
+                if (term === '' || label.includes(term)) {
+                    item.classList.remove('hidden');
+                    hasVisibleItems = true;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+            
+            /* Скрываем группу если нет видимых элементов */
+            if (term !== '' && !hasVisibleItems) {
+                group.style.display = 'none';
+            } else {
+                group.style.display = '';
+
+            }
         });
         
-        applyBtn.onclick = () => {
-            this.applySelectedColumns();
-            modal.style.display = 'none';
-        };
-        
-        selectAllBtn.onclick = () => {
-            document.querySelectorAll('#column-selector-modal .column-checkbox').forEach(checkbox => {
-                checkbox.checked = true;
-            });
-            this.updateAllGroupCheckboxes();
-        };
-        
-        deselectAllBtn.onclick = () => {
-            document.querySelectorAll('#column-selector-modal .column-checkbox').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            this.updateAllGroupCheckboxes();
-        };
-        
-        resetBtn.onclick = () => {
-            this.resetColumnVisibility();
-            modal.style.display = 'none';
-        };
-        
-        resetAllBtn.onclick = () => {
-            if (confirm('Сбросить все настройки таблицы (порядок, ширину и видимость колонок)?')) {
-                this.resetAllTableSettings();
-                modal.style.display = 'none';
+        /* Для простого списка без групп */
+        modal.querySelectorAll('#columns-list > .checkbox-item').forEach(item => {
+            const label = item.querySelector('label').textContent.toLowerCase();
+            if (term === '' || label.includes(term)) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
             }
-        };
-
-        /* Поиск по колонкам — ищем внутри modal, а не по глобальному ID */
-        searchInput = modal.querySelector('#column-search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.filterColumnsList(e.target.value);
-            });
-        }
-    }
+        });
+    });
+}
     
     showColumnSelector() {
-        const modal = document.getElementById('column-selector-modal');
-        this.populateColumnSelector();
-        modal.style.display = 'block';
+    const modal = document.getElementById('column-selector-modal');
+    const content = modal.querySelector('.modal-content');
+    const toggleBtn = document.getElementById('toggle-columns-btn');
+    
+    this.populateColumnSelector();
+    
+    /* Позиционируем под кнопкой */
+    if (toggleBtn && content) {
+        const rect = toggleBtn.getBoundingClientRect();
+        const modalWidth = 320;
+        
+        /* Проверяем, не выходит ли за правый край экрана */
+        let leftPos = rect.left;
+        if (leftPos + modalWidth > window.innerWidth - 20) {
+            leftPos = window.innerWidth - modalWidth - 20;
+        }
+        if (leftPos < 20) {
+            leftPos = 20;
+        }
+        
+        content.style.top = (rect.bottom + 5) + 'px';
+        content.style.left = leftPos + 'px';
     }
     
+    modal.style.display = 'block';
+    
+    /* Фокус на поле поиска */
+    setTimeout(() => {
+        const searchInput = modal.querySelector('.columns-search-input');
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.focus();
+        }
+    }, 50);
+}
+    
     populateColumnSelector() {
-        const columnsContainer = document.getElementById('columns-list');
-        const searchInput = document.getElementById('column-search-input');
-        columnsContainer.innerHTML = '';
-        if (searchInput) searchInput.value = '';
+    const columnsContainer = document.getElementById('columns-list');
+    columnsContainer.innerHTML = '';
+    
+    const columns = this.table.getColumns();
+    const columnGroups = this.getColumnGroups();
+    
+    /* Если есть группировка */
+    if (columnGroups && columnGroups.length > 0) {
+        const usedFields = new Set();
         
-        const columns = this.table.getColumns();
-        const columnGroups = this.getColumnGroups ? this.getColumnGroups() : null;
-        
-        /* Создаём карту колонок для быстрого доступа */
-        const columnMap = new Map();
-        columns.forEach(col => {
-            const field = col.getField();
-            if (field) {
-                columnMap.set(field, col);
-            }
-        });
-
-        if (columnGroups && columnGroups.length > 0) {
-            /* Режим с группами */
-            const usedFields = new Set();
+        columnGroups.forEach((group, groupIndex) => {
+            const groupEl = document.createElement('div');
+            groupEl.className = 'columns-group';
+            groupEl.dataset.groupIndex = groupIndex;
             
-            columnGroups.forEach((group, groupIndex) => {
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'column-group';
-                groupDiv.setAttribute('data-group-index', groupIndex);
-                
-                /* Заголовок группы с чекбоксом */
-                const groupHeader = document.createElement('div');
-                groupHeader.className = 'column-group-header';
-                groupHeader.innerHTML = `
-                    <label class="group-label">
-                        <input type="checkbox" class="group-checkbox" data-group-index="${groupIndex}">
-                        <span class="group-name">${group.name}</span>
-                    </label>
-                `;
-                groupDiv.appendChild(groupHeader);
-                
-                /* Список колонок в группе */
-                const groupColumns = document.createElement('div');
-                groupColumns.className = 'column-group-items';
-                
-                group.fields.forEach(field => {
-                    const column = columnMap.get(field);
-                    if (column) {
-                        usedFields.add(field);
-                        const title = column.getDefinition().title;
-                        const isVisible = column.isVisible();
-                        
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'checkbox-item';
-                        itemDiv.setAttribute('data-field', field);
-                        itemDiv.setAttribute('data-title', title.toLowerCase());
-                        itemDiv.innerHTML = `
-                            <label>
-                                <input type="checkbox" class="column-checkbox" value="${field}" data-group-index="${groupIndex}" ${isVisible ? 'checked' : ''}>
-                                ${title}
-                            </label>
-                        `;
-                        groupColumns.appendChild(itemDiv);
-                    }
-                });
-                
-                /* Добавляем группу только если в ней есть колонки */
-                if (groupColumns.children.length > 0) {
-                    groupDiv.appendChild(groupColumns);
-                    columnsContainer.appendChild(groupDiv);
+            /* Собираем колонки группы */
+            const groupColumns = [];
+            group.fields.forEach(field => {
+                const column = this.table.getColumn(field);
+                if (column) {
+                    groupColumns.push({ field, column, title: column.getDefinition().title });
+                    usedFields.add(field);
                 }
             });
             
-            /* Добавляем колонки, которые не попали ни в одну группу */
-            const ungroupedColumns = [];
-            columns.forEach(col => {
-                const field = col.getField();
-                if (field && !usedFields.has(field)) {
-                    ungroupedColumns.push(col);
-                }
-            });
+            if (groupColumns.length === 0) return;
             
-            if (ungroupedColumns.length > 0) {
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'column-group';
-                groupDiv.setAttribute('data-group-index', 'ungrouped');
-                
-                const groupHeader = document.createElement('div');
-                groupHeader.className = 'column-group-header';
-                groupHeader.innerHTML = `
-                    <label class="group-label">
-                        <input type="checkbox" class="group-checkbox" data-group-index="ungrouped">
-                        <span class="group-name">Прочее</span>
-                    </label>
-                `;
-                groupDiv.appendChild(groupHeader);
-                
-                const groupColumns = document.createElement('div');
-                groupColumns.className = 'column-group-items';
-                
-                ungroupedColumns.forEach(column => {
-                    const field = column.getField();
-                    const title = column.getDefinition().title;
-                    const isVisible = column.isVisible();
-                    
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'checkbox-item';
-                    itemDiv.setAttribute('data-field', field);
-                    itemDiv.setAttribute('data-title', title.toLowerCase());
-                    itemDiv.innerHTML = `
-                        <label>
-                            <input type="checkbox" class="column-checkbox" value="${field}" data-group-index="ungrouped" ${isVisible ? 'checked' : ''}>
-                            ${title}
-                        </label>
-                    `;
-                    groupColumns.appendChild(itemDiv);
-                });
-                
-                groupDiv.appendChild(groupColumns);
-                columnsContainer.appendChild(groupDiv);
+            /* Определяем состояние группы */
+            const visibleCount = groupColumns.filter(c => c.column.isVisible()).length;
+            const allVisible = visibleCount === groupColumns.length;
+            const someVisible = visibleCount > 0 && visibleCount < groupColumns.length;
+            
+            /* Заголовок группы */
+            const headerEl = document.createElement('div');
+            headerEl.className = 'columns-group-header';
+            headerEl.innerHTML = `
+                <input type="checkbox" class="columns-group-checkbox" data-group="${groupIndex}" 
+                    ${allVisible ? 'checked' : ''}>
+                <span class="columns-group-title">${group.title}</span>
+            `;
+            
+            /* Устанавливаем indeterminate если частично выбрано */
+            const groupCheckbox = headerEl.querySelector('.columns-group-checkbox');
+            if (someVisible) {
+                groupCheckbox.indeterminate = true;
             }
             
-            /* Привязываем события для групповых чекбоксов */
-            this.bindGroupCheckboxEvents();
+            /* Элементы группы */
+            const itemsEl = document.createElement('div');
+            itemsEl.className = 'columns-group-items';
             
-            /* Обновляем состояние групповых чекбоксов */
-            this.updateAllGroupCheckboxes();
-            
-        } else {
-            /* Режим без групп (для обратной совместимости) */
-            columns.forEach(column => {
-                const field = column.getField();
-                const title = column.getDefinition().title;
-                if (!field) return;
-                
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'checkbox-item';
-                itemDiv.setAttribute('data-field', field);
-                itemDiv.setAttribute('data-title', title.toLowerCase());
-                itemDiv.innerHTML = `
+            groupColumns.forEach(({ field, column, title }) => {
+                const checkbox = document.createElement('div');
+                checkbox.className = 'checkbox-item';
+                checkbox.dataset.field = field;
+                checkbox.innerHTML = `
                     <label>
-                        <input type="checkbox" class="column-checkbox" value="${field}" ${column.isVisible() ? 'checked' : ''}>
+                        <input type="checkbox" value="${field}" ${column.isVisible() ? 'checked' : ''}>
                         ${title}
                     </label>
                 `;
-                columnsContainer.appendChild(itemDiv);
+                
+                const input = checkbox.querySelector('input');
+                input.addEventListener('change', (e) => {
+                    this.toggleColumnVisibility(e.target.value, e.target.checked);
+                    this.updateGroupCheckboxState(groupEl);
+                });
+                
+                itemsEl.appendChild(checkbox);
             });
+            
+            /* Обработчик чекбокса группы */
+            groupCheckbox.addEventListener('change', (e) => {
+                e.stopPropagation();
+                const checked = e.target.checked;
+                itemsEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    if (cb.checked !== checked) {
+                        cb.checked = checked;
+                        this.toggleColumnVisibility(cb.value, checked);
+                    }
+                });
+                groupCheckbox.indeterminate = false;
+            });
+            
+            groupEl.appendChild(headerEl);
+            groupEl.appendChild(itemsEl);
+            columnsContainer.appendChild(groupEl);
+        });
+        
+        /* Добавляем колонки, которые не попали ни в одну группу */
+        const ungroupedColumns = [];
+        columns.forEach(column => {
+            const field = column.getField();
+            if (field && !usedFields.has(field)) {
+                ungroupedColumns.push({ field, column, title: column.getDefinition().title });
+            }
+        });
+        
+        if (ungroupedColumns.length > 0) {
+            const groupEl = document.createElement('div');
+            groupEl.className = 'columns-group';
+            groupEl.dataset.groupIndex = 'other';
+            
+            const visibleCount = ungroupedColumns.filter(c => c.column.isVisible()).length;
+            const allVisible = visibleCount === ungroupedColumns.length;
+            const someVisible = visibleCount > 0 && visibleCount < ungroupedColumns.length;
+            
+            const headerEl = document.createElement('div');
+            headerEl.className = 'columns-group-header';
+            headerEl.innerHTML = `
+                <input type="checkbox" class="columns-group-checkbox" data-group="other" 
+                    ${allVisible ? 'checked' : ''}>
+                <span class="columns-group-title">Разное</span>
+            `;
+            
+            const groupCheckbox = headerEl.querySelector('.columns-group-checkbox');
+            if (someVisible) {
+                groupCheckbox.indeterminate = true;
+            }
+            
+            const itemsEl = document.createElement('div');
+            itemsEl.className = 'columns-group-items';
+            
+            ungroupedColumns.forEach(({ field, column, title }) => {
+                const checkbox = document.createElement('div');
+                checkbox.className = 'checkbox-item';
+                checkbox.dataset.field = field;
+                checkbox.innerHTML = `
+                    <label>
+                        <input type="checkbox" value="${field}" ${column.isVisible() ? 'checked' : ''}>
+                        ${title}
+                    </label>
+                `;
+                
+                const input = checkbox.querySelector('input');
+                input.addEventListener('change', (e) => {
+                    this.toggleColumnVisibility(e.target.value, e.target.checked);
+                    this.updateGroupCheckboxState(groupEl);
+                });
+                
+                itemsEl.appendChild(checkbox);
+            });
+        
+            
+            groupCheckbox.addEventListener('change', (e) => {
+                e.stopPropagation();
+                const checked = e.target.checked;
+                itemsEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    if (cb.checked !== checked) {
+                        cb.checked = checked;
+                        this.toggleColumnVisibility(cb.value, checked);
+                    }
+                });
+                groupCheckbox.indeterminate = false;
+            });
+            
+            groupEl.appendChild(headerEl);
+            groupEl.appendChild(itemsEl);
+            columnsContainer.appendChild(groupEl);
+        }
+    } else {
+        /* Без группировки — простой список */
+        columns.forEach(column => {
+            const field = column.getField();
+            const title = column.getDefinition().title;
+            
+            if (!field) return;
+            
+            const checkbox = document.createElement('div');
+            checkbox.className = 'checkbox-item';
+            checkbox.dataset.field = field;
+            checkbox.innerHTML = `
+                <label>
+                    <input type="checkbox" value="${field}" ${column.isVisible() ? 'checked' : ''}>
+                    ${title}
+                </label>
+            `;
+            
+            const input = checkbox.querySelector('input');
+            input.addEventListener('change', (e) => {
+                this.toggleColumnVisibility(e.target.value, e.target.checked);
+            });
+            
+            columnsContainer.appendChild(checkbox);
+        });
+    }
+}
+
+    toggleColumnVisibility(field, visible) {
+        const column = this.table.getColumn(field);
+        if (column) {
+            if (visible) {
+                column.show();
+            } else {
+                column.hide();
+            }
         }
     }
+
+    updateGroupCheckboxState(groupEl) {
+    const groupCheckbox = groupEl.querySelector('.columns-group-checkbox');
+    const itemCheckboxes = groupEl.querySelectorAll('.columns-group-items input[type="checkbox"]');
+    
+    const total = itemCheckboxes.length;
+    const checked = Array.from(itemCheckboxes).filter(cb => cb.checked).length;
+    
+    if (checked === 0) {
+        groupCheckbox.checked = false;
+        groupCheckbox.indeterminate = false;
+    } else if (checked === total) {
+        groupCheckbox.checked = true;
+        groupCheckbox.indeterminate = false;
+    } else {
+        groupCheckbox.checked = false;
+        groupCheckbox.indeterminate = true;
+    }
+}
 
     /**
      * Привязка событий для чекбоксов групп
@@ -1408,19 +1540,7 @@ export default class BaseTable {
         container.appendChild(checkbox);
     }
     
-    applySelectedColumns() {
-        document.querySelectorAll('#column-selector-modal input[type="checkbox"]').forEach(checkbox => {
-            const column = this.table.getColumn(checkbox.value);
-            if (column) {
-                if (checkbox.checked) {
-                    column.show();
-                } else {
-                    column.hide();
-                }
-            }
-        });
-        // Tabulator persistence автоматически сохранит изменения
-    }
+
 
     createDeleteConfirmModal() {
         const existingModal = document.getElementById('delete-confirm-modal');

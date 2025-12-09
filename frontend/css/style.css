@@ -541,108 +541,280 @@ button {
 
 
 /* -----------------------------------------------------------------
-   9.1 Модалка выбора колонок
+   9.1 Выпадающий список выбора колонок
    ----------------------------------------------------------------- */
 
+#column-selector-modal {
+    background-color: transparent;
+    backdrop-filter: none;
+    z-index: 1000;
+}
+
 #column-selector-modal .modal-content {
-    margin: 5% auto;
-    padding: 0;
-    width: 90%;
-    max-width: 400px;
-    max-height: 85vh;
+    position: absolute;
+    margin: 0;
+    width: 320px;
+    max-height: 500px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
 #column-selector-modal .modal-header {
-    background-color: var(--color-bg-white);
-    border-bottom: none;
-    padding: 20px 20px 10px 20px;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    display: none;
 }
 
 #column-selector-modal .modal-body {
-    padding: 10px 0 0 0;
-    overflow-y: auto;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     flex: 1;
 }
 
+/* Быстрые действия */
+.columns-quick-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    justify-content: center;
+}
+
+.columns-quick-actions span {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: 3px;
+    transition: color var(--transition-normal);
+}
+
+.columns-quick-actions span:hover {
+    color: var(--color-primary);
+}
+
+.columns-quick-actions .separator {
+    color: var(--color-border-dark);
+    text-decoration: none;
+    cursor: default;
+}
+
+.columns-quick-actions .separator:hover {
+    color: var(--color-border-dark);
+}
+
+/* Поле поиска */
+.columns-search {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.columns-search-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--radius-md);
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    box-sizing: border-box;
+    transition: border-color var(--transition-normal);
+}
+
+.columns-search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(51, 154, 240, 0.1);
+}
+
+.columns-search-input::placeholder {
+    color: var(--color-text-light);
+}
+
+/* Список колонок */
 #column-selector-modal .columns-list {
-/*    border: 1px solid var(--color-border);*/
-    background-color: var(--color-bg-white);
-    padding: 10px 15px;
-    border-radius: var(--radius-lg);
-    max-height: 400px;
+    padding: 8px 0;
+    max-height: 350px;
     overflow-y: auto;
 }
 
 #column-selector-modal .checkbox-item {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--color-border-light);
-}
-
-#column-selector-modal .checkbox-item:last-child {
+    padding: 0;
     border-bottom: none;
 }
 
 #column-selector-modal .checkbox-item label {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px;
     font-size: 15px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
 }
 
-#column-selector-modal .modal-actions {
+#column-selector-modal .checkbox-item label:hover {
+    background-color: var(--color-bg-light);
+}
+
+#column-selector-modal .checkbox-item.hidden {
+    display: none;
+}
+
+/* Кастомные чекбоксы */
+#column-selector-modal .checkbox-item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border: 2px solid var(--color-border-dark);
+    border-radius: 4px;
+    margin-right: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-normal);
     background-color: var(--color-bg-white);
-    border-top: 1px solid var(--color-border);
-    padding: 15px 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: space-between;
 }
 
-#column-selector-modal .modal-actions-left {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+#column-selector-modal .checkbox-item input[type="checkbox"]:hover {
+    border-color: var(--color-primary);
 }
 
-#column-selector-modal .modal-actions-right {
+#column-selector-modal .checkbox-item input[type="checkbox"]:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+#column-selector-modal .checkbox-item input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+#column-selector-modal .checkbox-item input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(51, 154, 240, 0.2);
+}
+
+/* Скрываем старые actions */
+#column-selector-modal .modal-actions {
+    display: none;
+}
+
+/* Группы колонок */
+.columns-group {
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.columns-group:last-child {
+    border-bottom: none;
+}
+
+.columns-group-header {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    user-select: none;
+}
+
+.columns-group-header:hover {
+    background-color: var(--color-bg-light);
+}
+
+.columns-group-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border: 2px solid var(--color-border-dark);
+    border-radius: 4px;
+    margin-right: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-normal);
+    background-color: var(--color-bg-white);
+}
+
+.columns-group-checkbox:hover {
+    border-color: var(--color-primary);
+}
+
+.columns-group-checkbox:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.columns-group-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.columns-group-checkbox:indeterminate {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.columns-group-checkbox:indeterminate::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 7px;
+    width: 10px;
+    height: 2px;
+    background-color: white;
+}
+
+.columns-group-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text);
+    flex: 1;
+}
+
+.columns-group-items {
+    padding-left: 10px;
+}
+
+.columns-group-items .checkbox-item label {
+    padding: 8px 16px 8px 12px;
 }
 
 /* Мобильная адаптация */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+    #column-selector-modal {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
+    }
+    
     #column-selector-modal .modal-content {
-        margin: 0;
-        width: 100%;
-        max-width: 100%;
-        height: 85vh;
-        max-height: 85vh;
-        border-radius: 0;
-    }
-    
-    #column-selector-modal .modal-header {
-        border-radius: 0;
-    }
-    
-    #column-selector-modal .columns-list {
-        max-height: calc(100vh - 250px);
-    }
-    
-    #column-selector-modal .modal-actions {
-        flex-direction: column;
-        border-radius: 0;
-    }
-    
-    #column-selector-modal .modal-actions-left,
-    #column-selector-modal .modal-actions-right {
-        width: 100%;
-        justify-content: stretch;
-    }
-    
-    #column-selector-modal .modal-actions button {
-        flex: 1;
+        position: relative;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: calc(100% - 40px);
+        max-width: 320px;
+        margin: 20px;
     }
 }
 
