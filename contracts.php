@@ -65,6 +65,7 @@
                         <button class="quick-date-btn" data-days="1">Вчера</button>
                         <button class="quick-date-btn" data-days="7">Неделя</button>
                         <button class="quick-date-btn" data-days="30">Месяц</button>
+                        <button class="quick-date-btn" data-days="90">Квартал</button>
                         <button class="quick-date-btn" data-days="365">Год</button>
                         <button class="quick-date-btn" data-clear="true">Сбросить</button>
                     </div>

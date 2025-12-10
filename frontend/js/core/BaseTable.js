@@ -1052,15 +1052,15 @@ export default class BaseTable {
         <div id="column-selector-modal" class="modal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-body">
+                    <div class="columns-search">
+                        <input type="text" class="columns-search-input" placeholder="Поиск колонок..." autocomplete="off">
+                    </div>
                     <div class="columns-quick-actions">
                         <span id="select-all-columns">Все</span>
                         <span class="separator">/</span>
                         <span id="deselect-all-columns">Ничего</span>
                         <span class="separator">/</span>
                         <span id="reset-columns-visibility">По умолчанию</span>
-                    </div>
-                    <div class="columns-search">
-                        <input type="text" class="columns-search-input" placeholder="Поиск колонок..." autocomplete="off">
                     </div>
                     <div id="columns-list" class="columns-list"></div>
                 </div>

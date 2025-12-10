@@ -577,25 +577,29 @@ button {
     display: flex;
     gap: 8px;
     padding: 12px 16px;
-    border-bottom: 1px solid var(--color-border);
-    justify-content: center;
+    /* border-bottom: 1px solid var(--color-border); */
+    justify-content: flex-start;
 }
 
 .columns-quick-actions span {
     color: var(--color-text-muted);
     font-size: 13px;
+    font-weight: var(--font-weight-light);
     cursor: pointer;
-    text-decoration: underline;
+    border-bottom: 1px solid #ddd;
+    /* text-decoration: underline;
     text-decoration-style: dashed;
-    text-underline-offset: 3px;
+    text-underline-offset: 3px; */
     transition: color var(--transition-normal);
 }
 
 .columns-quick-actions span:hover {
     color: var(--color-primary);
+    border-bottom: 1px solid var(--color-primary);
 }
 
 .columns-quick-actions .separator {
+    border-bottom: none;
     color: var(--color-border-dark);
     text-decoration: none;
     cursor: default;
@@ -607,17 +611,16 @@ button {
 
 /* Поле поиска */
 .columns-search {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--color-border);
+    padding: 12px 16px 0 16px;
 }
 
 .columns-search-input {
     width: 100%;
-    padding: 10px 12px;
+    padding: 6px 10px;
     border: 1px solid var(--color-border-dark);
     border-radius: var(--radius-md);
     font-family: var(--font-family);
-    font-size: 14px;
+    font-size: 15px;
     color: var(--color-text-secondary);
     box-sizing: border-box;
     transition: border-color var(--transition-normal);
@@ -635,7 +638,7 @@ button {
 
 /* Список колонок */
 #column-selector-modal .columns-list {
-    padding: 8px 0;
+    padding: 0 0 8px 0;
     max-height: 350px;
     overflow-y: auto;
 }

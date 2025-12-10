@@ -13,8 +13,11 @@
 //e.romanova
 //H&yFR$Rdset
 
-$username = 'e.romanova';
-$password = 'H&yFR$Rdset';
+//a.piksaeva
+//H8tYF%6etds5
+
+$username = 'a.piksaeva';
+$password = 'H8tYF%6etds5';
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
 echo "Пароль: " . $password . "<br>";
