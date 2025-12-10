@@ -102,6 +102,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            margin-top: 20px;
             margin-bottom: 24px;
             gap: 20px;
             flex-wrap: wrap;
@@ -461,6 +462,38 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
 </head>
 <body>
     <?php include 'header.php'; ?>
+    <div class="page-with-sidebar">
+    <!-- Боковая панель со списком договоров --- -->
+    <aside class="contracts-sidebar" id="contracts-sidebar">
+        <div class="sidebar-header">
+            <h3>Договоры</h3>
+            <button class="sidebar-close" id="sidebar-close">
+                <img src="/assets/close.svg" alt="Закрыть">
+            </button>
+        </div>
+        <div class="sidebar-search">
+            <input type="text" id="contracts-search" placeholder="Поиск..." autocomplete="off">
+        </div>
+        <div class="sidebar-list" id="contracts-list">
+            <?php
+            try {
+                $stmtList = $pdo->query("SELECT id, contract_name, is_active FROM contracts ORDER BY id DESC");
+                $contractsList = $stmtList->fetchAll(PDO::FETCH_ASSOC);
+                
+                foreach ($contractsList as $item) {
+                    $isCurrentClass = ($item['id'] == $contractId) ? 'active' : '';
+                    $statusClass = ($item['is_active'] == 1) ? 'status-active' : 'status-inactive';
+                    echo '<a href="/contract.php?id=' . $item['id'] . '" class="sidebar-item ' . $isCurrentClass . '" data-name="' . htmlspecialchars(mb_strtolower($item['contract_name'])) . '">';
+                    echo '<span class="sidebar-item-status ' . $statusClass . '"></span>';
+                    echo '<span class="sidebar-item-name">' . htmlspecialchars($item['contract_name']) . '</span>';
+                    echo '</a>';
+                }
+            } catch (PDOException $e) {
+                echo '<div class="sidebar-error">Ошибка загрузки списка</div>';
+            }
+            ?>
+        </div>
+    </aside>
     
     <div class="container">
         <div class="contract-card">
@@ -804,6 +837,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             </div>
         </div>
     </div>
+    </div>
 
     <!-- Модальное окно подтверждения удаления -->
     <div id="delete-confirm-modal" class="modal" style="display: none;">
@@ -822,6 +856,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             </div>
         </div>
     </div>
+    
     
     <!--<script>
     /* Копирование в буфер обмена */
@@ -890,5 +925,56 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             }
         });
     </script>
+
+    <!-- --- Скрипт боковой панели --- -->
+    <script>
+    (function() {
+        const sidebar = document.getElementById('contracts-sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarClose = document.getElementById('sidebar-close');
+        const searchInput = document.getElementById('contracts-search');
+        
+        /* Открытие/закрытие сайдбара на мобильных */
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+        
+        if (sidebarClose) {
+            sidebarClose.addEventListener('click', function() {
+                sidebar.classList.remove('open');
+                document.body.style.overflow = '';
+            });
+        }
+        
+        /* Поиск по списку */
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                const items = document.querySelectorAll('.sidebar-item');
+                
+                items.forEach(function(item) {
+                    const name = item.getAttribute('data-name') || '';
+                    if (term === '' || name.includes(term)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        /* Прокрутка к активному элементу */
+        const activeItem = document.querySelector('.sidebar-item.active');
+        if (activeItem) {
+            setTimeout(function() {
+                activeItem.scrollIntoView({ block: 'center', behavior: 'auto' });
+            }, 100);
+        }
+    })();
+    </script>
+    
 </body>
 </html>

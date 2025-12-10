@@ -27,6 +27,11 @@ if (function_exists('getCurrentUserName')) {
             Выход
         </a>
     </div>
+
+    <!-- Кнопка списка договоров (только на странице договора) -->
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Список договоров">
+        <img src="/assets/list.svg" alt="Список">
+    </button>
     
     <!-- Кнопка мобильного меню -->
     <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Открыть меню">

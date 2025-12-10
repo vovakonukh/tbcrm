@@ -148,7 +148,7 @@ header {
     width: 100%;
     background-color: var(--color-bg-white);
     padding: 7px 20px;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     flex-direction: row;
     gap: 20px;
     align-items: center;
@@ -361,6 +361,7 @@ button {
    ================================================================= */
 
 .controls {
+    margin-top: 20px;
     margin-bottom: 25px;
     display: flex;
     gap: 10px;
@@ -1815,4 +1816,205 @@ button {
 /* Стиль для indeterminate чекбокса группы */
 .group-checkbox:indeterminate {
     opacity: 0.7;
+}
+
+/* =================================================================
+   18. БОКОВАЯ ПАНЕЛЬ СПИСКА ДОГОВОРОВ
+   ================================================================= */
+
+/* Обёртка страницы с сайдбаром */
+.page-with-sidebar {
+    display: flex;
+    /* max-width: 1400px; */
+    margin: 0 auto;
+}
+
+/* Сайдбар */
+.contracts-sidebar {
+    width: 280px;
+    min-width: 280px;
+    background-color: var(--color-bg-white);
+    /* border-right: 1px solid var(--color-border); */
+    height: 100vh;
+    position: sticky;
+    top: 0px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.sidebar-close {
+    display: none;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.sidebar-close img {
+    width: 20px;
+    height: 20px;
+}
+
+.sidebar-search {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.sidebar-search input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--radius-md);
+    font-family: var(--font-family);
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.sidebar-search input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.sidebar-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    transition: background-color var(--transition-fast);
+    border-left: 3px solid transparent;
+}
+
+.sidebar-item:hover {
+    background-color: var(--color-bg-light);
+}
+
+.sidebar-item.active {
+    background-color: #e7f5ff;
+    border-left-color: var(--color-primary);
+    color: var(--color-text);
+    font-weight: 500;
+}
+
+.sidebar-item-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.sidebar-item-status.status-active {
+    background-color: #40c057;
+}
+
+.sidebar-item-status.status-inactive {
+    background-color: #adb5bd;
+}
+
+.sidebar-item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-error {
+    padding: 20px;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+/* Кнопка открытия сайдбара (мобильная) */
+.sidebar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.sidebar-toggle img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Контейнер на странице с сайдбаром */
+.page-with-sidebar .container {
+    flex: 1;
+    min-width: 0;
+    padding: 0 30px 20px 30px;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .contracts-sidebar {
+        width: 240px;
+        min-width: 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Показываем кнопку сайдбара */
+    .sidebar-toggle {
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Кнопка закрытия в сайдбаре */
+    .sidebar-close {
+        display: block;
+    }
+    
+    /* Сайдбар как оверлей */
+    .contracts-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 300px;
+        height: 100vh;
+        z-index: 1005;
+        transform: translateX(-100%);
+        transition: transform var(--transition-slow);
+        border-right: none;
+        
+    }
+    
+    .contracts-sidebar.open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    /* Контейнер на мобильных */
+    .page-with-sidebar .container {
+        padding: 0 15px 15px 15px;
+    }
+    
+    /* Убираем обёртку flex на мобильных */
+    .page-with-sidebar {
+        display: block;
+    }
 }
