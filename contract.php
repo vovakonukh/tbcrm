@@ -665,8 +665,8 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                         <div class="data-value"><?= formatDate($contract['delivery_date']) ?></div>
                     </div>
                     <div class="data-item">
-                        <div class="data-label">Срок по договору</div>
-                        <div class="data-value"><?= $contract['contract_duration'] ? $contract['contract_duration'] . ' дней' : '—' ?></div>
+                        <div class="data-label">Крайний срок по договору</div>
+                        <div class="data-value"><?= formatDate($contract['contract_duration']) ?></div>
                     </div>
                 </div>
             </div>

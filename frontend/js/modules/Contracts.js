@@ -159,7 +159,8 @@ export class ContractsTable extends BaseTable {
                     thousand: " ",
                     precision: 0,
                     decimal: ","
-                }
+                },
+                cssClass: "cell-text-left"
             },
 
             {
@@ -192,7 +193,8 @@ export class ContractsTable extends BaseTable {
                 formatter: "lookup",
                 formatterParams: this.lookups.ipoteka_status,
                 editor: "list",
-                editorParams: listEditorParams(this.lookups.ipoteka_status)
+                editorParams: listEditorParams(this.lookups.ipoteka_status),
+                cssClass: "cell-text-left"
             },
 
             {
@@ -333,11 +335,24 @@ export class ContractsTable extends BaseTable {
             },
 
             {
-                title: "Срок по договору",
+                title: "Крайний срок по договору",
                 field: "contract_duration",
-                width: 100,
-                sorter: "number",
-                editor: "number",
+                width: 110,
+                sorter: "date",
+                sorterParams: {
+                    format: "yyyy-MM-dd",
+                    alignEmptyValues: "bottom"
+                },
+                formatter: "datetime",
+                formatterParams: {
+                    inputFormat: "yyyy-MM-dd",
+                    outputFormat: "dd.MM.yyyy",
+                    invalidPlaceholder: ""
+                },
+                editor: "date",
+                editorParams: {
+                    format: "yyyy-MM-dd"
+                },
                 editable: true
             },
 
@@ -487,7 +502,9 @@ export class ContractsTable extends BaseTable {
                 width: 120,
                 sorter: "string",
                 editor: "input",
-                editable: true
+                editable: true,
+                visible: false,
+                cssClass: "cell-text-left"
             },
 
             {
@@ -548,7 +565,8 @@ export class ContractsTable extends BaseTable {
                 editor: "textarea",
                 editorParams: textareaParams, // Используем наш новый конфиг
                 formatter: "textarea",
-                visible: false
+                visible: false,
+                cssClass: "cell-text-left"
             },
 
             {
@@ -556,13 +574,17 @@ export class ContractsTable extends BaseTable {
                 field: "cadastral_number",
                 width: 150,
                 editor: "input",
-                visible: false
-            }, {
+                visible: false,
+                cssClass: "cell-text-left"
+            },
+            
+            {
                 title: "Координаты",
                 field: "site_coordinates",
                 width: 150,
                 editor: "input",
-                visible: false
+                visible: false,
+                cssClass: "cell-text-left"
             },
 
             {
@@ -747,13 +769,10 @@ export class ContractsTable extends BaseTable {
      */
     getColumnGroups() {
         return [
-            {
-                title: 'ID',
-                fields: ['id', 'adesk_project_id']
-            },
+            
             {
                 title: 'Основное',
-                fields: ['contract_name', 'source_id', 'manager_id', 'sop_id', 'comment', 'is_active']
+                fields: ['contract_name', 'complectation_id', 'source_id', 'manager_id', 'sop_id', 'comment', 'is_active']
             },
             {
                 title: 'Финансы',
@@ -761,7 +780,7 @@ export class ContractsTable extends BaseTable {
             },
             {
                 title: 'Ипотека',
-                fields: ['payment_type_id', 'escrow_agent_id']
+                fields: ['payment_type_id', 'escrow_agent_id', 'ipoteka_status_id', 'escrow_number']
             },
             {
                 title: 'Даты',
@@ -777,7 +796,7 @@ export class ContractsTable extends BaseTable {
             },
             {
                 title: 'Строительство',
-                fields: ['ar_ready', 'kr_ready', 'estimate_ready', 'foundation', 'project_id', 'complectation_id', 'brigade_id']
+                fields: ['ar_ready', 'kr_ready', 'estimate_ready', 'foundation', 'project_id']
             },
             {
                 title: 'ЗП менеджер',
@@ -790,6 +809,10 @@ export class ContractsTable extends BaseTable {
             {
                 title: 'Разное',
                 fields: ['custom_field_1', 'custom_field_2', 'custom_field_3', 'created_by', 'updated_by', 'created_at', 'updated_at']
+            },
+            {
+                title: 'ID',
+                fields: ['id', 'adesk_project_id']
             }
         ];
     }
