@@ -57,11 +57,16 @@
                         </div>
                     </div>
                     <div class="quick-dates">
-                        <button class="quick-date-btn" data-days="0">Сегодня</button>
-                        <button class="quick-date-btn" data-days="1">Вчера</button>
-                        <button class="quick-date-btn" data-days="7">Неделя</button>
-                        <button class="quick-date-btn" data-days="30">Месяц</button>
-                        <button class="quick-date-btn" data-days="365">Год</button>
+                        <button class="quick-date-btn" data-period="this-month">Этот месяц</button>
+                        <button class="quick-date-btn" data-period="this-quarter">Этот квартал</button>
+                        <button class="quick-date-btn" data-period="this-year">Этот год</button>
+                        <button class="quick-date-btn" data-period="last-month">Прошлый месяц</button>
+                        <button class="quick-date-btn" data-period="last-30-days">Прошлые 30 дней</button>
+                        <button class="quick-date-btn" data-period="last-quarter">Прошлый квартал</button>
+                        <button class="quick-date-btn" data-period="last-90-days">Прошлые 90 дней</button>
+                        <button class="quick-date-btn" data-period="last-year">Прошлый год</button>
+                        <button class="quick-date-btn" data-period="last-365-days">Прошлые 365 дней</button>
+                        <button class="quick-date-btn" data-period="all-time">Всё время</button>
                         <button class="quick-date-btn" data-clear="true">Сбросить</button>
                     </div>
                 </div>

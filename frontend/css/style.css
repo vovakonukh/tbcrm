@@ -442,11 +442,11 @@ button {
 }
 
 .quick-date-btn {
-    padding: 3px 10px;
+    padding: 1px 10px;
     border: 1px solid var(--color-border);
     border-radius: 20px;
     background-color: var(--color-bg-light);
-    color: var(--color-text-secondary);
+    color: #788195;
     cursor: pointer;
     font-family: var(--font-family);
     font-size: 13px;
@@ -835,7 +835,7 @@ button {
 #date-filter-modal .modal-content {
     position: absolute;
     margin: 0;
-    width: 370px;
+    width: 350px;
 }
 
 #date-filter-modal .modal-header,

@@ -660,15 +660,15 @@ export default class BaseTable {
         quickDateBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation(); 
-                const days = e.target.getAttribute('data-days');
+                const period = e.target.getAttribute('data-period');
                 const clear = e.target.getAttribute('data-clear');
                 if (clear) {
                     const startEl = document.getElementById('start-date');
                     const endEl = document.getElementById('end-date');
                     if(startEl) startEl.value = '';
                     if(endEl) endEl.value = '';
-                } else if (days) {
-                    this.setQuickDateRange(parseInt(days));
+                } else if (period) {
+                    this.setPeriodDateRange(period);
                 }
             });
         });
@@ -706,10 +706,86 @@ export default class BaseTable {
         modal.style.display = 'block';
     }
 
-    setQuickDateRange(days) {
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - days);
+    /**
+     * Устанавливает диапазон дат по выбранному периоду
+     */
+    setPeriodDateRange(period) {
+        const today = new Date();
+        let startDate, endDate;
+        
+        switch (period) {
+            case 'this-month':
+                /* Первый день текущего месяца — сегодня */
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = today;
+                break;
+                
+            case 'this-quarter':
+                /* Первый день текущего квартала — сегодня */
+                const currentQuarter = Math.floor(today.getMonth() / 3);
+                startDate = new Date(today.getFullYear(), currentQuarter * 3, 1);
+                endDate = today;
+                break;
+                
+            case 'this-year':
+                /* 1 января текущего года — сегодня */
+                startDate = new Date(today.getFullYear(), 0, 1);
+                endDate = today;
+                break;
+                
+            case 'last-month':
+                /* Весь прошлый месяц (с 1 по последний день) */
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+                
+            case 'last-30-days':
+                /* Последние 30 дней включая сегодня */
+                startDate = new Date(today);
+                startDate.setDate(startDate.getDate() - 29);
+                endDate = today;
+                break;
+                
+            case 'last-quarter':
+                /* Весь прошлый квартал */
+                const lastQuarter = Math.floor(today.getMonth() / 3) - 1;
+                const lastQuarterYear = lastQuarter < 0 ? today.getFullYear() - 1 : today.getFullYear();
+                const adjustedQuarter = lastQuarter < 0 ? 3 : lastQuarter;
+                startDate = new Date(lastQuarterYear, adjustedQuarter * 3, 1);
+                endDate = new Date(lastQuarterYear, adjustedQuarter * 3 + 3, 0);
+                break;
+                
+            case 'last-90-days':
+                /* Последние 90 дней включая сегодня */
+                startDate = new Date(today);
+                startDate.setDate(startDate.getDate() - 89);
+                endDate = today;
+                break;
+                
+            case 'last-year':
+                /* Весь прошлый год (1 янв — 31 дек) */
+                startDate = new Date(today.getFullYear() - 1, 0, 1);
+                endDate = new Date(today.getFullYear() - 1, 11, 31);
+                break;
+                
+            case 'last-365-days':
+                /* Последние 365 дней включая сегодня */
+                startDate = new Date(today);
+                startDate.setDate(startDate.getDate() - 364);
+                endDate = today;
+                break;
+                
+            case 'all-time':
+                /* Всё время — очищаем оба поля */
+                const startInput = document.getElementById('start-date');
+                const endInput = document.getElementById('end-date');
+                if(startInput) startInput.value = '';
+                if(endInput) endInput.value = '';
+                return;
+                
+            default:
+                return;
+        }
         
         const startInput = document.getElementById('start-date');
         const endInput = document.getElementById('end-date');
@@ -719,7 +795,10 @@ export default class BaseTable {
     }
     
     formatDateForInput(date) {
-        return date.toISOString().split('T')[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
     
     applyDateFilter() {
