@@ -67,12 +67,12 @@
                         <button class="quick-date-btn" data-period="last-year">Прошлый год</button>
                         <button class="quick-date-btn" data-period="last-365-days">Прошлые 365 дней</button>
                         <button class="quick-date-btn" data-period="all-time">Всё время</button>
-                        <button class="quick-date-btn" data-clear="true">Сбросить</button>
+                        <!-- <button class="quick-date-btn" data-clear="true">Сбросить</button> -->
                     </div>
                 </div>
                 <div class="modal-actions">
                     <button id="apply-date-filter">Применить фильтр</button>
-                    <button id="clear-date-filter">Отмена</button>
+                    <!-- <button id="clear-date-filter">Отмена</button> -->
                 </div>
             </div>
         </div>

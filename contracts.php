@@ -76,7 +76,7 @@
                 </div>
                 <div class="modal-actions">
                     <button id="apply-date-filter">Применить</button>
-                    <button id="clear-date-filter">Отмена</button>
+                    <!-- <button id="clear-date-filter">Отмена</button> -->
                 </div>
             </div>
         </div>

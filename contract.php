@@ -197,6 +197,9 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             padding: 24px;
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            @media (max-width: 768px) {
+                padding: 16px;
+            }
         }
         
         .section-title {
@@ -307,6 +310,9 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 20px;
+            @media (max-width: 768px) {
+                gap: 10px;
+            }
         }
         
         .finance-item {
@@ -325,6 +331,10 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             font-size: 22px;
             font-weight: 700;
             color: #2c3e50;
+
+            @media (max-width: 768px) {
+                font-size: 18px;
+            }
         }
         
         .finance-value.profit {
@@ -407,6 +417,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                 flex: 1;
                 justify-content: center;
             }
+
         }
         
         /* Двухколоночный layout для некоторых секций */
@@ -414,6 +425,10 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+
+            @media (max-width: 768px) {
+                gap: 5px;
+            }
         }
         
         @media (max-width: 900px) {

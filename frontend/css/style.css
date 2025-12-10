@@ -121,7 +121,7 @@ body {
 
 @media (max-width: 768px) {
     .container {
-        padding: 0 5px 5px 5px;
+        padding: 0 10px 5px 5px;
     }
 }
 
@@ -1395,21 +1395,26 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
+
+    @media (max-width: 768px) {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
 .open-contract-btn img {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;  
 }
 
 .open-contract-btn:hover {
     background: var(--color-bg-light);
-    border-color: var(--color-primary);
+    border-color: var(--color-border-dark);
 }
 
-.open-contract-btn:hover img {
+/* .open-contract-btn:hover img {
     filter: brightness(0) saturate(100%) invert(45%) sepia(98%) saturate(1000%) hue-rotate(190deg);
-}
+} */
 
 .tabulator-cell:hover .open-contract-btn {
     opacity: 1;

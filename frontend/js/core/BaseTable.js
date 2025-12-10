@@ -123,6 +123,7 @@ export default class BaseTable {
         this.bindSelectFilterEvents();
         this.createDeleteConfirmModal();
         this.createSelectFilterModal();
+        this.loadFiltersFromStorage();
     }
 
     async loadDataAndInit() {
@@ -812,6 +813,7 @@ export default class BaseTable {
         this.activeFilters.set(this.currentFilterField, {start: startDate, end: endDate});
         this.updateFilterButton(this.currentFilterField);
         this.applyAllFilters();
+        this.saveFiltersToStorage();
     }
     
     clearDateFilter() {
@@ -819,6 +821,7 @@ export default class BaseTable {
             this.activeFilters.delete(this.currentFilterField);
             this.updateFilterButton(this.currentFilterField);
             this.applyAllFilters();
+            this.saveFiltersToStorage();
         }
     }
     
@@ -1055,12 +1058,14 @@ export default class BaseTable {
         
         this.updateSelectFilterButton(field, displayLabel);
         this.applyAllFilters();
+        this.saveFiltersToStorage();
     }
 
     clearSelectFilter(field) {
         this.activeFilters.delete(field);
         this.updateSelectFilterButton(field, null);
         this.applyAllFilters();
+        this.saveFiltersToStorage();
     }
 
     updateSelectFilterButton(field, label) {
@@ -1715,5 +1720,73 @@ export default class BaseTable {
                 console.log(`Key: "${key}"`, localStorage.getItem(key));
             }
         }
+    }
+
+    /* Ключ для хранения фильтров в localStorage */
+    getFiltersStorageKey() {
+        return `${this.persistenceId}_filters`;
+    }
+
+    /* Сохранение фильтров в localStorage */
+    saveFiltersToStorage() {
+        try {
+            const filtersData = {};
+            this.activeFilters.forEach((value, field) => {
+                filtersData[field] = value;
+            });
+            localStorage.setItem(this.getFiltersStorageKey(), JSON.stringify(filtersData));
+        } catch (error) {
+            console.error('Error saving filters to localStorage:', error);
+        }
+    }
+
+    /* Загрузка фильтров из localStorage */
+    loadFiltersFromStorage() {
+        try {
+            const stored = localStorage.getItem(this.getFiltersStorageKey());
+            if (!stored) return;
+
+            const filtersData = JSON.parse(stored);
+            
+            Object.entries(filtersData).forEach(([field, value]) => {
+                this.activeFilters.set(field, value);
+                
+                /* Обновляем UI кнопки фильтра */
+                if (value.type === 'select') {
+                    this.updateSelectFilterButton(field, value.label);
+                } else {
+                    this.updateFilterButton(field);
+                }
+            });
+
+            /* Применяем фильтры к таблице после её инициализации */
+            if (this.table) {
+                this.applyAllFilters();
+            }
+        } catch (error) {
+            console.error('Error loading filters from localStorage:', error);
+        }
+    }
+
+    /* Очистка всех сохранённых фильтров */
+    clearAllFilters() {
+        this.activeFilters.clear();
+        localStorage.removeItem(this.getFiltersStorageKey());
+        
+        /* Сбрасываем UI всех кнопок фильтров */
+        document.querySelectorAll('.filter-btn.has-filter, .filter-btn-select.has-filter').forEach(btn => {
+            const field = btn.getAttribute('data-field');
+            if (btn.classList.contains('filter-btn-select')) {
+                this.updateSelectFilterButton(field, null);
+            } else {
+                this.updateFilterButton(field);
+            }
+        });
+        
+        if (this.table) {
+            this.table.clearFilter();
+        }
+        
+        this.showNotification('Все фильтры сброшены', 'success');
     }
 }
