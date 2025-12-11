@@ -198,10 +198,15 @@ button {
     background-color: var(--color-bg-white);
     color: var(--color-text);
     border: 1px solid var(--color-border-input);
-    padding: 10px 10px;
+    padding: 7px 10px;
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.controls button img {
+    width: 15px;
+    height: 15px;
 }
 
 .btn:hover,
