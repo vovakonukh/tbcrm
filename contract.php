@@ -465,14 +465,11 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
     <div class="page-with-sidebar">
     <!-- Боковая панель со списком договоров --- -->
     <aside class="contracts-sidebar" id="contracts-sidebar">
-        <div class="sidebar-header">
-            <h3>Договоры</h3>
+        <div class="sidebar-search">
+            <input type="text" id="contracts-search" placeholder="Поиск..." autocomplete="off">
             <button class="sidebar-close" id="sidebar-close">
                 <img src="/assets/close.svg" alt="Закрыть">
             </button>
-        </div>
-        <div class="sidebar-search">
-            <input type="text" id="contracts-search" placeholder="Поиск..." autocomplete="off">
         </div>
         <div class="sidebar-list" id="contracts-list">
             <?php
