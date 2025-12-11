@@ -14,14 +14,20 @@ export class ContractsTable extends BaseTable {
     }
 
     getNewRowData() {
+        const today = new Date().toISOString().split('T')[0]; /* Формат YYYY-MM-DD */
         return {
             contract_name: 'Новый договор',
+            contract_date: today,
             is_active: 1
         };
     }
 
     getNameField() {
         return "contract_name";
+    }
+
+    getDefaultSort() {
+        return [{column: "contract_date", dir: "desc"}];
     }
 
     getCalculatedFieldsDependencies() {

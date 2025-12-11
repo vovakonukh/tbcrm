@@ -82,7 +82,7 @@
     <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
     <script src="frontend/js/config.js"></script>
     <script type="module">
-        import { StagesTable } from './frontend/js/modules/Stages.js?v=1.0.1';
+        import { StagesTable } from './frontend/js/modules/Stages.js?v=1.0.2';
         document.addEventListener('DOMContentLoaded', function() {
             window.stagesTableInstance = new StagesTable();  // Для отладки
         });

@@ -474,7 +474,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
         <div class="sidebar-list" id="contracts-list">
             <?php
             try {
-                $stmtList = $pdo->query("SELECT id, contract_name, is_active FROM contracts ORDER BY id DESC");
+                $stmtList = $pdo->query("SELECT id, contract_name, is_active, contract_date FROM contracts ORDER BY is_active DESC, contract_date DESC");
                 $contractsList = $stmtList->fetchAll(PDO::FETCH_ASSOC);
                 
                 foreach ($contractsList as $item) {

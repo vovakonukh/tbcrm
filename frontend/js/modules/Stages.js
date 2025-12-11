@@ -2,6 +2,7 @@ import BaseTable from '../core/BaseTable.js';
 
 export class StagesTable extends BaseTable {
     constructor() {
+        console.log('=== StagesTable constructor вызван ===');
         super();
     }
 
@@ -73,6 +74,7 @@ export class StagesTable extends BaseTable {
     }
 
     getColumns() {
+        console.log('=== StagesTable getColumns вызван ===');
         // Хелпер для параметров редактора списков
         // ПРЕОБРАЗУЕМ объект справочника в массив для точного совпадения типов (String vs Number)
         const listEditorParams = (lookupData) => {
@@ -293,7 +295,7 @@ export class StagesTable extends BaseTable {
      * Сортировка по умолчанию - по дате начала (новые сверху)
      */
     getDefaultSort() {
-        return [{column: "start_date", dir: "desc"}];
+        return [{column: "start_date", dir: "asc"}];
     }
 
     /**
@@ -332,5 +334,5 @@ export class StagesTable extends BaseTable {
             groupStartOpen: true,
             groupToggleElement: "header"
         };
-    }
+     }
 }

@@ -319,6 +319,7 @@ export default class BaseTable {
         console.log('Количество строк:', tableData.length);
         console.log('Количество колонок:', tableColumns.length);
         console.log('isMobile:', this.isMobile);
+        console.log('=== getDefaultSort результат:', this.getDefaultSort());
 
         // Базовая конфигурация Tabulator
         const config = {
