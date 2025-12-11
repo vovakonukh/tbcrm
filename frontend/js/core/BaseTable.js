@@ -595,28 +595,32 @@ export default class BaseTable {
 
     bindTableEvents() {
         const tableElement = document.querySelector(this.getTableSelector());
-        if (tableElement) {
-            // Обработчик для кнопок удаления
-            tableElement.addEventListener('click', (e) => {
-                if (e.target.classList.contains('delete-row-btn')) {
-                    e.stopPropagation();
-                    const id = e.target.getAttribute('data-id');
-                    if (id) {
-                        this.showDeleteConfirm(id);
-                    }
+        if (!tableElement) return;
+
+        tableElement.addEventListener('click', (e) => {
+            /* Обработчик для кнопки открытия договора */
+            const openBtn = e.target.closest('.open-contract-btn');
+            if (openBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                const id = openBtn.getAttribute('data-id');
+                if (id) {
+                    window.location.href = `/contract.php?id=${id}`;
                 }
-            
-                // Обработчик для кнопки открытия договора
-                const openBtn = e.target.closest('.open-contract-btn');
-                if (openBtn) {
-                    e.stopPropagation();
-                    const id = openBtn.getAttribute('data-id');
-                    if (id) {
-                        window.location.href = `/contract.php?id=${id}`;
-                    }
+                return; /* Важно: выходим, чтобы не обрабатывать другие клики */
+            }
+
+            /* Обработчик для кнопок удаления */
+            if (e.target.classList.contains('delete-row-btn')) {
+                e.stopPropagation();
+                e.preventDefault();
+                const id = e.target.getAttribute('data-id');
+                if (id) {
+                    this.showDeleteConfirm(id);
                 }
-            });
-        }
+                return;
+            }
+        }, true); /* true = capturing phase, перехватываем ДО Tabulator */
     }
     // --- ЛОГИКА ФИЛЬТРОВ ПО ДАТЕ ---
 
