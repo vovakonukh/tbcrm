@@ -1334,6 +1334,17 @@ button {
     overflow-y: visible;
 }
 
+/* Итоговая строка группы */
+.tabulator .tabulator-calcs-bottom {
+    background-color: #e8f4e8 !important;
+    font-weight: 600;
+    border-top: 2px solid #28a745;
+}
+
+.tabulator .tabulator-calcs-bottom .tabulator-cell {
+    background-color: #e8f4e8 !important;
+}
+
 
 /* =================================================================
    11. КНОПКИ УДАЛЕНИЯ В ЯЧЕЙКАХ
@@ -2013,5 +2024,57 @@ button {
     /* Убираем обёртку flex на мобильных */
     .page-with-sidebar {
         display: block;
+    }
+}
+
+/* =================================================================
+   19. КНОПКА ПЕРЕСЧЁТА В ЯЧЕЙКАХ
+   ================================================================= */
+
+.refresh-cell-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-bg-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 4px 5px;
+    cursor: pointer;
+    z-index: 10;
+    transition: all var(--transition-normal);
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.refresh-cell-btn img {
+    width: 12px;
+    height: 12px;
+}
+
+.refresh-cell-btn:hover {
+    background: var(--color-bg-light);
+    border-color: var(--color-border-dark);
+}
+
+.refresh-cell-btn:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.tabulator-cell:hover .refresh-cell-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+    .refresh-cell-btn {
+        opacity: 1;
+        pointer-events: auto;
     }
 }

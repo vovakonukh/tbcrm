@@ -13,6 +13,7 @@ if (function_exists('getCurrentUserName')) {
     <nav class="desktop-nav">
         <a href="contracts.php">Договора</a>
         <a href="stages.php">Этапы работ</a>
+        <a href="planfact.php">План-Факт</a>
         <a href="brigades.php">Бригады</a>
         <a href="adesk.php">Adesk</a>
         <a href="settings.php">Настройки</a>
@@ -50,6 +51,7 @@ if (function_exists('getCurrentUserName')) {
     <nav class="mobile-menu-nav">
         <a href="contracts.php">Договора</a>
         <a href="stages.php">Этапы работ</a>
+        <a href="planfact.php">План-Факт</a>
         <a href="brigades.php">Бригады</a>
         <a href="adesk.php">Adesk</a>
         <a href="settings.php">Настройки</a>

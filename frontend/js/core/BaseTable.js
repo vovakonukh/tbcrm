@@ -331,7 +331,7 @@ export default class BaseTable {
             paginationSizeSelector: [10, 20, 50, 100],
             movableColumns: true,
             resizableColumns: true,
-            resizableRows: true,
+            resizableRows: false,
             height: "calc(100vh - 30px)",
             initialSort: this.getDefaultSort(),
             columns: tableColumns,

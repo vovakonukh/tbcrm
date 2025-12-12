@@ -5,6 +5,7 @@ const CONFIG = {
         STAGES: '/stages_api.php',
         SETTINGS: '/settings_api.php',
         BRIGADES: '/brigades_api.php',
-        ADESK: '/adesk_api.php'
+        ADESK: '/adesk_api.php',
+        PLANFACT: '/planfact_api.php'
     }
 };
