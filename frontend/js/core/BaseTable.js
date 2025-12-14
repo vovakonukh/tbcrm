@@ -972,7 +972,7 @@ export default class BaseTable {
     }
     
     html += `<div class="select-filter-items">`;
-    html += `<div class="select-filter-item clear-option" data-value="">Сбросить фильтр</div>`;
+    // html += `<div class="select-filter-item clear-option" data-value="">Сбросить фильтр</div>`;
     
     const options = filterConfig.options;
     

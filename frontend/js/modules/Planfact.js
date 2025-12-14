@@ -138,124 +138,131 @@ export class PlanfactTable extends BaseTable {
             {
                 title: "Выручка",
                 columns: [
-                {
-                    title: "План",
-                    field: "revenue_plan",
-                    width: 130,
-                    headerSort: false,
-                    editor: "number",
-                    editorParams: { min: 0 },
-                    formatter: "money",
-                    formatterParams: moneyParams,
-                    editable: true,
-                    bottomCalc: "sum",
-                    bottomCalcFormatter: "money",
-                    bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
-                },
-                {
-                    title: "Факт",
-                    field: "revenue_fact",
-                    width: 150,
-                    headerSort: false,
-                    editor: "number",
-                    editorParams: { min: 0 },
-                    formatter: cellWithRefreshFormatter,
-                    formatterParams: { isMoney: true },
-                    editable: true,
-                    cssClass: "cell-with-action",
-                    bottomCalc: "sum",
-                    bottomCalcFormatter: "money",
-                    bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
-                },
-                {
-                    title: "% вып",
-                    field: "revenue_percent",
-                    width: 100,
-                    headerSort: false,
-                    editable: false,
-                    formatter: percentFormatter,
-                    editable: true,
-                    cssClass: "cell-calculated",
-                    bottomCalc: percentBottomCalc,
-                    bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
-                },
-            ]
-        },
-
-        {
+                    {
+                        title: "План",
+                        field: "revenue_plan",
+                        width: 130,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        bottomCalc: "sum",
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
+                    },
+                    {
+                        title: "Факт",
+                        field: "revenue_fact",
+                        width: 150,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: cellWithRefreshFormatter,
+                        formatterParams: { isMoney: true },
+                        editable: true,
+                        cssClass: "cell-with-action",
+                        bottomCalc: "sum",
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
+                    },
+                    {
+                        title: "% вып",
+                        field: "revenue_percent",
+                        width: 100,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        editable: true,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
+                    },
+                ]
+             },
+            {
                 title: "Договоры",
                 columns: [
-                {
-                    title: "План",
-                    field: "contracts_plan",
-                    width: 130,
-                    headerSort: false,
-                    editor: "number",
-                    editorParams: { min: 0 },
-                    editable: true,
-                    bottomCalc: "sum"
-                },
-                {
-                    title: "Факт",
-                    field: "contracts_fact",
-                    width: 150,
-                    headerSort: false,
-                    editor: "number",
-                    editorParams: { min: 0 },
-                    formatter: cellWithRefreshFormatter,
-                    formatterParams: { isMoney: false },
-                    editable: true,
-                    cssClass: "cell-with-action",
-                    bottomCalc: "sum"
-                },
-                {
-                    title: "% вып",
-                    field: "contracts_percent",
-                    width: 100,
-                    headerSort: false,
-                    editable: false,
-                    editorParams: { min: 0, max: 1000, step: 0.1 },
-                    formatter: percentFormatter,
-                    editable: true,
-                    cssClass: "cell-calculated",
-                    bottomCalc: percentBottomCalc,
-                    bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
-                },
-            ]
-        },
-            {
-                title: "Встречи план",
-                field: "meetings_plan",
-                width: 120,
-                sorter: "number",
-                editor: "number",
-                editorParams: { min: 0 },
-                editable: true,
-                bottomCalc: "sum"
+                    {
+                        title: "План",
+                        field: "contracts_plan",
+                        width: 130,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        editable: true,
+                        bottomCalc: "sum"
+                    },
+                    {
+                        title: "Факт",
+                        field: "contracts_fact",
+                        width: 150,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: cellWithRefreshFormatter,
+                        formatterParams: { isMoney: false },
+                        editable: true,
+                        cssClass: "cell-with-action",
+                        bottomCalc: "sum"
+                    },
+                    {
+                        title: "% вып",
+                        field: "contracts_percent",
+                        width: 100,
+                        headerSort: false,
+                        editable: false,
+                        editorParams: { min: 0, max: 1000, step: 0.1 },
+                        formatter: percentFormatter,
+                        editable: true,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
+                    },
+                ]
             },
             {
-                title: "Встречи факт",
-                field: "meetings_fact",
-                width: 120,
-                sorter: "number",
-                editor: "number",
-                editorParams: { min: 0 },
-                editable: true,
-                bottomCalc: "sum"
+                title: "Встречи",
+                columns: [
+                    {
+                        title: "План",
+                        field: "meetings_plan",
+                        width: 120,
+                        sorter: "number",
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        editable: true,
+                        bottomCalc: "sum"
+                    },
+                    {
+                        title: "Факт",
+                        field: "meetings_fact",
+                        width: 120,
+                        sorter: "number",
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        editable: true,
+                        bottomCalc: "sum"
+                    },
+                    {
+                        title: "% вып",
+                        field: "meetings_percent",
+                        width: 100,
+                        sorter: "number",
+                        editable: false,
+                        editorParams: { min: 0, max: 1000, step: 0.1 },
+                        formatter: percentFormatter,
+                        editable: true,
+                        cssClass: "cell-calculated"
+                    },
+                ]
             },
             {
-                title: "Встречи %",
-                field: "meetings_percent",
-                width: 100,
-                sorter: "number",
-                editable: false,
-                editorParams: { min: 0, max: 1000, step: 0.1 },
-                formatter: percentFormatter,
-                editable: true,
-                cssClass: "cell-calculated"
-            },
+                title: "Целевые лиды",
+                columns: [
             {
-                title: "Целевые лиды план",
+                title: "План",
                 field: "target_lead_plan",
                 width: 140,
                 sorter: "number",
@@ -265,7 +272,7 @@ export class PlanfactTable extends BaseTable {
                 bottomCalc: "sum"
             },
             {
-                title: "Целевые лиды факт",
+                title: "Факт",
                 field: "target_lead_fact",
                 width: 140,
                 sorter: "number",
@@ -275,7 +282,7 @@ export class PlanfactTable extends BaseTable {
                 bottomCalc: "sum"
             },
             {
-                title: "Целевые лиды %",
+                title: "% вып",
                 field: "target_lead_percent",
                 width: 120,
                 sorter: "number",
@@ -287,79 +294,91 @@ export class PlanfactTable extends BaseTable {
                 bottomCalc: percentBottomCalc,
                 bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
             },
-            {
-                title: "Квал. лиды план",
-                field: "qual_lead_plan",
-                width: 130,
-                sorter: "number",
-                editor: "number",
-                editorParams: { min: 0 },
-                editable: true,
-                bottomCalc: "sum"
+                ]
             },
             {
-                title: "Квал. лиды факт",
-                field: "qual_lead_fact",
-                width: 130,
-                sorter: "number",
-                editor: "number",
-                editorParams: { min: 0 },
-                editable: true,
-                bottomCalc: "sum"
+                title: "Квал. лиды",
+                columns: [
+                    {
+                        title: "План",
+                        field: "qual_lead_plan",
+                        width: 130,
+                        sorter: "number",
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        editable: true,
+                        bottomCalc: "sum"
+                    },
+                    {
+                        title: "Факт",
+                        field: "qual_lead_fact",
+                        width: 130,
+                        sorter: "number",
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        editable: true,
+                        bottomCalc: "sum"
+                    },
+                    {
+                        title: "% вып",
+                        field: "qual_lead_percent",
+                        width: 110,
+                        sorter: "number",
+                        editable: false,
+                        editorParams: { min: 0, max: 1000, step: 0.01 },
+                        formatter: percentFormatter,
+                        editable: true,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
+                    },
+                ]
             },
             {
-                title: "Квал. лиды %",
-                field: "qual_lead_percent",
-                width: 110,
-                sorter: "number",
-                editable: false,
-                editorParams: { min: 0, max: 1000, step: 0.01 },
-                formatter: percentFormatter,
-                editable: true,
-                cssClass: "cell-calculated",
-                bottomCalc: percentBottomCalc,
-                bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
-            },
-            {
-                title: "Бюджет план",
-                field: "budget_plan",
-                width: 120,
-                sorter: "number",
-                editor: "number",
-                editorParams: { min: 0 },
-                formatter: "money",
-                formatterParams: moneyParams,
-                editable: true,
-                bottomCalc: "sum",
-                bottomCalcFormatter: "money",
-                bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
-            },
-            {
-                title: "Бюджет факт",
-                field: "budget_fact",
-                width: 120,
-                sorter: "number",
-                editor: "number",
-                editorParams: { min: 0 },
-                formatter: "money",
-                formatterParams: moneyParams,
-                editable: true,
-                bottomCalc: "sum",
-                bottomCalcFormatter: "money",
-                bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
-            },
-            {
-                title: "Бюджет %",
-                field: "budget_percent",
-                width: 100,
-                sorter: "number",
-                editable: false,
-                editorParams: { min: 0, max: 1000, step: 0.01 },
-                formatter: percentFormatter,
-                editable: true,
-                cssClass: "cell-calculated",
-                bottomCalc: percentBottomCalc,
-                bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
+                title: "Бюджет",
+                columns: [
+                    {
+                        title: "План",
+                        field: "budget_plan",
+                        width: 120,
+                        sorter: "number",
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        bottomCalc: "sum",
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
+                    },
+                    {
+                        title: "Факт",
+                        field: "budget_fact",
+                        width: 120,
+                        sorter: "number",
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        bottomCalc: "sum",
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
+                    },
+                    {
+                        title: "% вып",
+                        field: "budget_percent",
+                        width: 100,
+                        sorter: "number",
+                        editable: false,
+                        editorParams: { min: 0, max: 1000, step: 0.01 },
+                        formatter: percentFormatter,
+                        editable: true,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
+                    },
+                ]
             },
             {
                 title: "ID",
