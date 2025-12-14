@@ -159,7 +159,7 @@ elseif ($method == 'PATCH') {
     $field = $input['field'];
     
     /* Разрешённые поля для пересчёта */
-    $allowedFields = ['revenue_fact', 'contracts_fact', 'meetings_fact'];
+    $allowedFields = ['revenue_fact', 'contracts_fact', 'meetings_fact', 'qual_lead_fact', 'target_lead_fact'];
     if (!in_array($field, $allowedFields)) {
         http_response_code(400);
         echo json_encode(["success" => false, "error" => "Field not allowed for recalculation"]);
@@ -231,6 +231,44 @@ elseif ($method == 'PATCH') {
                 
                 $totalCount += $bitrixResult['total'] ?? 0;
             }
+            
+            $value = $totalCount;
+        }
+
+        elseif ($field === 'qual_lead_fact') {
+            /* Количество сделок из Основной воронки Битрикс24 по дате создания */
+            require_once __DIR__ . '/../lib/crest.php';
+            
+            /* Формируем фильтр по DATE_CREATE (datetime в Битрикс) */
+            $filterStart = $startDate . 'T00:00:00';
+            $filterEnd = $endDate . 'T23:59:59';
+            
+            $totalCount = 0;
+            $start = 0;
+            
+            /* Пагинация - Битрикс отдаёт по 50 записей */
+            do {
+                $bitrixResult = CRest::call('crm.deal.list', [
+                    'filter' => [
+                        'CATEGORY_ID' => 0,
+                        '>=DATE_CREATE' => $filterStart,
+                        '<=DATE_CREATE' => $filterEnd
+                    ],
+                    'select' => ['ID'],
+                    'start' => $start
+                ]);
+                
+                if (isset($bitrixResult['error'])) {
+                    throw new Exception("Ошибка Битрикс24: " . ($bitrixResult['error_description'] ?? $bitrixResult['error']));
+                }
+                
+                /* При первом запросе берём total */
+                if ($start === 0) {
+                    $totalCount = $bitrixResult['total'] ?? 0;
+                    break; /* total уже содержит полное количество, пагинация не нужна */
+                }
+                
+            } while (false);
             
             $value = $totalCount;
         }

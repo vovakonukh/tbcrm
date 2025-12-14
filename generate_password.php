@@ -16,8 +16,11 @@
 //a.piksaeva
 //H8tYF%6etds5
 
-$username = 'a.piksaeva';
-$password = 'H8tYF%6etds5';
+//
+//
+
+$username = 'n.ivanova';
+$password = 'H8tYF%G^r6e3';
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
 echo "Пароль: " . $password . "<br>";

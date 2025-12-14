@@ -317,11 +317,14 @@ export class PlanfactTable extends BaseTable {
                     {
                         title: "Факт",
                         field: "qual_lead_fact",
-                        width: 130,
-                        sorter: "number",
+                        width: 150,
+                        headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
+                        formatter: cellWithRefreshFormatter,
+                        formatterParams: { isMoney: false },
                         editable: true,
+                        cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
                     {
@@ -508,7 +511,13 @@ export class PlanfactTable extends BaseTable {
                     /* Сохраняем процент в БД */
                     this.updatePercentField(id, percentField, percentValue);
                 }
-                this.showNotification(`${field === 'revenue_fact' ? 'Выручка' : 'Договоры'}: ${result.value.toLocaleString('ru-RU')}`, 'success');
+                const fieldNames = {
+                    'revenue_fact': 'Выручка',
+                    'contracts_fact': 'Договоры',
+                    'meetings_fact': 'Встречи',
+                    'qual_lead_fact': 'Квал. лиды'
+                };
+                this.showNotification(`${fieldNames[field] || field}: ${result.value.toLocaleString('ru-RU')}`, 'success');
             } else {
                 throw new Error(result.error);
             }
