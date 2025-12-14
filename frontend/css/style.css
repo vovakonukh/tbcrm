@@ -1089,12 +1089,22 @@ button {
 
 #contracts-table,
 #stages-table,
-#brigades-table {
+#brigades-table,
+#planfact-table {
     margin: 20px 0 0 0;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow-x: auto; /* Горизонтальный скролл */
     overflow-y: visible; /* Вертикальный скролл отключен */
+    scrollbar-width: none; 
+}
+
+#contracts-table::-webkit-scrollbar,
+#brigades-table::-webkit-scrollbar,
+#stages-table::-webkit-scrollbar,
+#planfact-table::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .tabulator {
@@ -1133,7 +1143,7 @@ button {
 
 .tabulator .tabulator-header .tabulator-col {
     background-color: var(--color-bg-light);
-    border-right: 1px solid var(--color-border);
+    /* border-right: 1px solid var(--color-border); */
 }
 
 .tabulator-col {
@@ -1441,7 +1451,7 @@ button {
 /* Ячейка с кнопкой действия */
 .cell-with-action {
     position: relative;
-    padding-right: 40px !important;
+    /* padding-right: 40px !important; */
 }
 
 

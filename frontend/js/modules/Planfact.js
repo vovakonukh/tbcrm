@@ -218,7 +218,7 @@ export class PlanfactTable extends BaseTable {
                         editable: true,
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
-                        bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
+                        bottomCalcParams: { planField: "contracts_plan", factField: "contracts_fact" }
                     },
                 ]
             },
@@ -257,7 +257,9 @@ export class PlanfactTable extends BaseTable {
                         editorParams: { min: 0, max: 1000, step: 0.1 },
                         formatter: percentFormatter,
                         editable: true,
-                        cssClass: "cell-calculated"
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "meetings_plan", factField: "meetings_fact" }
                     },
                 ]
             },
@@ -295,7 +297,7 @@ export class PlanfactTable extends BaseTable {
                 editable: true,
                 cssClass: "cell-calculated",
                 bottomCalc: percentBottomCalc,
-                bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
+                bottomCalcParams: { planField: "target_lead_plan", factField: "target_lead_fact" }
             },
                 ]
             },
@@ -333,7 +335,7 @@ export class PlanfactTable extends BaseTable {
                         editable: true,
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
-                        bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
+                        bottomCalcParams: { planField: "qual_lead_plan", factField: "qual_lead_fact" }
                     },
                 ]
             },
@@ -379,7 +381,7 @@ export class PlanfactTable extends BaseTable {
                         editable: true,
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
-                        bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
+                        bottomCalcParams: { planField: "budget_plan", factField: "budget_fact" }
                     },
                 ]
             },
