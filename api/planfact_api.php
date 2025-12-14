@@ -159,7 +159,7 @@ elseif ($method == 'PATCH') {
     $field = $input['field'];
     
     /* Разрешённые поля для пересчёта */
-    $allowedFields = ['revenue_fact', 'contracts_fact'];
+    $allowedFields = ['revenue_fact', 'contracts_fact', 'meetings_fact'];
     if (!in_array($field, $allowedFields)) {
         http_response_code(400);
         echo json_encode(["success" => false, "error" => "Field not allowed for recalculation"]);
@@ -207,6 +207,32 @@ elseif ($method == 'PATCH') {
             $stmt->execute([$startDate, $endDate]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             $value = intval($result['total']);
+        }
+        elseif ($field === 'meetings_fact') {
+            /* Количество встреч из Битрикс24 */
+            require_once __DIR__ . '/../lib/crest.php';
+            
+            $categories = [0, 10]; /* Основная воронка и Перспектива */
+            $totalCount = 0;
+            
+            foreach ($categories as $categoryId) {
+                $bitrixResult = CRest::call('crm.deal.list', [
+                    'filter' => [
+                        'CATEGORY_ID' => $categoryId,
+                        '>=UF_CRM_1669280228' => $startDate,
+                        '<=UF_CRM_1669280228' => $endDate
+                    ],
+                    'select' => ['ID']
+                ]);
+                
+                if (isset($bitrixResult['error'])) {
+                    throw new Exception("Ошибка Битрикс24: " . ($bitrixResult['error_description'] ?? $bitrixResult['error']));
+                }
+                
+                $totalCount += $bitrixResult['total'] ?? 0;
+            }
+            
+            $value = $totalCount;
         }
         
         /* Сохраняем значение */

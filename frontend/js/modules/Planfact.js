@@ -235,14 +235,17 @@ export class PlanfactTable extends BaseTable {
                         editable: true,
                         bottomCalc: "sum"
                     },
-                    {
+                                        {
                         title: "Факт",
                         field: "meetings_fact",
-                        width: 120,
-                        sorter: "number",
+                        width: 150,
+                        headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
+                        formatter: cellWithRefreshFormatter,
+                        formatterParams: { isMoney: false },
                         editable: true,
+                        cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
                     {

@@ -6,6 +6,7 @@ const CONFIG = {
         SETTINGS: '/settings_api.php',
         BRIGADES: '/brigades_api.php',
         ADESK: '/adesk_api.php',
-        PLANFACT: '/planfact_api.php'
+        PLANFACT: '/planfact_api.php',
+        BITRIX: '/api/bitrix_api.php'
     }
 };
