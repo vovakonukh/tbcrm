@@ -1,5 +1,6 @@
 api/config.php
 lib/settings.php
+lib/logs/
 .DS_Store
 *.DS_Store
 **/.DS_Store

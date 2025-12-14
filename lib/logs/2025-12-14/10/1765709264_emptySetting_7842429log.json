@@ -1,1 +1,0 @@
-{"params":{"method":"crm.deal.list","params":{"filter":{"CATEGORY_ID":0,"\u003E=UF_CRM_1669280228":"2025-01-01","\u003C=UF_CRM_1669280228":"2025-01-31"},"select":["ID"]}}}
