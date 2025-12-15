@@ -272,7 +272,13 @@ export default class BaseTable {
 
         const config = {
             data: tableData,
-            layout: "fitColumns",
+            layout: "fitDataFill", // заменил с fitColumns на fitDataFill для использования virtual DOM
+            // Дополнительные оптимизации virtual DOM:
+            virtualDomBuffer: 50, // Буфер строк вне видимой области (по умолчанию 20)
+            renderVertical: "virtual", // Гарантированно включаем virtual DOM
+            renderHorizontal: "virtual", // И горизонтально тоже
+            // Оптимизация рендеринга:
+            rowFormatter: null, // Отключаем кастомный форматтер если не нужен
             responsiveLayout: false,
             pagination: "local",
             paginationSize: 100,
@@ -324,7 +330,13 @@ export default class BaseTable {
         // Базовая конфигурация Tabulator
         const config = {
             data: tableData,
-            layout: "fitColumns",
+            layout: "fitDataFill", // заменил с fitColumns на fitDataFill для использования virtual DOM
+            // Дополнительные оптимизации virtual DOM:
+            virtualDomBuffer: 50, // Буфер строк вне видимой области (по умолчанию 20)
+            renderVertical: "virtual", // Гарантированно включаем virtual DOM
+            renderHorizontal: "virtual", // И горизонтально тоже
+            // Оптимизация рендеринга:
+            rowFormatter: null, // Отключаем кастомный форматтер если не нужен
             responsiveLayout: false,
             pagination: "local",
             paginationSize: 100,

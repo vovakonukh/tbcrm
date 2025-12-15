@@ -1310,6 +1310,17 @@ button {
     overflow: visible !important;
 }
 
+/* убираем стрелочки в number */
+.tabulator-cell input[type="number"] {
+    appearance: textfield;
+}
+
+.tabulator-cell input[type="number"]::-webkit-outer-spin-button,
+.tabulator-cell input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 
 /* -----------------------------------------------------------------
    10.5 Группировка
