@@ -932,6 +932,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
         const searchInput = document.getElementById('contracts-search');
         
         /* Открытие/закрытие сайдбара на мобильных */
+        sidebarToggle.style.display = 'flex';
         if (sidebarToggle) {
             sidebarToggle.addEventListener('click', function() {
                 sidebar.classList.add('open');

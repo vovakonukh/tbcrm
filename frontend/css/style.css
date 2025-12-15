@@ -2037,7 +2037,7 @@ button {
 @media (max-width: 768px) {
     /* Показываем кнопку сайдбара */
     .sidebar-toggle {
-        display: flex;
+        /* display: flex; */
         align-items: center;
     }
     

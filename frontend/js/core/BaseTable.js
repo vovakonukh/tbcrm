@@ -598,6 +598,19 @@ export default class BaseTable {
         const tableElement = document.querySelector(this.getTableSelector());
         if (!tableElement) return;
 
+        /* Обработчик для мобильных устройств — touchend срабатывает раньше, чем Tabulator запускает редактор */
+        tableElement.addEventListener('touchend', (e) => {
+            const openBtn = e.target.closest('.open-contract-btn');
+            if (openBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = openBtn.getAttribute('data-id');
+                if (id) {
+                    window.location.href = `/contract.php?id=${id}`;
+                }
+            }
+        }, true);
+
         tableElement.addEventListener('click', (e) => {
             /* Обработчик для кнопки открытия договора */
             const openBtn = e.target.closest('.open-contract-btn');
