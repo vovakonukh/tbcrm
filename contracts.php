@@ -85,6 +85,7 @@
     <script src="https://cdn.jsdelivr.net/npm/luxon/build/global/luxon.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
     <script src="frontend/js/config.js"></script>
+    <script src="frontend/js/core/UserService.js"></script>
     <script type="module">
         import { ContractsTable } from './frontend/js/modules/Contracts.js?v=1.0.2';
         document.addEventListener('DOMContentLoaded', function() {

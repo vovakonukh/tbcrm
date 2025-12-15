@@ -70,6 +70,7 @@
     <script src="https://cdn.jsdelivr.net/npm/luxon/build/global/luxon.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
     <script src="frontend/js/config.js"></script>
+    <script src="frontend/js/core/UserService.js"></script>
     <script type="module">
         import { PlanfactTable } from './frontend/js/modules/Planfact.js?v=1.0.0';
         document.addEventListener('DOMContentLoaded', function() {

@@ -514,7 +514,9 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                 <div class="card-actions">
                     <a href="contracts.php" class="btn-back">← Назад к списку</a>
                     <!-- <a href="contracts.php?edit=<?= $contract['id'] ?>" class="btn-edit">✎ Редактировать</a> -->
-                    <button class="btn-delete" id="delete-contract-btn" data-id="<?= $contract['id'] ?>">Удалить</button>
+                    <?php if (getCurrentUserRole() !== 'viewer'): ?>
+                        <button class="btn-delete" id="delete-contract-btn" data-id="<?= $contract['id'] ?>">Удалить</button>
+                    <?php endif; ?>
                 </div>
             </div>
             
@@ -736,6 +738,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             </div>-->
             
             <!-- Менеджеры -->
+            <?php if ($userRole === 'admin'): ?>
             <div class="card-section">
                 <h2 class="section-title">Менеджеры и выплаты</h2>
                 <div class="two-columns">
@@ -793,6 +796,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
             
             <!-- Комментарий
             <?php if ($contract['comment']): ?>
@@ -802,6 +806,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             </div>
             <?php endif; ?>-->
             
+            <?php if ($userRole === 'admin'): ?>
             <!-- Этапы работ -->
             <div class="card-section">
                 <h2 class="section-title">Этапы работ</h2>
@@ -832,6 +837,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                     -->
                 </div>
             </div>
+            <?php endif; ?>
         </div>
     </div>
     </div>
@@ -890,37 +896,40 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
         /* Удаление договора */
         const deleteBtn = document.getElementById('delete-contract-btn');
         const modal = document.getElementById('delete-confirm-modal');
-        const closeBtn = modal.querySelector('.close');
-        const cancelBtn = document.getElementById('cancel-delete-btn');
-        const confirmBtn = document.getElementById('confirm-delete-btn');
 
-        function closeModal() {
-            modal.style.display = 'none';
-        }
+        if (deleteBtn && modal) {
+            const closeBtn = modal.querySelector('.close');
+            const cancelBtn = document.getElementById('cancel-delete-btn');
+            const confirmBtn = document.getElementById('confirm-delete-btn');
 
-        deleteBtn.addEventListener('click', () => modal.style.display = 'block');
-        closeBtn.addEventListener('click', closeModal);
-        cancelBtn.addEventListener('click', closeModal);
-        window.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-
-        confirmBtn.addEventListener('click', async function() {
-            const contractId = deleteBtn.dataset.id;
-            try {
-                const response = await fetch(`${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.CONTRACTS}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: contractId })
-                });
-                const result = await response.json();
-                if (result.success) {
-                    window.location.href = '/contracts.php?deleted=1';
-                } else {
-                    alert('Ошибка удаления: ' + result.error);
-                }
-            } catch (error) {
-                alert('Ошибка: ' + error.message);
+            function closeModal() {
+                modal.style.display = 'none';
             }
-        });
+
+            deleteBtn.addEventListener('click', () => modal.style.display = 'block');
+            closeBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            window.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+            confirmBtn.addEventListener('click', async function() {
+                const contractId = deleteBtn.dataset.id;
+                try {
+                    const response = await fetch(`${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.CONTRACTS}`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: contractId })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = '/contracts.php?deleted=1';
+                    } else {
+                        alert('Ошибка удаления: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('Ошибка: ' + error.message);
+                }
+            });
+        }
     </script>
 
     <!-- --- Скрипт боковой панели --- -->

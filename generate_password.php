@@ -16,11 +16,11 @@
 //a.piksaeva
 //H8tYF%6etds5
 
-//
-//
+//guest
+//classhouse_is_be$t
 
-$username = 'n.ivanova';
-$password = 'H8tYF%G^r6e3';
+$username = 'guest';
+$password = 'classhouse_is_be$t';
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
 echo "Пароль: " . $password . "<br>";

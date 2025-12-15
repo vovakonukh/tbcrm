@@ -117,6 +117,7 @@ export default class BaseTable {
     // --- ОСНОВНАЯ ЛОГИКА ---
 
     async init() {
+        await userService.load();
         await this.loadDataAndInit();
         this.bindEvents();
         this.bindDateFilterEvents();
@@ -211,6 +212,25 @@ export default class BaseTable {
         });
     }
 
+    /* Отключает редактирование колонок для пользователей без прав */
+    applyEditPermissions(columns) {
+        if (userService.canEdit()) return columns;
+        
+        return columns.map(column => {
+            /* Если это группа колонок */
+            if (column.columns) {
+                return { ...column, columns: this.applyEditPermissions(column.columns) };
+            }
+            
+            /* Убираем редактирование */
+            const newColumn = { ...column };
+            delete newColumn.editor;
+            delete newColumn.editorParams;
+            
+            return newColumn;
+        });
+    }
+
     /**
      * Сохраняет порядок колонок в localStorage
      */
@@ -269,6 +289,7 @@ export default class BaseTable {
     createTableWithoutPersistence(tableData) {
         let tableColumns = this.getColumns();
         tableColumns = this.applyResponsiveFrozen(tableColumns);
+        tableColumns = this.applyEditPermissions(tableColumns);
 
         const config = {
             data: tableData,
@@ -320,6 +341,7 @@ export default class BaseTable {
         // Получаем колонки и применяем responsive frozen
         let tableColumns = this.getColumns();
         tableColumns = this.applyResponsiveFrozen(tableColumns);
+        tableColumns = this.applyEditPermissions(tableColumns);
 
         console.log('=== createTable вызван ===');
         console.log('Количество строк:', tableData.length);
@@ -556,13 +578,31 @@ export default class BaseTable {
         if (debugBtn) debugBtn.addEventListener('click', () => this.debugTable());
 
         const addContractBtn = document.getElementById('add-contract-btn');
-        if (addContractBtn) addContractBtn.addEventListener('click', () => this.addNewRow());
+        if (addContractBtn) {
+            if (userService.canEdit()) {
+                addContractBtn.addEventListener('click', () => this.addNewRow());
+            } else {
+                addContractBtn.style.display = 'none';
+            }
+        }
 
         const addStageBtn = document.getElementById('add-stage-btn');
-        if (addStageBtn) addStageBtn.addEventListener('click', () => this.addNewRow());
+        if (addStageBtn) {
+            if (userService.canEdit()) {
+                addStageBtn.addEventListener('click', () => this.addNewRow());
+            } else {
+                addStageBtn.style.display = 'none';
+            }
+        }
 
         const addBrigadeBtn = document.getElementById('add-brigade-btn');
-        if (addBrigadeBtn) addBrigadeBtn.addEventListener('click', () => this.addNewRow());
+        if (addBrigadeBtn) {
+            if (userService.canEdit()) {
+                addBrigadeBtn.addEventListener('click', () => this.addNewRow());
+            } else {
+                addBrigadeBtn.style.display = 'none';
+            }
+        }
 
         // Обработка кнопок фильтров по датам
         document.querySelectorAll('.filter-btn:not(.filter-btn-select)').forEach(btn => {

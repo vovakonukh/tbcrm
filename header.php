@@ -1,10 +1,14 @@
 <?php
 // header.php - Общий компонент шапки с мобильным меню
 
-// Получаем имя текущего пользователя (если функция доступна)
+// Получаем имя и роль текущего пользователя (если функции доступны)
 $userName = '';
+$userRole = 'viewer';
 if (function_exists('getCurrentUserName')) {
     $userName = getCurrentUserName() ?: getCurrentUserId();
+}
+if (function_exists('getCurrentUserRole')) {
+    $userRole = getCurrentUserRole();
 }
 ?>
 
@@ -16,7 +20,7 @@ if (function_exists('getCurrentUserName')) {
         <a href="planfact.php">Планфакт</a>
         <!-- <a href="brigades.php">Бригады</a> -->
         <!-- <a href="adesk.php">Adesk</a> -->
-        <a href="settings.php">Настройки</a>
+        <?php if ($userRole === 'admin'): ?><a href="settings.php">Настройки</a><?php endif; ?>
     </nav>
     
     <!-- Десктопный блок пользователя -->
@@ -54,7 +58,7 @@ if (function_exists('getCurrentUserName')) {
         <a href="planfact.php">Планфакт</a>
         <!-- <a href="brigades.php">Бригады</a> -->
         <!-- <a href="adesk.php">Adesk</a> -->
-        <a href="settings.php">Настройки</a>
+        <?php if ($userRole === 'admin'): ?><a href="settings.php">Настройки</a><?php endif; ?>
     </nav>
     
     <div class="mobile-menu-footer">
