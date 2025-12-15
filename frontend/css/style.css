@@ -215,6 +215,40 @@ button {
     border-color: #cdd4da;
 }
 
+/* Поле поиска в панели управления */
+.controls .search-input {
+    padding: 8px 12px;
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--radius-md);
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    width: 200px;
+    transition: border-color var(--transition-normal), width var(--transition-normal);
+}
+
+.controls .search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(51, 154, 240, 0.1);
+}
+
+.controls .search-input::placeholder {
+    color: var(--color-text-light);
+}
+
+/* Мобильная адаптация поля поиска */
+@media (max-width: 768px) {
+    .controls .search-input {
+        width: 100%;
+        order: -1; /* Перемещаем поиск в начало на мобильных */
+    }
+    
+    .controls {
+        flex-wrap: wrap;
+    }
+}
+
 /* Кнопка primary (синяя) */
 .btn-primary,
 #add-contract-btn,

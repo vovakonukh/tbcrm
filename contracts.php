@@ -14,11 +14,11 @@
     <?php include 'header.php'; ?>
     <div class="container">
         <div class="controls">
+            <input type="text" id="search-contract-name" class="search-input" placeholder="Поиск по названию">
             <button id="add-contract-btn"><img src="/assets/plus.svg"/> Добавить</button>
             <button id="refresh-btn"><img src="/assets/refresh.svg"/>Обновить</button>
             <button id="toggle-columns-btn"><img src="/assets/control.svg"/>Настройки</button>
             <button id="save-all-btn"><img src="/assets/save.svg"/>Сохранить все</button>
-            <!-- <button id="debug-btn">Отладка</button> -->
         </div>
         
         <!-- Фильтры по датам -->

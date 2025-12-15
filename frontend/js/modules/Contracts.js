@@ -3,6 +3,7 @@ import BaseTable from '../core/BaseTable.js';
 export class ContractsTable extends BaseTable {
     constructor() {
         super();
+        this.bindSearchInput();
     }
     
     getApiEndpoint() {
@@ -768,6 +769,25 @@ export class ContractsTable extends BaseTable {
             }
         ];
         
+    }
+
+    bindSearchInput() {
+        const searchInput = document.getElementById('search-contract-name');
+        if (!searchInput) return;
+
+        let debounceTimer;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const value = e.target.value.trim();
+                if (value) {
+                    this.table.setFilter('contract_name', 'like', value);
+                } else {
+                    this.table.clearFilter(true); /* Сбрасываем все фильтры по полю */
+                    this.applyAllFilters(); /* Восстанавливаем активные фильтры из activeFilters */
+                }
+            }, 300);
+        });
     }
 
     /**
