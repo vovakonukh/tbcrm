@@ -34,9 +34,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = loginUser($username, $password, $conn);
     
     if ($result['success']) {
-        // Успешный вход - редирект на главную страницу
-        header('Location: /contracts.php');
-        exit;
+    /* Если отмечено "Запомнить меня" - создаём токен */
+    if (!empty($_POST['remember'])) {
+        $token = createRememberToken($result['user']['id'], $conn);
+        setRememberCookie($token);
+    }
+    
+    header('Location: /contracts.php');
+    exit;
     } else {
         $error = $result['error'];
     }

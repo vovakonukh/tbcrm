@@ -225,4 +225,136 @@ function requireRole($allowedRoles) {
         exit;
     }
 }
+
+/**
+ * Генерирует безопасный токен для "Запомнить меня"
+ * @return string
+ */
+function generateRememberToken() {
+    return bin2hex(random_bytes(32));
+}
+
+/**
+ * Создаёт "remember me" токен и сохраняет в БД
+ * @param int $userId
+ * @param mysqli $conn
+ * @return string токен
+ */
+function createRememberToken($userId, $conn) {
+    $token = generateRememberToken();
+    $expiresAt = date('Y-m-d H:i:s', strtotime('+90 days'));
+    
+    /* Удаляем старые токены этого пользователя */
+    $stmt = $conn->prepare("DELETE FROM user_tokens WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $stmt->close();
+    
+    /* Создаём новый токен */
+    $stmt = $conn->prepare("INSERT INTO user_tokens (user_id, token, expires_at) VALUES (?, ?, ?)");
+    $stmt->bind_param("iss", $userId, $token, $expiresAt);
+    $stmt->execute();
+    $stmt->close();
+    
+    return $token;
+}
+
+/**
+ * Устанавливает cookie для "Запомнить меня"
+ * @param string $token
+ */
+function setRememberCookie($token) {
+    $expires = time() + (90 * 24 * 60 * 60); // 90 дней
+    setcookie('remember_token', $token, [
+        'expires' => $expires,
+        'path' => '/',
+        'secure' => isset($_SERVER['HTTPS']),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+}
+
+/**
+ * Удаляет cookie "Запомнить меня"
+ */
+function clearRememberCookie() {
+    setcookie('remember_token', '', [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'secure' => isset($_SERVER['HTTPS']),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+}
+
+/**
+ * Проверяет токен из cookie и авторизует пользователя
+ * @param mysqli $conn
+ * @return bool
+ */
+function loginFromRememberToken($conn) {
+    if (empty($_COOKIE['remember_token'])) {
+        return false;
+    }
+    
+    $token = $_COOKIE['remember_token'];
+    
+    /* Ищем валидный токен */
+    $stmt = $conn->prepare("
+        SELECT ut.user_id, ut.expires_at, u.id, u.username, u.full_name, u.role, u.is_active
+        FROM user_tokens ut
+        JOIN users u ON ut.user_id = u.id
+        WHERE ut.token = ? AND ut.expires_at > NOW()
+        LIMIT 1
+    ");
+    $stmt->bind_param("s", $token);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        clearRememberCookie();
+        return false;
+    }
+    
+    $data = $result->fetch_assoc();
+    $stmt->close();
+    
+    /* Проверяем активность пользователя */
+    if ($data['is_active'] != 1) {
+        clearRememberCookie();
+        return false;
+    }
+    
+    /* Авторизуем пользователя через сессию */
+    startSession();
+    session_regenerate_id(true);
+    
+    $_SESSION['user_id'] = $data['id'];
+    $_SESSION['username'] = $data['username'];
+    $_SESSION['user_name'] = $data['full_name'];
+    $_SESSION['user_role'] = $data['role'];
+    $_SESSION['user_logged_in'] = true;
+    $_SESSION['login_time'] = time();
+    
+    /* Обновляем last_login */
+    $stmtUpdate = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+    $stmtUpdate->bind_param("i", $data['id']);
+    $stmtUpdate->execute();
+    $stmtUpdate->close();
+    
+    return true;
+}
+
+/**
+ * Удаляет токен из БД при выходе
+ * @param int $userId
+ * @param mysqli $conn
+ */
+function deleteRememberToken($userId, $conn) {
+    $stmt = $conn->prepare("DELETE FROM user_tokens WHERE user_id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $stmt->close();
+}
 ?>
