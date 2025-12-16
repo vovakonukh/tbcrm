@@ -16,6 +16,7 @@ export default class BaseTable {
         
         // Справочники (будут заполнены при загрузке данных)
         this.lookups = {};
+        this.activeLookups = {}; // Только активные записи для dropdown
         
         // Блокировка повторных сохранений
         this.savingLocks = new Set();
@@ -144,6 +145,7 @@ export default class BaseTable {
             if (result.success) {
                 // Сохраняем справочники, если они пришли
                 if (result.options) this.lookups = result.options;
+                if (result.activeOptions) this.activeLookups = result.activeOptions;
                 
                 this.createTable(result.data);
                 this.createColumnSelectorModal();
@@ -169,6 +171,7 @@ export default class BaseTable {
             
             if (result.success) {
                 if (result.options) this.lookups = result.options;
+                if (result.activeOptions) this.activeLookups = result.activeOptions;
                 this.table.setData(result.data);
             }
         } catch (error) {

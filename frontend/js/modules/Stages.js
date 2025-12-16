@@ -77,10 +77,15 @@ export class StagesTable extends BaseTable {
         console.log('=== StagesTable getColumns вызван ===');
         // Хелпер для параметров редактора списков
         // ПРЕОБРАЗУЕМ объект справочника в массив для точного совпадения типов (String vs Number)
-        const listEditorParams = (lookupData) => {
-            const values = Object.entries(lookupData || {}).map(([id, name]) => ({
+        /* 
+            Хелпер для параметров редактора списков
+            - activeLookupData: только активные записи для выбора
+            - allLookupData: все записи (для сохранения текущего значения если оно неактивно)
+        */
+        const listEditorParams = (activeLookupData, allLookupData) => {
+            const values = Object.entries(activeLookupData || {}).map(([id, name]) => ({
                 label: name,
-                value: isNaN(id) ? id : Number(id) // Приводим ID к числу, чтобы совпало с данными в ячейке
+                value: isNaN(id) ? id : Number(id)
             }));
 
             return {
@@ -88,10 +93,18 @@ export class StagesTable extends BaseTable {
                 autocomplete: true, 
                 clearable: true,
                 listOnEmpty: true,
-                freetext: false, // Запрещаем вводить то, чего нет в списке
+                freetext: false,
                 filterFunc: (term, label, value, item) => {
-                    // Улучшенный поиск: ищем вхождение строки (case-insensitive)
                     return String(label).toLowerCase().indexOf(String(term).toLowerCase()) > -1;
+                },
+                valueLookup: (value) => {
+                    if (value === null || value === undefined || value === '') return null;
+                    const numValue = isNaN(value) ? value : Number(value);
+                    const activeLabel = (activeLookupData || {})[numValue];
+                    if (activeLabel) return { label: activeLabel, value: numValue };
+                    const allLabel = (allLookupData || {})[numValue];
+                    if (allLabel) return { label: allLabel + ' (неактивен)', value: numValue };
+                    return null;
                 }
             };
         };
@@ -117,7 +130,7 @@ export class StagesTable extends BaseTable {
                 formatter: "lookup", 
                 formatterParams: this.lookups.contracts,
                 editor: "list", 
-                editorParams: listEditorParams(this.lookups.contracts),
+                editorParams: listEditorParams(this.activeLookups.contracts, this.lookups.contracts),
                 cssClass: "tabulator-cell-contract-name"
             },
             {
@@ -136,13 +149,22 @@ export class StagesTable extends BaseTable {
                 cssClass: "cell-text-left cell-with-delete"
             },
             {    
-                title: "Тип этапа", field: "stage_type_id", width: 150, sorter: "number", visible: true,
-             formatter: "lookup", formatterParams: this.lookups.stage_types,
-             editor: "list", editorParams: listEditorParams(this.lookups.stage_types)},
-            {title: "Дата начала", field: "start_date", width: 110, sorter: "date", visible: true,
+                title: "Тип этапа", 
+                field: "stage_type_id", 
+                width: 150, sorter: "number", 
+                visible: true,
+                formatter: "lookup",
+                formatterParams: this.lookups.stage_types,
+                editor: "list",
+                editorParams: listEditorParams(this.activeLookups.stage_types, this.lookups.stage_types)
+            },
+            {
+                title: "Дата начала", field: "start_date", width: 110, sorter: "date", visible: true,
              sorterParams: {format: "yyyy-MM-dd", alignEmptyValues: "bottom"},
              formatter: "datetime", formatterParams: {inputFormat: "yyyy-MM-dd", outputFormat: "dd.MM.yyyy", invalidPlaceholder: ""},
-             editor: "date", editorParams: {format: "yyyy-MM-dd"}, editable: true},
+             editor: "date", editorParams: {format: "yyyy-MM-dd"}, 
+                editable: true
+            },
             {
                 title: "Дата окончания", field: "end_date", width: 110, sorter: "date", visible: true,
              sorterParams: {format: "yyyy-MM-dd", alignEmptyValues: "bottom"},
@@ -188,12 +210,15 @@ export class StagesTable extends BaseTable {
                  }
              },
             
-            {title: "Бригада", field: "brigade_id", width: 150, sorter: "number", visible: true,
+            {
+                title: "Бригада", field: "brigade_id", width: 150, sorter: "number", visible: true,
              formatter: "lookup", formatterParams: this.lookups.brigades,
-             editor: "list", editorParams: listEditorParams(this.lookups.brigades)},
-            {title: "Прораб", field: "prorab_id", width: 150, sorter: "number", visible: true,
+             editor: "list", editorParams: listEditorParams(this.activeLookups.brigades, this.lookups.brigades)},
+            {
+                title: "Прораб", field: "prorab_id", width: 150, sorter: "number", visible: true,
              formatter: "lookup", formatterParams: this.lookups.prorabs,
-             editor: "list", editorParams: listEditorParams(this.lookups.prorabs)},
+             editor: "list", editorParams: listEditorParams(this.activeLookups.prorabs, this.lookups.prorabs)
+            },
             {
                 title: "Бытовка",
                 field: "temporary_building", 
@@ -224,22 +249,22 @@ export class StagesTable extends BaseTable {
             {
                 title: "Комплектация (Договор)", field: "complectation_id", width: 150, sorter: "number", visible: false,
                 formatter: "lookup", formatterParams: this.lookups.complectation,
-                editor: "list", editorParams: listEditorParams(this.lookups.complectation)
+                editor: "list", editorParams: listEditorParams(this.activeLookups.complectation, this.lookups.complectation)
             },
             {
                 title: "Тип оплаты (Договор)", field: "payment_type_id", width: 130, sorter: "number", visible: false,
                 formatter: "lookup", formatterParams: this.lookups.payment_types,
-                editor: "list", editorParams: listEditorParams(this.lookups.payment_types)
+                editor: "list", editorParams: listEditorParams(this.activeLookups.payment_types, this.lookups.payment_types)
             },
             {
                 title: "Менеджер (Договор)", field: "manager_id", width: 120, sorter: "number", visible: false,
                 formatter: "lookup", formatterParams: this.lookups.managers,
-                editor: "list", editorParams: listEditorParams(this.lookups.managers)
+                editor: "list", editorParams: listEditorParams(this.activeLookups.managers, this.lookups.managers)
             },
             {
                 title: "Проект (Договор)", field: "project_id", width: 150, sorter: "number", visible: false,
                 formatter: "lookup", formatterParams: this.lookups.projects,
-                editor: "list", editorParams: listEditorParams(this.lookups.projects)
+                editor: "list", editorParams: listEditorParams(this.lookups.projects, this.lookups.projects)
             },
             {
                 title: "АР готов (Договор)", 
@@ -275,7 +300,7 @@ export class StagesTable extends BaseTable {
              formatter: "money", formatterParams: {thousand: " ", precision: 0, decimal: ","}},
             {title: "Подрядчик", field: "contractor_id", width: 150, sorter: "number", visible: false,
              formatter: "lookup", formatterParams: this.lookups.contractors,
-             editor: "list", editorParams: listEditorParams(this.lookups.contractors)},
+             editor: "list", editorParams: listEditorParams(this.activeLookups.contractors, this.lookups.contractors)},
             {title: "Длительность (дни)", field: "duration_days", width: 120, sorter: "number", editor: "number", editable: true, visible: false},
             {title: "Статус", field: "status", width: 120, sorter: "string", visible: false,
              editor: "list", editorParams: {values: ["планируется", "в процессе", "завершен", "отменен"]}, editable: true},

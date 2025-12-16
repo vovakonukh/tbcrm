@@ -9,6 +9,7 @@ class ReferenceTable {
         this.selector = config.selector;         // CSS селектор контейнера
         this.addButtonId = config.addButtonId;   // ID кнопки добавления
         this.hasIsActive = config.hasIsActive !== false; // По умолчанию true
+        this.allowDelete = config.allowDelete !== false; // По умолчанию true
         this.columns = config.columns || this.getDefaultColumns();
         this.height = config.height || "300px";
         this.defaultRowData = config.defaultRowData || this.getDefaultRowData();
@@ -65,7 +66,11 @@ class ReferenceTable {
             });
         }
 
-        columns.push(this.getDeleteColumn());
+        // Добавляем колонку удаления только если allowDelete = true
+        if (this.allowDelete) {
+            columns.push(this.getDeleteColumn());
+        }
+
         return columns;
     }
 

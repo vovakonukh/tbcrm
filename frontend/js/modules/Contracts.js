@@ -73,12 +73,15 @@ export class ContractsTable extends BaseTable {
     }
 
     getColumns() {
-        // Хелпер для параметров редактора списков
-        // ПРЕОБРАЗУЕМ объект справочника в массив для точного совпадения типов (String vs Number)
-        const listEditorParams = (lookupData) => {
-            const values = Object.entries(lookupData || {}).map(([id, name]) => ({
+        /* 
+            Хелпер для параметров редактора списков
+            - activeLookupData: только активные записи для выбора
+            - allLookupData: все записи (для сохранения текущего значения если оно неактивно)
+        */
+        const listEditorParams = (activeLookupData, allLookupData) => {
+            const values = Object.entries(activeLookupData || {}).map(([id, name]) => ({
                 label: name,
-                value: isNaN(id) ? id : Number(id) // Приводим ID к числу, чтобы совпало с данными в ячейке
+                value: isNaN(id) ? id : Number(id)
             }));
 
             return {
@@ -86,10 +89,19 @@ export class ContractsTable extends BaseTable {
                 autocomplete: true, 
                 clearable: true,
                 listOnEmpty: true,
-                freetext: false, // Запрещаем вводить то, чего нет в списке
+                freetext: false,
                 filterFunc: (term, label, value, item) => {
-                    // Улучшенный поиск: ищем вхождение строки (case-insensitive)
                     return String(label).toLowerCase().indexOf(String(term).toLowerCase()) > -1;
+                },
+                /* Если текущее значение неактивно, добавляем его в список */
+                valueLookup: (value) => {
+                    if (value === null || value === undefined || value === '') return null;
+                    const numValue = isNaN(value) ? value : Number(value);
+                    const activeLabel = (activeLookupData || {})[numValue];
+                    if (activeLabel) return { label: activeLabel, value: numValue };
+                    const allLabel = (allLookupData || {})[numValue];
+                    if (allLabel) return { label: allLabel + ' (неактивен)', value: numValue };
+                    return null;
                 }
             };
         };
@@ -178,7 +190,7 @@ export class ContractsTable extends BaseTable {
                 formatter: "lookup",
                 formatterParams: this.lookups.complectation,
                 editor: "list",
-                editorParams: listEditorParams(this.lookups.complectation)
+                editorParams: listEditorParams(this.activeLookups.complectation, this.lookups.complectation)
             },
 
             {
@@ -189,7 +201,7 @@ export class ContractsTable extends BaseTable {
                 formatter: "lookup",
                 formatterParams: this.lookups.payment_types,
                 editor: "list",
-                editorParams: listEditorParams(this.lookups.payment_types)
+                editorParams: listEditorParams(this.activeLookups.payment_types, this.lookups.payment_types)
             },
 
             {
@@ -200,7 +212,7 @@ export class ContractsTable extends BaseTable {
                 formatter: "lookup",
                 formatterParams: this.lookups.ipoteka_status,
                 editor: "list",
-                editorParams: listEditorParams(this.lookups.ipoteka_status),
+                editorParams: listEditorParams(this.activeLookups.ipoteka_status, this.lookups.ipoteka_status),
                 cssClass: "cell-text-left"
             },
 
@@ -212,7 +224,7 @@ export class ContractsTable extends BaseTable {
                 formatter: "lookup",
                 formatterParams: this.lookups.escrow_agents,
                 editor: "list",
-                editorParams: listEditorParams(this.lookups.escrow_agents)
+                editorParams: listEditorParams(this.activeLookups.escrow_agents, this.lookups.escrow_agents)
             }, 
 
             {
@@ -232,7 +244,7 @@ export class ContractsTable extends BaseTable {
                 formatter: "lookup",
                 formatterParams: this.lookups.sources,
                 editor: "list",
-                editorParams: listEditorParams(this.lookups.sources)
+                editorParams: listEditorParams(this.activeLookups.sources, this.lookups.sources)
             }, 
 
             {
@@ -243,7 +255,7 @@ export class ContractsTable extends BaseTable {
                 formatter: "lookup",
                 formatterParams: this.lookups.managers,
                 editor: "list",
-                editorParams: listEditorParams(this.lookups.managers)
+                editorParams: listEditorParams(this.activeLookups.managers, this.lookups.managers)
             }, 
 
             {
@@ -522,7 +534,7 @@ export class ContractsTable extends BaseTable {
                 formatter: "lookup",
                 formatterParams: this.lookups.projects,
                 editor: "list",
-                editorParams: listEditorParams(this.lookups.projects),
+                editorParams: listEditorParams(this.lookups.projects, this.lookups.projects),
                 visible: false
             }, 
 

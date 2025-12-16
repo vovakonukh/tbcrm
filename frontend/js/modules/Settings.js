@@ -10,18 +10,18 @@ class SettingsPage {
         this.pendingDelete = null;
         
         // Конфигурация всех справочников
+        // allowDelete: false — мягкое удаление через is_active, кнопка удаления скрыта
         this.tableConfigs = [
-            
-            { tableName: 'brigade_types', selector: '#brigade_types-table', addButtonId: 'add-brigade_types-btn', title: 'Типы бригад', hasIsActive: false },
-            { tableName: 'managers', selector: '#managers-table', addButtonId: 'add-managers-btn', title: 'Менеджеры' },
-            { tableName: 'contractors', selector: '#contractors-table', addButtonId: 'add-contractors-btn', title: 'Подрядчики' },
-            { tableName: 'escrow_agents', selector: '#escrow_agents-table', addButtonId: 'add-escrow_agents-btn', title: 'Эскроу агенты' },
-            { tableName: 'payment_types', selector: '#payment_types-table', addButtonId: 'add-payment_types-btn', title: 'Типы оплаты' },
-            { tableName: 'complectation', selector: '#complectation-table', addButtonId: 'add-complectation-btn', title: 'Типы комплектаций' },
-            { tableName: 'sources', selector: '#sources-table', addButtonId: 'add-sources-btn', title: 'Источники' },
-            { tableName: 'prorabs', selector: '#prorabs-table', addButtonId: 'add-prorabs-btn', title: 'Прорабы' },
-            { tableName: 'stage_types', selector: '#stage_types-table', addButtonId: 'add-stage_types-btn', title: 'Типы этапов' },
-            { tableName: 'ipoteka_status', selector: '#ipoteka_status-table', addButtonId: 'add-ipoteka_status-btn', title: 'Статусы ипотеки' }
+            { tableName: 'brigade_types', selector: '#brigade_types-table', addButtonId: 'add-brigade_types-btn', title: 'Типы бригад', hasIsActive: false, allowDelete: true },
+            { tableName: 'managers', selector: '#managers-table', addButtonId: 'add-managers-btn', title: 'Менеджеры', allowDelete: false },
+            { tableName: 'contractors', selector: '#contractors-table', addButtonId: 'add-contractors-btn', title: 'Подрядчики', allowDelete: false },
+            { tableName: 'escrow_agents', selector: '#escrow_agents-table', addButtonId: 'add-escrow_agents-btn', title: 'Эскроу агенты', allowDelete: false },
+            { tableName: 'payment_types', selector: '#payment_types-table', addButtonId: 'add-payment_types-btn', title: 'Типы оплаты', allowDelete: false },
+            { tableName: 'complectation', selector: '#complectation-table', addButtonId: 'add-complectation-btn', title: 'Типы комплектаций', allowDelete: false },
+            { tableName: 'sources', selector: '#sources-table', addButtonId: 'add-sources-btn', title: 'Источники', allowDelete: false },
+            { tableName: 'prorabs', selector: '#prorabs-table', addButtonId: 'add-prorabs-btn', title: 'Прорабы', allowDelete: false },
+            { tableName: 'stage_types', selector: '#stage_types-table', addButtonId: 'add-stage_types-btn', title: 'Типы этапов', allowDelete: false },
+            { tableName: 'ipoteka_status', selector: '#ipoteka_status-table', addButtonId: 'add-ipoteka_status-btn', title: 'Статусы ипотеки', allowDelete: false }
         ];
         
         this.init();
@@ -54,6 +54,7 @@ class SettingsPage {
                         selector: config.selector,
                         addButtonId: config.addButtonId,
                         hasIsActive: config.hasIsActive,
+                        allowDelete: config.allowDelete !== false, // По умолчанию true, если не указано
                         onDeleteCallback: (table, id) => this.showDeleteConfirm(table, id)
                     });
                     

@@ -30,6 +30,17 @@ function getDictionary($pdo, $tableName) {
     }
 }
 
+/* Получение только активных записей справочника */
+function getActiveDictionary($pdo, $tableName) {
+    try {
+        $stmt = $pdo->query("SELECT id, name FROM `$tableName` WHERE is_active = 1");
+        return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    } catch (PDOException $e) {
+        error_log("Error fetching active dictionary $tableName: " . $e->getMessage());
+        return [];
+    }
+}
+
 // GET запрос - получить данные и справочники
 if ($method == 'GET') {
     try {
@@ -37,7 +48,7 @@ if ($method == 'GET') {
         $stmt = $pdo->query("SELECT * FROM contracts ORDER BY id DESC");
         $contracts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // 2. Получаем справочники для выпадающих списков и отображения
+        // 2. Получаем справочники для отображения (все записи)
         $options = [
             "payment_types" => getDictionary($pdo, 'payment_types'),
             "managers"      => getDictionary($pdo, 'managers'),
@@ -48,10 +59,22 @@ if ($method == 'GET') {
             "ipoteka_status" => getDictionary($pdo, 'ipoteka_status')
         ];
         
+        // 3. Получаем только активные записи для выбора в dropdown
+        $activeOptions = [
+            "payment_types" => getActiveDictionary($pdo, 'payment_types'),
+            "managers"      => getActiveDictionary($pdo, 'managers'),
+            "escrow_agents" => getActiveDictionary($pdo, 'escrow_agents'),
+            "projects"      => getDictionary($pdo, 'projects'), // projects без is_active
+            "complectation" => getActiveDictionary($pdo, 'complectation'),
+            "sources"       => getActiveDictionary($pdo, 'sources'),
+            "ipoteka_status" => getActiveDictionary($pdo, 'ipoteka_status')
+        ];
+        
         echo json_encode([
             "success" => true,
             "data" => $contracts,
-            "options" => $options
+            "options" => $options,
+            "activeOptions" => $activeOptions
         ]);
         
     } catch(PDOException $e) {

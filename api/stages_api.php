@@ -33,6 +33,20 @@ function getDictionary($pdo, $tableName, $nameField = 'name') {
     }
 }
 
+/* Получение только активных записей справочника */
+function getActiveDictionary($pdo, $tableName, $nameField = 'name') {
+    try {
+        if ($tableName === 'contracts') {
+            $nameField = 'contract_name';
+        }
+        $stmt = $pdo->query("SELECT id, $nameField FROM `$tableName` WHERE is_active = 1");
+        return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    } catch (PDOException $e) {
+        error_log("Error fetching active dictionary $tableName: " . $e->getMessage());
+        return [];
+    }
+}
+
 // GET запрос - получить данные и справочники
 if ($method == 'GET') {
     try {
@@ -56,24 +70,37 @@ if ($method == 'GET') {
         $stmt = $pdo->query($query);
         $stages = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // 2. Получаем справочники для выпадающих списков и отображения
+        // 2. Получаем справочники для отображения (все записи)
         $options = [
             "contracts" => getDictionary($pdo, 'contracts', 'contract_name'),
             "stage_types" => getDictionary($pdo, 'stage_types'),
             "contractors" => getDictionary($pdo, 'contractors'),
             "brigades" => getDictionary($pdo, 'brigades'),
             "prorabs" => getDictionary($pdo, 'prorabs'),
-            // Новые справочники для полей договора
             "complectation" => getDictionary($pdo, 'complectation'),
             "payment_types" => getDictionary($pdo, 'payment_types'),
             "managers"      => getDictionary($pdo, 'managers'),
             "projects"      => getDictionary($pdo, 'projects')
         ];
         
+        // 3. Получаем только активные записи для выбора в dropdown
+        $activeOptions = [
+            "contracts" => getActiveDictionary($pdo, 'contracts', 'contract_name'),
+            "stage_types" => getActiveDictionary($pdo, 'stage_types'),
+            "contractors" => getActiveDictionary($pdo, 'contractors'),
+            "brigades" => getActiveDictionary($pdo, 'brigades'),
+            "prorabs" => getActiveDictionary($pdo, 'prorabs'),
+            "complectation" => getActiveDictionary($pdo, 'complectation'),
+            "payment_types" => getActiveDictionary($pdo, 'payment_types'),
+            "managers"      => getActiveDictionary($pdo, 'managers'),
+            "projects"      => getDictionary($pdo, 'projects') // projects без is_active
+        ];
+        
         echo json_encode([
             "success" => true,
             "data" => $stages,
-            "options" => $options
+            "options" => $options,
+            "activeOptions" => $activeOptions
         ]);
         
     } catch(PDOException $e) {
