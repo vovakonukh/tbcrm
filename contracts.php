@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Договоры</title>
+    <link rel="icon" href="/assets/favicon.ico">
     <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
     <link href="frontend/css/style.css?v=1.3" rel="stylesheet">
     <link href="frontend/css/fonts.css" rel="stylesheet">

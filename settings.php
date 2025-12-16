@@ -9,7 +9,8 @@ requireRole('admin');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Настройки - Справочники</title>
+    <title>Настройки</title>
+    <link rel="icon" href="/assets/favicon.ico">
     <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
     <link href="frontend/css/style.css?v=1.2" rel="stylesheet">
     <link href="frontend/css/fonts.css" rel="stylesheet">
@@ -98,14 +99,7 @@ requireRole('admin');
         <div class="settings-container">
            
 
-            <!-- Типы бригад -->
-            <div class="reference-table-wrapper">
-                <h2>Типы бригад</h2>
-                <div class="table-controls">
-                    <button id="add-brigade_types-btn">+ Добавить</button>
-                </div>
-                <div id="brigade_types-table" class="reference-table"></div>
-            </div>
+            
 
             <!-- Менеджеры -->
             <div class="reference-table-wrapper">
@@ -116,32 +110,7 @@ requireRole('admin');
                 <div id="managers-table" class="reference-table"></div>
             </div>
 
-            <!-- Прорабы -->
-            <div class="reference-table-wrapper">
-                <h2>Прорабы</h2>
-                <div class="table-controls">
-                    <button id="add-prorabs-btn">+ Добавить</button>
-                </div>
-                <div id="prorabs-table" class="reference-table"></div>
-            </div>
-
-            <!-- Подрядчики -->
-            <div class="reference-table-wrapper">
-                <h2>Подрядчики</h2>
-                <div class="table-controls">
-                    <button id="add-contractors-btn">+ Добавить</button>
-                </div>
-                <div id="contractors-table" class="reference-table"></div>
-            </div>
-
-            <!-- Эскроу агенты -->
-            <div class="reference-table-wrapper">
-                <h2>Эскроу агенты</h2>
-                <div class="table-controls">
-                    <button id="add-escrow_agents-btn">+ Добавить</button>
-                </div>
-                <div id="escrow_agents-table" class="reference-table"></div>
-            </div>
+            
 
             <!-- Типы оплаты -->
             <div class="reference-table-wrapper">
@@ -159,6 +128,24 @@ requireRole('admin');
                     <button id="add-complectation-btn">+ Добавить</button>
                 </div>
                 <div id="complectation-table" class="reference-table"></div>
+            </div>
+
+            <!-- Эскроу агенты -->
+            <div class="reference-table-wrapper">
+                <h2>Эскроу агенты</h2>
+                <div class="table-controls">
+                    <button id="add-escrow_agents-btn">+ Добавить</button>
+                </div>
+                <div id="escrow_agents-table" class="reference-table"></div>
+            </div>
+
+            <!-- Статусы ипотеки -->
+            <div class="reference-table-wrapper">
+                <h2>Статусы ипотеки</h2>
+                <div class="table-controls">
+                    <button id="add-ipoteka_status-btn">+ Добавить</button>
+                </div>
+                <div id="ipoteka_status-table" class="reference-table"></div>
             </div>
 
             <!-- Источники -->
@@ -179,13 +166,31 @@ requireRole('admin');
                 <div id="stage_types-table" class="reference-table"></div>
             </div>
 
-            <!-- Статусы ипотеки -->
+            <!-- Типы бригад -->
             <div class="reference-table-wrapper">
-                <h2>Статусы ипотеки</h2>
+                <h2>Типы бригад</h2>
                 <div class="table-controls">
-                    <button id="add-ipoteka_status-btn">+ Добавить</button>
+                    <button id="add-brigade_types-btn">+ Добавить</button>
                 </div>
-                <div id="ipoteka_status-table" class="reference-table"></div>
+                <div id="brigade_types-table" class="reference-table"></div>
+            </div>
+
+            <!-- Прорабы -->
+            <div class="reference-table-wrapper">
+                <h2>Прорабы</h2>
+                <div class="table-controls">
+                    <button id="add-prorabs-btn">+ Добавить</button>
+                </div>
+                <div id="prorabs-table" class="reference-table"></div>
+            </div>
+
+            <!-- Подрядчики -->
+            <div class="reference-table-wrapper">
+                <h2>Подрядчики</h2>
+                <div class="table-controls">
+                    <button id="add-contractors-btn">+ Добавить</button>
+                </div>
+                <div id="contractors-table" class="reference-table"></div>
             </div>
         </div>
 
