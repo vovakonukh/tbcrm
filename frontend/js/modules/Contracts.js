@@ -73,6 +73,11 @@ export class ContractsTable extends BaseTable {
     }
 
     getColumns() {
+
+        /* Определяем, нужно ли скрывать поля зарплаты */
+        const userRole = userService.getRole();
+        const hidePayrollFields = (userRole === 'manager');
+        
         /* 
             Хелпер для параметров редактора списков
             - activeLookupData: только активные записи для выбора
@@ -685,6 +690,8 @@ export class ContractsTable extends BaseTable {
                 editorParams: listEditorParams(this.lookups.managers),
                 visible: false
             },
+            // Поля зарплат - показываем только админам и конструкторам
+            ...(hidePayrollFields ? [] : [
             {
                 title: "% менеджера",
                 field: "manager_percent",
@@ -779,6 +786,7 @@ export class ContractsTable extends BaseTable {
                 formatter: "money",
                 formatterParams: { thousand: " ", precision: 0, decimal: "," }
             }
+            ])
         ];
         
     }
@@ -806,7 +814,11 @@ export class ContractsTable extends BaseTable {
      * Возвращает конфигурацию групп колонок для селектора
      */
     getColumnGroups() {
-        return [
+            const userRole = userService.getRole();
+    const hidePayrollFields = (userRole === 'manager');
+    
+    const groups = [
+        // return [
             
             {
                 title: 'Основное',
@@ -836,6 +848,8 @@ export class ContractsTable extends BaseTable {
                 title: 'Строительство',
                 fields: ['ar_ready', 'kr_ready', 'estimate_ready', 'foundation', 'project_id']
             },
+            // Группы с зарплатами показываем только если не менеджер
+            ...(hidePayrollFields ? [] : [
             {
                 title: 'ЗП менеджер',
                 fields: ['manager_percent', 'manager_zp', 'manager_paid', 'manager_balance']
@@ -844,6 +858,7 @@ export class ContractsTable extends BaseTable {
                 title: 'ЗП СОП',
                 fields: ['sop_percent', 'sop_zp', 'sop_paid', 'sop_balance']
             },
+            ]),
             {
                 title: 'Разное',
                 fields: ['custom_field_1', 'custom_field_2', 'custom_field_3', 'created_by', 'updated_by', 'created_at', 'updated_at']
@@ -853,5 +868,7 @@ export class ContractsTable extends BaseTable {
                 fields: ['id', 'adesk_project_id']
             }
         ];
+
+        return groups;
     }
 }

@@ -48,6 +48,7 @@ class UserService {
     isViewer() {
         return this.getRole() === 'viewer';
     }
+    
 }
 
 /* Глобальный экземпляр сервиса */
