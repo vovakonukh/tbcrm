@@ -136,12 +136,12 @@ export class PlanfactTable extends BaseTable {
                 frozen: true
             },
             {
-                title: "Выручка",
+                title: "ВЫРУЧКА",
                 columns: [
                     {
                         title: "План",
                         field: "revenue_plan",
-                        width: 130,
+                        width: 120,
                         headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
@@ -155,7 +155,7 @@ export class PlanfactTable extends BaseTable {
                     {
                         title: "Факт",
                         field: "revenue_fact",
-                        width: 150,
+                        width: 120,
                         headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
@@ -170,11 +170,10 @@ export class PlanfactTable extends BaseTable {
                     {
                         title: "% вып",
                         field: "revenue_percent",
-                        width: 100,
+                        width: 70,
                         headerSort: false,
                         editable: false,
                         formatter: percentFormatter,
-                        editable: true,
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
                         bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
@@ -182,22 +181,23 @@ export class PlanfactTable extends BaseTable {
                 ]
              },
             {
-                title: "Договоры",
+                title: "ДОГОВОРЫ",
                 columns: [
                     {
                         title: "План",
                         field: "contracts_plan",
-                        width: 130,
+                        width: 70,
                         headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
                         editable: true,
-                        bottomCalc: "sum"
+                        bottomCalc: "sum",
+                        cssClass: "cell-border-left"
                     },
                     {
                         title: "Факт",
                         field: "contracts_fact",
-                        width: 150,
+                        width: 70,
                         headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
@@ -210,7 +210,7 @@ export class PlanfactTable extends BaseTable {
                     {
                         title: "% вып",
                         field: "contracts_percent",
-                        width: 100,
+                        width: 70,
                         headerSort: false,
                         editable: false,
                         editorParams: { min: 0, max: 1000, step: 0.1 },
@@ -223,22 +223,23 @@ export class PlanfactTable extends BaseTable {
                 ]
             },
             {
-                title: "Встречи",
+                title: "ВСТРЕЧИ",
                 columns: [
                     {
                         title: "План",
                         field: "meetings_plan",
-                        width: 120,
-                        sorter: "number",
+                        width: 70,
+                        headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
                         editable: true,
-                        bottomCalc: "sum"
+                        bottomCalc: "sum",
+                        cssClass: "cell-border-left"
                     },
                                         {
                         title: "Факт",
                         field: "meetings_fact",
-                        width: 150,
+                        width: 70,
                         headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
@@ -251,8 +252,8 @@ export class PlanfactTable extends BaseTable {
                     {
                         title: "% вып",
                         field: "meetings_percent",
-                        width: 100,
-                        sorter: "number",
+                        width: 70,
+                        headerSort: false,
                         editable: false,
                         editorParams: { min: 0, max: 1000, step: 0.1 },
                         formatter: percentFormatter,
@@ -264,60 +265,65 @@ export class PlanfactTable extends BaseTable {
                 ]
             },
             {
-                title: "Целевые лиды",
+                title: "ЦЕЛЕВЫЕ ЛИДЫ",
                 columns: [
-            {
-                title: "План",
-                field: "target_lead_plan",
-                width: 140,
-                sorter: "number",
-                editor: "number",
-                editorParams: { min: 0 },
-                editable: true,
-                bottomCalc: "sum"
-            },
-            {
-                title: "Факт",
-                field: "target_lead_fact",
-                width: 140,
-                sorter: "number",
-                editor: "number",
-                editorParams: { min: 0 },
-                editable: true,
-                bottomCalc: "sum"
-            },
-            {
-                title: "% вып",
-                field: "target_lead_percent",
-                width: 120,
-                sorter: "number",
-                editable: false,
-                editorParams: { min: 0, max: 1000, step: 0.01 },
-                formatter: percentFormatter,
-                editable: true,
-                cssClass: "cell-calculated",
-                bottomCalc: percentBottomCalc,
-                bottomCalcParams: { planField: "target_lead_plan", factField: "target_lead_fact" }
-            },
+                    {
+                        title: "План",
+                        field: "target_lead_plan",
+                        width: 70,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        editable: true,
+                        bottomCalc: "sum",
+                        cssClass: "cell-border-left"
+                    },
+                    {
+                        title: "Факт",
+                        field: "target_lead_fact",
+                        width: 70,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: cellWithRefreshFormatter,
+                        formatterParams: { isMoney: false },
+                        editable: true,
+                        cssClass: "cell-with-action",
+                        bottomCalc: "sum"
+                    },
+                    {
+                        title: "% вып",
+                        field: "target_lead_percent",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        editorParams: { min: 0, max: 1000, step: 0.01 },
+                        formatter: percentFormatter,
+                        editable: true,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "target_lead_plan", factField: "target_lead_fact" }
+                    },
                 ]
             },
             {
-                title: "Квал. лиды",
+                title: "КВАЛ. ЛИДЫ",
                 columns: [
                     {
                         title: "План",
                         field: "qual_lead_plan",
-                        width: 130,
-                        sorter: "number",
+                        width: 70,
+                        headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
                         editable: true,
-                        bottomCalc: "sum"
+                        bottomCalc: "sum",
+                        cssClass: "cell-border-left"
                     },
                     {
                         title: "Факт",
                         field: "qual_lead_fact",
-                        width: 150,
+                        width: 70,
                         headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
@@ -330,8 +336,8 @@ export class PlanfactTable extends BaseTable {
                     {
                         title: "% вып",
                         field: "qual_lead_percent",
-                        width: 110,
-                        sorter: "number",
+                        width: 70,
+                        headerSort: false,
                         editable: false,
                         editorParams: { min: 0, max: 1000, step: 0.01 },
                         formatter: percentFormatter,
@@ -343,18 +349,19 @@ export class PlanfactTable extends BaseTable {
                 ]
             },
             {
-                title: "Бюджет",
+                title: "РЕКЛАМНЫЙ БЮДЖЕТ",
                 columns: [
                     {
                         title: "План",
                         field: "budget_plan",
                         width: 120,
-                        sorter: "number",
+                        headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
                         formatter: "money",
                         formatterParams: moneyParams,
                         editable: true,
+                        cssClass: "cell-border-left",
                         bottomCalc: "sum",
                         bottomCalcFormatter: "money",
                         bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
@@ -363,7 +370,7 @@ export class PlanfactTable extends BaseTable {
                         title: "Факт",
                         field: "budget_fact",
                         width: 120,
-                        sorter: "number",
+                        headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
                         formatter: "money",
@@ -376,8 +383,8 @@ export class PlanfactTable extends BaseTable {
                     {
                         title: "% вып",
                         field: "budget_percent",
-                        width: 100,
-                        sorter: "number",
+                        width: 70,
+                        headerSort: false,
                         editable: false,
                         editorParams: { min: 0, max: 1000, step: 0.01 },
                         formatter: percentFormatter,
@@ -392,7 +399,7 @@ export class PlanfactTable extends BaseTable {
                 title: "ID",
                 field: "id",
                 width: 80,
-                sorter: "number",
+                headerSort: false,
                 editable: false,
                 visible: false
             },
@@ -515,7 +522,8 @@ export class PlanfactTable extends BaseTable {
                     'revenue_fact': 'Выручка',
                     'contracts_fact': 'Договоры',
                     'meetings_fact': 'Встречи',
-                    'qual_lead_fact': 'Квал. лиды'
+                    'qual_lead_fact': 'Квал. лиды',
+                    'target_lead_fact': 'Целевые лиды'
                 };
                 this.showNotification(`${fieldNames[field] || field}: ${result.value.toLocaleString('ru-RU')}`, 'success');
             } else {

@@ -1243,6 +1243,11 @@ button {
     text-align: left !important;
 }
 
+/* Отделение ячеек */
+.cell-border-left {
+    border-left: 1px solid #333;
+}
+
 .tabulator-cell-contract-name {
     text-align: left !important;
 }

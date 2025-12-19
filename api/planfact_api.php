@@ -235,6 +235,29 @@ elseif ($method == 'PATCH') {
             $value = $totalCount;
         }
 
+        elseif ($field === 'target_lead_fact') {
+            /* Количество лидов из Битрикс24 по полю "Дата взятия в работу" (UF_CRM_1687959404) */
+            require_once __DIR__ . '/../lib/crest.php';
+            
+            /* Формируем фильтр по datetime-полю */
+            $filterStart = $startDate . 'T00:00:00';
+            $filterEnd = $endDate . 'T23:59:59';
+            
+            $bitrixResult = CRest::call('crm.lead.list', [
+                'filter' => [
+                    '>=UF_CRM_1687959404' => $filterStart,
+                    '<=UF_CRM_1687959404' => $filterEnd
+                ],
+                'select' => ['ID']
+            ]);
+            
+            if (isset($bitrixResult['error'])) {
+                throw new Exception("Ошибка Битрикс24: " . ($bitrixResult['error_description'] ?? $bitrixResult['error']));
+            }
+            
+            $value = $bitrixResult['total'] ?? 0;
+        }
+
         elseif ($field === 'qual_lead_fact') {
             /* Количество сделок из Основной воронки Битрикс24 по дате создания */
             require_once __DIR__ . '/../lib/crest.php';
