@@ -104,7 +104,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             justify-content: space-between;
             align-items: flex-start;
             margin-top: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             gap: 20px;
             flex-wrap: wrap;
         }
@@ -118,7 +118,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             font-size: 28px;
             font-weight: 700;
             color: #2c3e50;
-            margin: 0 0 8px 0;
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -271,8 +271,8 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
         }
         
         .copy-btn img {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
         }
         
         .copy-btn.copied {
@@ -392,6 +392,53 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             text-align: center;
             padding: 20px;
         }
+
+        /* Ссылки */
+        .data-link {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+        
+        .data-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Комментарий */
+        .comment-text {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #495057;
+            white-space: pre-wrap;
+        }
+        
+        .mobile-buttons {
+            display: none;
+            flex-direction: row;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .button_call,
+        .button_map {
+            display: flex;
+            width: 50%;
+            border-radius: var(--radius-md);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .button_call {
+            background-color: var(--color-success);
+            color: white;
+        }
+
+        .contract_status {
+            display: block;
+            margin-bottom: 24px;
+        }
         
         /* Адаптив */
         @media (max-width: 768px) {
@@ -420,6 +467,14 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                 justify-content: center;
             }
 
+            .mobile-buttons {
+                display: flex;
+            }
+
+            .contract_status {
+                display: none;
+            }
+
         }
         
         /* Двухколоночный layout для некоторых секций */
@@ -439,26 +494,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
             }
         }
         
-        /* Ссылки */
-        .data-link {
-            color: var(--color-primary);
-            text-decoration: none;
-        }
         
-        .data-link:hover {
-            text-decoration: underline;
-        }
-        
-        /* Комментарий */
-        .comment-text {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #495057;
-            white-space: pre-wrap;
-        }
     </style>
 </head>
 <body>
@@ -504,25 +540,22 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                             <img src="/assets/copy.svg" alt="Копировать">
                         </button>
                     </h1>
-                    <div class="card-subtitle">
-                        
-                        Создан: <?= formatDateTime($contract['created_at']) ?><br>
-                        <?php if ($contract['updated_at']): ?>
-                            Обновлён: <?= formatDateTime($contract['updated_at']) ?>
-                        <?php endif; ?>
-                    </div>
+                    
                 </div>
-                <div class="card-actions">
-                    <a href="contracts.php" class="btn-back">← Назад к списку</a>
-                    <!-- <a href="contracts.php?edit=<?= $contract['id'] ?>" class="btn-edit">✎ Редактировать</a> -->
-                    <?php if (getCurrentUserRole() !== 'viewer'): ?>
-                        <button class="btn-delete" id="delete-contract-btn" data-id="<?= $contract['id'] ?>">Удалить</button>
-                    <?php endif; ?>
-                </div>
+                
+            </div>
+
+            <div class="mobile-buttons">
+                <?php if ($contract['customer_phone']): ?>
+                    <a href="<?= 'tel:' . htmlspecialchars($contract['customer_phone']) ?>" target="_blank" class="btn button_call">Звонок заказчику</a>
+                <?php endif; ?>
+                <?php if ($contract['site_map_link']): ?>
+                    <a href="<?= htmlspecialchars($contract['site_map_link']) ?>" target="_blank" class="btn button_map">Яндекс Карты</a>
+                <?php endif; ?>
             </div>
             
             <!-- Статус -->
-            <div style="margin-bottom: 24px;">
+            <div class="contract_status">
                 <?php if ($contract['is_active'] == 1): ?>
                     <span class="card-status active">● В работе</span>
                 <?php else: ?>
@@ -839,6 +872,12 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
                 </div>
             </div>
             <?php endif; ?>
+
+            <div class="card-actions">
+                <?php if (getCurrentUserRole() !== 'viewer'): ?>
+                    <button class="btn-delete" id="delete-contract-btn" data-id="<?= $contract['id'] ?>">Удалить</button>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
     </div>
