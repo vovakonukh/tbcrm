@@ -76,7 +76,7 @@ export class ContractsTable extends BaseTable {
 
         /* Определяем, нужно ли скрывать поля зарплаты */
         const userRole = userService.getRole();
-        const hidePayrollFields = (userRole === 'manager');
+        const hideFinancialFields = (userRole === 'manager');
         
         /* 
             Хелпер для параметров редактора списков
@@ -379,7 +379,8 @@ export class ContractsTable extends BaseTable {
                 },
                 editable: true
             },
-
+            /* Финансовые поля - скрыты для менеджеров */
+            ...(hideFinancialFields ? [] : [
             {
                 title: "Сумма с допками",
                 field: "final_amount",
@@ -439,6 +440,7 @@ export class ContractsTable extends BaseTable {
                     return value + '%';
                 }
             },
+        ]),
 
             {
                 title: "Заказчик",
@@ -691,7 +693,7 @@ export class ContractsTable extends BaseTable {
                 visible: false
             },
             // Поля зарплат - показываем только админам и конструкторам
-            ...(hidePayrollFields ? [] : [
+            ...(hideFinancialFields ? [] : [
             {
                 title: "% менеджера",
                 field: "manager_percent",
@@ -815,7 +817,7 @@ export class ContractsTable extends BaseTable {
      */
     getColumnGroups() {
             const userRole = userService.getRole();
-    const hidePayrollFields = (userRole === 'manager');
+            const hideFinancialFields = (userRole === 'manager');
     
     const groups = [
         // return [
@@ -826,7 +828,9 @@ export class ContractsTable extends BaseTable {
             },
             {
                 title: 'Финансы',
-                fields: ['contract_amount', 'final_amount', 'profit', 'margin_percent']
+                fields: hideFinancialFields 
+                    ? ['contract_amount'] 
+                    : ['contract_amount', 'final_amount', 'profit', 'margin_percent']
             },
             {
                 title: 'Ипотека',
@@ -849,7 +853,7 @@ export class ContractsTable extends BaseTable {
                 fields: ['ar_ready', 'kr_ready', 'estimate_ready', 'foundation', 'project_id']
             },
             // Группы с зарплатами показываем только если не менеджер
-            ...(hidePayrollFields ? [] : [
+            ...(hideFinancialFields ? [] : [
             {
                 title: 'ЗП менеджер',
                 fields: ['manager_percent', 'manager_zp', 'manager_paid', 'manager_balance']
