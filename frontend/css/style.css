@@ -224,7 +224,7 @@ button {
     font-family: var(--font-family);
     font-size: 14px;
     color: var(--color-text-secondary);
-    width: 200px;
+    width: 350px;
     transition: border-color var(--transition-normal), width var(--transition-normal);
 }
 

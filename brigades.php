@@ -15,11 +15,9 @@
     <?php include 'header.php'; ?>
     <div class="container">
         <div class="controls">
-            <button id="add-contract-btn"><img src="/assets/plus.svg"/></button>
-            <button id="refresh-btn"><img src="/assets/refresh.svg"/></button>
-            <button id="toggle-columns-btn"><img src="/assets/control.svg"/></button>
-            <button id="save-all-btn"><img src="/assets/save.svg"/></button>
-            <!-- <button id="debug-btn">Отладка</button> -->
+            <button id="add-contract-btn"><img src="/assets/plus.svg"/> Добавить</button>
+            <button id="refresh-btn"><img src="/assets/refresh.svg"/>Обновить</button>
+            <button id="toggle-columns-btn"><img src="/assets/control.svg"/>Настройки</button>
         </div>
         
         <!-- Фильтры -->

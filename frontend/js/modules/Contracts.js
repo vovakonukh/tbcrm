@@ -355,30 +355,31 @@ export class ContractsTable extends BaseTable {
                         },
                         editable: true
                     },
+                    {
+                        title: "Крайний срок по договору",
+                        field: "contract_duration",
+                        width: 110,
+                        sorter: "date",
+                        sorterParams: {
+                            format: "yyyy-MM-dd",
+                            alignEmptyValues: "bottom"
+                        },
+                        formatter: "datetime",
+                        formatterParams: {
+                            inputFormat: "yyyy-MM-dd",
+                            outputFormat: "dd.MM.yyyy",
+                            invalidPlaceholder: ""
+                        },
+                        editor: "date",
+                        editorParams: {
+                            format: "yyyy-MM-dd"
+                        },
+                        editable: true
+                    },
                 ]
             },
 
-            {
-                title: "Крайний срок по договору",
-                field: "contract_duration",
-                width: 110,
-                sorter: "date",
-                sorterParams: {
-                    format: "yyyy-MM-dd",
-                    alignEmptyValues: "bottom"
-                },
-                formatter: "datetime",
-                formatterParams: {
-                    inputFormat: "yyyy-MM-dd",
-                    outputFormat: "dd.MM.yyyy",
-                    invalidPlaceholder: ""
-                },
-                editor: "date",
-                editorParams: {
-                    format: "yyyy-MM-dd"
-                },
-                editable: true
-            },
+            
             /* Финансовые поля - скрыты для менеджеров */
             ...(hideFinancialFields ? [] : [
             {

@@ -72,6 +72,35 @@ export class PlanfactTable extends BaseTable {
         return names[field] || field;
     }
 
+    getColumnGroups() {
+        return [
+            {
+                title: 'Выручка',
+                fields: ['revenue_plan', 'revenue_fact', 'revenue_percent']
+            },
+            {
+                title: 'Договоры',
+                fields: ['contracts_plan', 'contracts_fact', 'contracts_percent']
+            },
+            {
+                title: 'Встречи',
+                fields: ['meetings_plan', 'meetings_fact', 'meetings_percent']
+            },
+            {
+                title: 'Целевые лиды',
+                fields: ['target_lead_plan', 'target_lead_fact', 'target_lead_percent']
+            },
+            {
+                title: 'Квал. лиды',
+                fields: ['qual_lead_plan', 'qual_lead_fact', 'qual_lead_percent']
+            },
+            {
+                title: 'Рекламный бюджет',
+                fields: ['budget_plan', 'budget_fact', 'budget_percent']
+            }
+        ];
+    }
+
     getColumns() {
         /* Хелпер для форматирования процентов */
         const percentFormatter = (cell) => {
