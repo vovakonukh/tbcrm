@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#2563eb"/>
+  <g transform="translate(256,256)">
+    <!-- Внешний круг -->
+    <circle r="120" fill="none" stroke="white" stroke-width="24"/>
+    <!-- Внутренний круг -->
+    <circle r="40" fill="white"/>
+    <!-- Стрелки по бокам (символ стройки/прогресса) -->
+    <path d="M-180 0 L-140 -30 L-140 -10 L-100 -10 L-100 10 L-140 10 L-140 30 Z" fill="white"/>
+    <path d="M180 0 L140 30 L140 10 L100 10 L100 -10 L140 -10 L140 -30 Z" fill="white"/>
+  </g>
+</svg>
