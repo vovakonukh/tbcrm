@@ -385,7 +385,7 @@ export class ContractsTable extends BaseTable {
             {
                 title: "Сумма с допками",
                 field: "final_amount",
-                width: 120,
+                width: 140,
                 sorter: "number",
                 editor: "number",
                 editorParams: {
@@ -393,29 +393,57 @@ export class ContractsTable extends BaseTable {
                     step: 0.01
                 },
                 editable: true,
-                formatter: "money",
-                formatterParams: {
-                    thousand: " ",
-                    precision: 0,
-                    decimal: ","
+                cssClass: "cell-with-action",
+                formatter: (cell) => {
+                    const value = cell.getValue();
+                    const rowData = cell.getRow().getData();
+                    
+                    let displayValue = '';
+                    if (value !== null && value !== undefined && value !== '') {
+                        displayValue = Number(value).toLocaleString('ru-RU', { maximumFractionDigits: 0 });
+                    }
+                    
+                    /* Показываем кнопку только если есть adesk_project_id */
+                    const hasAdesk = rowData.adesk_project_id;
+                    const buttonHtml = hasAdesk 
+                        ? `<button class="refresh-adesk-btn" data-id="${rowData.id}" data-adesk-id="${rowData.adesk_project_id}" data-field="final_amount" title="Загрузить из Adesk">
+                                <img src="/assets/refresh.svg" alt="Обновить"/>
+                        </button>`
+                        : '';
+                    
+                    return `<span class="cell-content">${displayValue}</span>${buttonHtml}`;
                 }
             },
 
             {
                 title: "Прибыль",
                 field: "profit",
-                width: 120,
+                width: 140,
                 sorter: "number",
                 editor: "number",
                 editorParams: {
                     step: 0.01
                 },
                 editable: true,
-                formatter: "money",
-                formatterParams: {
-                    thousand: " ",
-                    precision: 0,
-                    decimal: ","
+                cssClass: "cell-with-action",
+                formatter: (cell) => {
+                    const value = cell.getValue();
+                    const rowData = cell.getRow().getData();
+                    
+                    let displayValue = '';
+                    if (value !== null && value !== undefined && value !== '') {
+                        displayValue = Number(value).toLocaleString('ru-RU', { maximumFractionDigits: 0 });
+                    }
+                    
+                    /* Показываем кнопку только если есть adesk_project_id */
+                    const hasAdesk = rowData.adesk_project_id;
+                    const buttonHtml = hasAdesk 
+                        ? `<button class="refresh-adesk-btn" data-id="${rowData.id}" data-adesk-id="${rowData.adesk_project_id}" data-field="profit" title="Загрузить из Adesk">
+                                    <img src="/assets/refresh.svg" alt="Обновить"/>
+                            </button>`
+                        : '';
+                    
+                    return `<span class="cell-content">${displayValue}</span>${buttonHtml}`;
                 }
             },
 
@@ -875,5 +903,97 @@ export class ContractsTable extends BaseTable {
         ];
 
         return groups;
+    }
+
+    async fetchFromAdesk(contractId, adeskProjectId, field, buttonElement) {
+        try {
+            /* Показываем индикатор загрузки */
+            const originalImg = buttonElement.innerHTML;
+            buttonElement.innerHTML = '⏳';
+            buttonElement.disabled = true;
+            
+            const url = `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.ADESK}?action=get_project_income&project_id=${adeskProjectId}`;
+            const response = await fetch(url);
+            const result = await response.json();
+            
+            if (result.success) {
+                const data = result.data;
+                console.log('Adesk response:', data, 'field:', field);
+                let value, fieldName;
+                
+                if (field === 'final_amount') {
+                    value = data.income;
+                    fieldName = 'Сумма с допками';
+                } else if (field === 'profit') {
+                    value = data.profit;
+                    fieldName = 'Прибыль';
+                }
+                
+                /* Обновляем значение в таблице */
+                const row = this.table.getRow(contractId);
+                if (row) {
+                    row.update({ [field]: value });
+                    
+                    /* Сохраняем в БД */
+                    await this.saveFieldToServer(contractId, field, value);
+                    
+                    this.showNotification(`${fieldName}: ${value.toLocaleString('ru-RU')} ₽`, 'success');
+                }
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки из Adesk:', error);
+            this.showNotification('Ошибка: ' + error.message, 'error');
+        } finally {
+            if (buttonElement) {
+                buttonElement.innerHTML = '<img src="/assets/refresh.svg" alt="Обновить"/>';
+                buttonElement.disabled = false;
+            }
+        }
+    }
+
+    async saveFieldToServer(id, field, value) {
+        const url = `${CONFIG.API_BASE_URL}${this.getApiEndpoint()}`;
+        await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id, [field]: value })
+        });
+    }
+
+    bindTableEvents() {
+        const tableElement = document.querySelector(this.getTableSelector());
+        if (!tableElement) return;
+
+        tableElement.addEventListener('click', async (e) => {
+            /* Обработчик для кнопки загрузки из Adesk */
+            const adeskBtn = e.target.closest('.refresh-adesk-btn');
+            if (adeskBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                const contractId = adeskBtn.getAttribute('data-id');
+                const adeskProjectId = adeskBtn.getAttribute('data-adesk-id');
+                const field = adeskBtn.getAttribute('data-field');
+                
+                if (contractId && adeskProjectId && field) {
+                    await this.fetchFromAdesk(contractId, adeskProjectId, field, adeskBtn);
+                }
+                return;
+            }
+
+            /* Обработчик для кнопки открытия договора */
+            const openBtn = e.target.closest('.open-contract-btn');
+            if (openBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                const id = openBtn.getAttribute('data-id');
+                if (id) {
+                    window.location.href = `/contract.php?id=${id}`;
+                }
+                return;
+            }
+        }, true);
     }
 }

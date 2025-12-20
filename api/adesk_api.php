@@ -1,7 +1,7 @@
 <?php
 /**
  * adesk_api.php
- * API endpoint для управления интеграцией с Adesk
+ * API endpoint для работы с Adesk
  */
 
 header('Access-Control-Allow-Origin: *');
@@ -14,14 +14,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/AdeskSyncService.php';
+require_once __DIR__ . '/AdeskAPI.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
-try {
-    $syncService = new AdeskSyncService($pdo);
+/* Получение API токена из БД */
+function getAdeskApi($pdo) {
+    $stmt = $pdo->query("SELECT api_token, is_enabled FROM adesk_settings LIMIT 1");
+    $settings = $stmt->fetch(PDO::FETCH_ASSOC);
     
+    if (!$settings || !$settings['is_enabled'] || empty($settings['api_token'])) {
+        throw new Exception('Интеграция с Adesk не настроена');
+    }
+    
+    return new AdeskAPI($settings['api_token']);
+}
+
+try {
     switch ($action) {
         
         /* Получить настройки */
@@ -58,72 +68,40 @@ try {
         
         /* Проверить подключение */
         case 'test_connection':
-            $result = $syncService->testConnection();
-            echo json_encode($result);
+            $api = getAdeskApi($pdo);
+            $api->get('legal-entities');
+            echo json_encode(['success' => true, 'message' => 'Подключение установлено']);
             break;
         
-        /* Запустить синхронизацию */
-        case 'sync':
-            if ($method !== 'POST') throw new Exception('Method not allowed');
+        /* Получить финансовые данные проекта из Adesk */
+        case 'get_project_income':
+            $projectId = $_GET['project_id'] ?? null;
+            if (!$projectId) throw new Exception('project_id обязателен');
             
-            $input = json_decode(file_get_contents('php://input'), true);
-            $dateFrom = $input['date_from'] ?? date('Y-01-01');
-            $dateTo = $input['date_to'] ?? date('Y-m-d');
+            $api = getAdeskApi($pdo);
+            $response = $api->get("projects", ['status' => 'all']);
             
-            $result = $syncService->syncTransactions($dateFrom, $dateTo);
+            $projects = $response['projects'] ?? [];
+            $projectData = null;
             
-            echo json_encode([
-                'success' => true,
-                'message' => "Получено: {$result['fetched']}, создано: {$result['created']}, обновлено: {$result['updated']}",
-                'data' => $result
-            ]);
-            break;
-        
-        /* Получить операции из локальной БД */
-        case 'get_transactions':
-            $where = [];
-            $params = [];
-            
-            if (!empty($_GET['project_id'])) {
-                $where[] = "project_id = ?";
-                $params[] = $_GET['project_id'];
+            foreach ($projects as $project) {
+                if ($project['id'] == $projectId) {
+                    $income = floatval($project['income'] ?? 0);
+                    $outcome = floatval($project['outcome'] ?? 0);
+                    $projectData = [
+                        'income' => $income,
+                        'outcome' => $outcome,
+                        'profit' => $income - $outcome
+                    ];
+                    break;
+                }
             }
             
-            if (!empty($_GET['category_group'])) {
-                $where[] = "category_group_name LIKE ?";
-                $params[] = '%' . $_GET['category_group'] . '%';
+            if ($projectData === null) {
+                throw new Exception('Проект не найден в Adesk');
             }
             
-            if (!empty($_GET['date_from'])) {
-                $where[] = "transaction_date >= ?";
-                $params[] = $_GET['date_from'];
-            }
-            
-            if (!empty($_GET['date_to'])) {
-                $where[] = "transaction_date <= ?";
-                $params[] = $_GET['date_to'];
-            }
-            
-            $whereClause = count($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-            
-            $sql = "SELECT * FROM adesk_transactions {$whereClause} ORDER BY transaction_date DESC";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
-            
-            echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
-            break;
-        
-        /* Список проектов из загруженных операций */
-        case 'get_projects':
-            $stmt = $pdo->query("
-                SELECT DISTINCT project_id, project_name, COUNT(*) as cnt
-                FROM adesk_transactions
-                WHERE project_id IS NOT NULL
-                GROUP BY project_id, project_name
-                ORDER BY project_name
-            ");
-            
-            echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            echo json_encode(['success' => true, 'data' => $projectData]);
             break;
         
         default:
