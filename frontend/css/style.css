@@ -370,6 +370,8 @@ button {
     font-size: 15px;
     color: var(--color-text-secondary);
     transition: border-color var(--transition-normal);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .date-input:focus {
@@ -944,11 +946,6 @@ button {
     
     #date-filter-modal .date-input-group {
         width: 100%;
-    }
-    
-    #date-filter-modal .date-input {
-        width: 100%;
-        box-sizing: border-box;
     }
     
     #date-filter-modal .quick-dates {

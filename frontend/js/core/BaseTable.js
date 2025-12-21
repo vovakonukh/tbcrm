@@ -770,11 +770,24 @@ export default class BaseTable {
             if(endInput) endInput.value = '';
         }
         
-        // Позиционирование
+        // Позиционирование с учётом границ экрана
         if (buttonElement && content) {
             const rect = buttonElement.getBoundingClientRect();
+            const modalWidth = 350; // Ширина модалки из CSS
+            const screenWidth = window.innerWidth;
+            
             content.style.top = (rect.bottom + 5) + 'px';
-            content.style.left = rect.left + 'px';
+            
+            // Проверяем, помещается ли окно справа
+            if (rect.left + modalWidth > screenWidth - 10) {
+                // Не помещается — открываем влево от правого края кнопки
+                content.style.left = 'auto';
+                content.style.right = (screenWidth - rect.right) + 'px';
+            } else {
+                // Помещается — открываем как обычно
+                content.style.left = rect.left + 'px';
+                content.style.right = 'auto';
+            }
         }
 
         modal.style.display = 'block';

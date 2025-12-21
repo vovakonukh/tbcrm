@@ -48,6 +48,7 @@ export class PlanfactTable extends BaseTable {
 
     getCalculatedFieldsDependencies() {
         return {
+            /* Зависимости для процентов */
             'revenue_plan': 'revenue_percent',
             'revenue_fact': 'revenue_percent',
             'contracts_plan': 'contracts_percent',
@@ -59,7 +60,36 @@ export class PlanfactTable extends BaseTable {
             'qual_lead_plan': 'qual_lead_percent',
             'qual_lead_fact': 'qual_lead_percent',
             'budget_plan': 'budget_percent',
-            'budget_fact': 'budget_percent'
+            'budget_fact': 'budget_percent',
+            'target_lead_price_plan': 'target_lead_price_percent',
+            'target_lead_price_fact': 'target_lead_price_percent',
+            'qual_lead_price_plan': 'qual_lead_price_percent',
+            'qual_lead_price_fact': 'qual_lead_price_percent',
+            'meeting_price_plan': 'meeting_price_percent',
+            'meeting_price_fact': 'meeting_price_percent',
+            'contract_price_plan': 'contract_price_percent',
+            'contract_price_fact': 'contract_price_percent'
+        };
+    }
+
+    /* Зависимости для расчёта стоимостных показателей (price_fact = budget_fact / count_fact) */
+    getPriceDependencies() {
+        return {
+            'target_lead_price_fact': { budgetField: 'budget_fact', countField: 'target_lead_fact' },
+            'qual_lead_price_fact': { budgetField: 'budget_fact', countField: 'qual_lead_fact' },
+            'meeting_price_fact': { budgetField: 'budget_fact', countField: 'meetings_fact' },
+            'contract_price_fact': { budgetField: 'budget_fact', countField: 'contracts_fact' }
+        };
+    }
+
+    /* Какие price_fact поля нужно пересчитать при изменении данного поля */
+    getFieldsToPriceRecalc() {
+        return {
+            'budget_fact': ['target_lead_price_fact', 'qual_lead_price_fact', 'meeting_price_fact', 'contract_price_fact'],
+            'target_lead_fact': ['target_lead_price_fact'],
+            'qual_lead_fact': ['qual_lead_price_fact'],
+            'meetings_fact': ['meeting_price_fact'],
+            'contracts_fact': ['contract_price_fact']
         };
     }
 
@@ -83,16 +113,32 @@ export class PlanfactTable extends BaseTable {
                 fields: ['contracts_plan', 'contracts_fact', 'contracts_percent']
             },
             {
+                title: 'Стоимость договора',
+                fields: ['contract_price_plan', 'contract_price_fact', 'contract_price_percent']
+            },
+            {
                 title: 'Встречи',
                 fields: ['meetings_plan', 'meetings_fact', 'meetings_percent']
+            },
+            {
+                title: 'Стоимость встречи',
+                fields: ['meeting_price_plan', 'meeting_price_fact', 'meeting_price_percent']
             },
             {
                 title: 'Целевые лиды',
                 fields: ['target_lead_plan', 'target_lead_fact', 'target_lead_percent']
             },
             {
+                title: 'Стоимость целевого лида',
+                fields: ['target_lead_price_plan', 'target_lead_price_fact', 'target_lead_price_percent']
+            },
+            {
                 title: 'Квал. лиды',
                 fields: ['qual_lead_plan', 'qual_lead_fact', 'qual_lead_percent']
+            },
+            {
+                title: 'Стоимость квал. лида',
+                fields: ['qual_lead_price_plan', 'qual_lead_price_fact', 'qual_lead_price_percent']
             },
             {
                 title: 'Рекламный бюджет',
@@ -124,6 +170,23 @@ export class PlanfactTable extends BaseTable {
             
             if (totalPlan === 0) return '';
             return Math.round((totalFact / totalPlan) * 100) + '%';
+        };
+
+        /* Калькулятор стоимости для итоговой строки: сумма бюджета / сумма количества */
+        const priceBottomCalc = (values, data, calcParams) => {
+            const budgetField = calcParams.budgetField;
+            const countField = calcParams.countField;
+            
+            let totalBudget = 0;
+            let totalCount = 0;
+            
+            data.forEach(row => {
+                totalBudget += parseFloat(row[budgetField]) || 0;
+                totalCount += parseFloat(row[countField]) || 0;
+            });
+            
+            if (totalCount === 0) return '';
+            return Math.round(totalBudget / totalCount);
         };
 
         /* Хелпер для форматирования денег */
@@ -170,7 +233,7 @@ export class PlanfactTable extends BaseTable {
                     {
                         title: "План",
                         field: "revenue_plan",
-                        width: 120,
+                        width: 110,
                         headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
@@ -184,13 +247,14 @@ export class PlanfactTable extends BaseTable {
                     {
                         title: "Факт",
                         field: "revenue_fact",
-                        width: 120,
+                        width: 110,
                         headerSort: false,
                         editor: "number",
                         editorParams: { min: 0 },
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: true },
                         editable: true,
+                        headerTooltip:"При нажатии кнопки загружаем выручку из Договоров",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum",
                         bottomCalcFormatter: "money",
@@ -233,6 +297,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: false },
                         editable: true,
+                        headerTooltip:"При нажатии кнопки загружаем количество из Договоров",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
@@ -275,6 +340,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: false },
                         editable: true,
+                        headerTooltip:"При нажатии кнопки загружаем количество из Битрикса",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
@@ -317,6 +383,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: false },
                         editable: true,
+                        headerTooltip:"При нажатии кнопки загружаем количество из Битрикса",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
@@ -359,6 +426,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: false },
                         editable: true,
+                        headerTooltip:"При нажатии кнопки загружаем количество из Битрикса",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
@@ -390,6 +458,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: "money",
                         formatterParams: moneyParams,
                         editable: true,
+                        headerTooltip:"Вводим вручную",
                         cssClass: "cell-border-left",
                         bottomCalc: "sum",
                         bottomCalcFormatter: "money",
@@ -405,6 +474,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: "money",
                         formatterParams: moneyParams,
                         editable: true,
+                        headerTooltip:"Вводим вручную",
                         bottomCalc: "sum",
                         bottomCalcFormatter: "money",
                         bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
@@ -424,6 +494,212 @@ export class PlanfactTable extends BaseTable {
                     },
                 ]
             },
+
+            {
+                title: "СТОИМОСТЬ ЦЕЛ. ЛИДА",
+                columns: [
+                    {
+                        title: "План",
+                        field: "target_lead_price_plan",
+                        width: 100,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        cssClass: "cell-border-left",
+                        bottomCalc: priceBottomCalc,
+                        bottomCalcParams: { budgetField: "budget_plan", countField: "target_lead_plan" },
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," },
+                        visible: false
+                    },
+                    {
+                        title: "Факт",
+                        field: "target_lead_price_fact",
+                        width: 100,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        headerTooltip:"Пересчитываем автоматически при изменении показателей",
+                        bottomCalc: priceBottomCalc,
+                        bottomCalcParams: { budgetField: "budget_fact", countField: "target_lead_fact" },
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," },
+                        visible: false
+                    },
+                    {
+                        title: "% вып",
+                        field: "target_lead_price_percent",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "target_lead_price_plan", factField: "target_lead_price_fact" },
+                        visible: false
+                    }
+                ]
+            },
+            {
+                title: "СТОИМОСТЬ КВАЛ. ЛИДА",
+                columns: [
+                    {
+                        title: "План",
+                        field: "qual_lead_price_plan",
+                        width: 100,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        cssClass: "cell-border-left",
+                        bottomCalc: priceBottomCalc,
+                        bottomCalcParams: { budgetField: "budget_plan", countField: "qual_lead_plan" },
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," },
+                        visible: false
+                    },
+                    {
+                        title: "Факт",
+                        field: "qual_lead_price_fact",
+                        width: 100,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        headerTooltip:"Пересчитываем автоматически при изменении показателей",
+                        bottomCalc: priceBottomCalc,
+                        bottomCalcParams: { budgetField: "budget_fact", countField: "qual_lead_fact" },
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," },
+                        visible: false
+                    },
+                    {
+                        title: "% вып",
+                        field: "qual_lead_price_percent",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "qual_lead_price_plan", factField: "qual_lead_price_fact" },
+                        visible: false
+                    }
+                ]
+            },
+            {
+                title: "СТОИМОСТЬ ВСТРЕЧИ",
+                columns: [
+                    {
+                        title: "План",
+                        field: "meeting_price_plan",
+                        width: 100,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        cssClass: "cell-border-left",
+                        bottomCalc: priceBottomCalc,
+                        bottomCalcParams: { budgetField: "budget_plan", countField: "meetings_plan" },
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," },
+                        visible: false
+                    },
+                    {
+                        title: "Факт",
+                        field: "meeting_price_fact",
+                        width: 100,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        headerTooltip:"Пересчитываем автоматически при изменении показателей",
+                        bottomCalc: priceBottomCalc,
+                        bottomCalcParams: { budgetField: "budget_fact", countField: "meetings_fact" },
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," },
+                        visible: false
+                    },
+                    {
+                        title: "% вып",
+                        field: "meeting_price_percent",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "meeting_price_plan", factField: "meeting_price_fact" },
+                        visible: false
+                    }
+                ]
+            },
+            {
+                title: "СТОИМОСТЬ ДОГОВОРА",
+                columns: [
+                    {
+                        title: "План",
+                        field: "contract_price_plan",
+                        width: 100,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        cssClass: "cell-border-left",
+                        bottomCalc: priceBottomCalc,
+                        bottomCalcParams: { budgetField: "budget_plan", countField: "contracts_plan" },
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," },
+                        visible: false
+                    },
+                    {
+                        title: "Факт",
+                        field: "contract_price_fact",
+                        width: 100,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        headerTooltip:"Пересчитываем автоматически при изменении показателей",
+                        bottomCalc: priceBottomCalc,
+                        bottomCalcParams: { budgetField: "budget_fact", countField: "contracts_fact" },
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," },
+                        visible: false
+                    },
+                    {
+                        title: "% вып",
+                        field: "contract_price_percent",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "contract_price_plan", factField: "contract_price_fact" },
+                        visible: false
+                    }
+                ]
+            },
+
             {
                 title: "ID",
                 field: "id",
@@ -485,29 +761,56 @@ export class PlanfactTable extends BaseTable {
         const rowData = row.getData();
         const rowId = rowData.id;
         
-        /* Проверяем, нужно ли пересчитать процент */
+        /* 1. Пересчёт процента для изменённого поля */
         const dependencies = this.getCalculatedFieldsDependencies();
         const percentField = dependencies[field];
         
         if (percentField) {
-            /* Определяем какие поля plan и fact использовать */
             const prefix = percentField.replace('_percent', '');
             const planField = prefix + '_plan';
             const factField = prefix + '_fact';
             
-            const planValue = rowData[planField];
-            const factValue = rowData[factField];
+            const percentValue = this.calculatePercent(rowData[planField], rowData[factField]);
             
-            const percentValue = this.calculatePercent(planValue, factValue);
-            
-            /* Обновляем значение в строке */
             row.update({ [percentField]: percentValue });
-            
-            /* Сохраняем процент в БД */
             this.updatePercentField(rowId, percentField, percentValue);
         }
         
-        /* Вызываем родительский метод для сохранения основного поля */
+        /* 2. Пересчёт стоимостных показателей */
+        const fieldsToPriceRecalc = this.getFieldsToPriceRecalc();
+        const priceFieldsToUpdate = fieldsToPriceRecalc[field];
+        
+        if (priceFieldsToUpdate) {
+            const priceDependencies = this.getPriceDependencies();
+            const updatedData = row.getData(); /* Получаем актуальные данные после update */
+            const fieldsToSave = {};
+            
+            priceFieldsToUpdate.forEach(priceField => {
+                const deps = priceDependencies[priceField];
+                const budgetValue = parseFloat(updatedData[deps.budgetField]) || 0;
+                const countValue = parseFloat(updatedData[deps.countField]) || 0;
+                
+                /* Расчёт: бюджет / количество */
+                const priceValue = countValue > 0 ? Math.round(budgetValue / countValue) : null;
+                
+                fieldsToSave[priceField] = priceValue;
+                
+                /* Также пересчитываем процент для стоимости */
+                const pricePercentField = priceField.replace('_fact', '_percent');
+                const pricePlanField = priceField.replace('_fact', '_plan');
+                const pricePercentValue = this.calculatePercent(updatedData[pricePlanField], priceValue);
+                
+                fieldsToSave[pricePercentField] = pricePercentValue;
+            });
+            
+            /* Обновляем UI */
+            row.update(fieldsToSave);
+            
+            /* Сохраняем в БД */
+            this.savePriceFields(rowId, fieldsToSave);
+        }
+        
+        /* 3. Вызываем сохранение основного поля */
         this.showNotification(`Изменено поле: ${field}`, 'success');
         this.saveChanges(cell);
     }
@@ -600,6 +903,27 @@ export class PlanfactTable extends BaseTable {
             }
         } catch (error) {
             console.error('Ошибка сохранения процента:', error);
+        }
+    }
+
+    async savePriceFields(rowId, fields) {
+        try {
+            const url = `${CONFIG.API_BASE_URL}${this.getApiEndpoint()}`;
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: rowId,
+                    ...fields
+                })
+            });
+            
+            const result = await response.json();
+            if (!result.success) {
+                console.error('Ошибка сохранения стоимостных полей:', result.error);
+            }
+        } catch (error) {
+            console.error('Ошибка сохранения стоимостных полей:', error);
         }
     }
 }
