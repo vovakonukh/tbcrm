@@ -33,7 +33,7 @@ const PRECACHE_ASSETS = [
     '/assets/close.svg',
     '/assets/refresh.svg',
     '/assets/save.svg',
-    '/offline.html'
+    '/pwa/offline.html'
 ];
 
 /* Установка SW — кешируем статику */
@@ -169,7 +169,7 @@ async function networkFirstWithOffline(request) {
         if (cached) return cached;
         
         /* Возвращаем офлайн-страницу */
-        const offlinePage = await caches.match('/offline.html');
+        const offlinePage = await caches.match('/pwa/offline.html');
         if (offlinePage) return offlinePage;
         
         return new Response('<h1>Нет подключения к сети</h1>', {

@@ -1,4 +1,4 @@
-<?php require_once 'api/check_auth.php'; ?>
+<?php require_once __DIR__ . '/../api/check_auth.php'; ?>
 
 <!DOCTYPE html>
 <html lang="ru">
@@ -6,14 +6,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Этапы работ</title>
-    <?php include 'pwa_head.php'; ?>
+    <?php include __DIR__ . '/../includes/pwa_head.php'; ?>
     <link rel="icon" href="/assets/favicon.ico">
     <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
-    <link href="frontend/css/style.css?v=1.2" rel="stylesheet">
-    <link href="frontend/css/fonts.css" rel="stylesheet">
+    <link href="/frontend/css/style.css?v=1.2" rel="stylesheet">
+    <link href="/frontend/css/fonts.css" rel="stylesheet">
 </head>
 <body>
-    <?php include 'header.php'; ?>
+    <?php include __DIR__ . '/../includes/header.php'; ?>
     <div class="container">
         <div class="controls">
             <button id="add-contract-btn"><img src="/assets/plus.svg"/> Добавить</button>
@@ -80,10 +80,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/luxon/build/global/luxon.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
-    <script src="frontend/js/config.js"></script>
-    <script src="frontend/js/core/UserService.js"></script>
+    <script src="/frontend/js/config.js"></script>
+    <script src="/frontend/js/core/UserService.js"></script>
     <script type="module">
-        import { StagesTable } from './frontend/js/modules/Stages.js?v=1.0.2';
+        import { StagesTable } from '/frontend/js/modules/Stages.js?v=1.0.2';
         document.addEventListener('DOMContentLoaded', function() {
             window.stagesTableInstance = new StagesTable();  // Для отладки
         });

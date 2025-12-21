@@ -15,12 +15,12 @@ if (function_exists('getCurrentUserRole')) {
 <header>
     <!-- Десктопная навигация -->
     <nav class="desktop-nav">
-        <a href="contracts.php">Договора</a>
+        <a href="/contracts.php">Договора</a>
         <!-- <a href="stages.php">Этапы работ</a> -->
-        <a href="planfact.php">Планфакт</a>
+        <a href="/planfact.php">Планфакт</a>
         <!-- <a href="brigades.php">Бригады</a> -->
         <!-- <a href="adesk.php">Adesk</a> -->
-        <?php if ($userRole === 'admin'): ?><a href="settings.php">Настройки</a><?php endif; ?>
+        <?php if ($userRole === 'admin'): ?><a href="/settings.php">Настройки</a><?php endif; ?>
     </nav>
     
     <!-- Десктопный блок пользователя -->
@@ -28,7 +28,7 @@ if (function_exists('getCurrentUserRole')) {
         <span style="color: #868e96; font-size: 14px;">
             <?php echo htmlspecialchars($userName); ?>
         </span>
-        <a href="logout.php" style="background-color: #fa5252; color: white; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-size: 14px;">
+        <a href="/logout.php" style="background-color: #fa5252; color: white; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-size: 14px;">
             Выход
         </a>
     </div>
@@ -53,17 +53,17 @@ if (function_exists('getCurrentUserRole')) {
     </div>
     
     <nav class="mobile-menu-nav">
-        <a href="contracts.php">Договора</a>
+        <a href="/contracts.php">Договора</a>
         <!-- <a href="stages.php">Этапы работ</a> -->
-        <a href="planfact.php">Планфакт</a>
+        <a href="/planfact.php">Планфакт</a>
         <!-- <a href="brigades.php">Бригады</a> -->
         <!-- <a href="adesk.php">Adesk</a> -->
-        <?php if ($userRole === 'admin'): ?><a href="settings.php">Настройки</a><?php endif; ?>
+        <?php if ($userRole === 'admin'): ?><a href="/settings.php">Настройки</a><?php endif; ?>
     </nav>
     
     <div class="mobile-menu-footer">
         <span class="mobile-menu-user"><?php echo htmlspecialchars($userName); ?></span>
-        <a href="logout.php" class="mobile-menu-logout">Выход</a>
+        <a href="/logout.php" class="mobile-menu-logout">Выход</a>
     </div>
 </div>
 

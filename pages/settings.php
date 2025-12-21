@@ -1,5 +1,5 @@
 <?php 
-require_once 'api/check_auth.php';
+require_once __DIR__ . '/../api/check_auth.php'; 
 // Только админы могут заходить в настройки
 requireRole('admin');
 ?>
@@ -10,11 +10,11 @@ requireRole('admin');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Настройки</title>
-    <?php include 'pwa_head.php'; ?>
+    <?php include __DIR__ . '/../includes/pwa_head.php'; ?>
     <link rel="icon" href="/assets/favicon.ico">
     <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
-    <link href="frontend/css/style.css?v=1.2" rel="stylesheet">
-    <link href="frontend/css/fonts.css" rel="stylesheet">
+    <link href="/frontend/css/style.css?v=1.2" rel="stylesheet">
+    <link href="/frontend/css/fonts.css" rel="stylesheet">
     <style>
         /* Специфичные стили для страницы настроек */
         .settings-container {
@@ -92,7 +92,7 @@ requireRole('admin');
     </style>
 </head>
 <body>
-    <?php include 'header.php'; ?>
+    <?php include __DIR__ . '/../includes/header.php'; ?>
 
     <div class="container">
         <h1 style="text-align: left; font-size: 24px; margin-bottom: 10px;">Настройки справочников</h1>
@@ -219,10 +219,10 @@ requireRole('admin');
 
     <script src="https://cdn.jsdelivr.net/npm/luxon/build/global/luxon.min.js"></script>
     <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
-    <script src="frontend/js/config.js?v=1.0.1"></script>
-    <script src="frontend/js/core/UserService.js"></script>
-    <script src="frontend/js/core/ReferenceTable.js?v=1.0.1"></script>
-    <script src="frontend/js/modules/Settings.js?v=1.0.1"></script>
+    <script src="/frontend/js/config.js?v=1.0.1"></script>
+    <script src="/frontend/js/core/UserService.js"></script>
+    <script src="/frontend/js/core/ReferenceTable.js?v=1.0.1"></script>
+    <script src="/frontend/js/modules/Settings.js?v=1.0.1"></script>
     <script src="/frontend/js/pwa.js"></script>
 </body>
 </html>

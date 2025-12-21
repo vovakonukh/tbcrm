@@ -1,6 +1,6 @@
 <?php 
-require_once 'api/check_auth.php';
-require_once 'api/config.php';
+require_once __DIR__ . '/../api/check_auth.php'; 
+require_once __DIR__ . '/../api/config.php';
 
 /* Получаем ID договора из GET параметра */
 $contractId = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -89,10 +89,10 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($contract['contract_name']) ?></title>
-    <?php include 'pwa_head.php'; ?>
+    <?php include __DIR__ . '/../includes/pwa_head.php'; ?>
     <link rel="icon" href="/assets/favicon.ico">
-    <link href="frontend/css/style.css?v=1.3" rel="stylesheet">
-    <link href="frontend/css/fonts.css" rel="stylesheet">
+    <link href="/frontend/css/style.css?v=1.3" rel="stylesheet">
+    <link href="/frontend/css/fonts.css" rel="stylesheet">
     <style>
         /* Стили карточки договора */
         .contract-card {
@@ -499,7 +499,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
     </style>
 </head>
 <body>
-    <?php include 'header.php'; ?>
+    <?php include __DIR__ . '/../includes/header.php'; ?>
     <div class="page-with-sidebar">
     <!-- Боковая панель со списком договоров --- -->
     <aside class="contracts-sidebar" id="contracts-sidebar">
@@ -918,7 +918,7 @@ if ($contract['profit'] && $contract['final_amount'] && floatval($contract['fina
     });
     </script>-->
 
-    <script src="frontend/js/config.js"></script>
+    <script src="/frontend/js/config.js"></script>
     <script>
         /* Копирование в буфер обмена */
         document.querySelectorAll('.copy-btn').forEach(btn => {
