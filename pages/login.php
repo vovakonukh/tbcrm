@@ -1,8 +1,8 @@
 <?php
 // login.php - Страница авторизации
 
-require_once 'api/config.php';
-require_once 'api/auth.php';
+require_once __DIR__ . '/../api/config.php';
+require_once __DIR__ . '/../api/auth.php';
 
 // Создаём подключение к БД
 $conn = new mysqli($host, $username, $password, $dbname);
