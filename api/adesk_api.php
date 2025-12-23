@@ -103,6 +103,44 @@ try {
             
             echo json_encode(['success' => true, 'data' => $projectData]);
             break;
+
+            /* Получить сумму расходов по проекту и контрагенту */
+            case 'get_contractor_expenses':
+                $projectId = $_GET['project_id'] ?? null;
+                $contractorId = $_GET['contractor_id'] ?? null;
+                
+                if (!$projectId) throw new Exception('project_id обязателен');
+                if (!$contractorId) throw new Exception('contractor_id обязателен');
+                
+                $api = getAdeskApi($pdo);
+                
+                $response = $api->post('transactions', [
+                    'range' => 'all_time',
+                    'type' => 'outcome',
+                    'project' => $projectId,
+                    'contractor' => $contractorId,
+                    'start' => 0,
+                    'length' => 1000
+                ]);
+                
+                $transactions = $response['transactions'] ?? [];
+                $totalExpenses = 0;
+                
+                foreach ($transactions as $transaction) {
+                    /* Суммируем только подтверждённые расходы (не плановые) */
+                    if (empty($transaction['isPlanned'])) {
+                        $totalExpenses += floatval($transaction['amount'] ?? 0);
+                    }
+                }
+                
+                echo json_encode([
+                    'success' => true, 
+                    'data' => [
+                        'total' => $totalExpenses,
+                        'count' => count($transactions)
+                    ]
+                ]);
+            break;
         
         default:
             throw new Exception('Unknown action');

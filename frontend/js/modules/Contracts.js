@@ -38,6 +38,50 @@ export class ContractsTable extends BaseTable {
         };
     }
 
+    /* 
+    Зависимости для расчёта ЗП:
+    - manager_zp = contract_amount * manager_percent / 100
+    - sop_zp = contract_amount * sop_percent / 100
+    - manager_balance = manager_zp - manager_paid
+    - sop_balance = sop_zp - sop_paid
+    */
+    getSalaryDependencies() {
+        return {
+            /* Поля ЗП, которые зависят от изменения указанных полей */
+            'contract_amount': ['manager_zp', 'sop_zp'],
+            'manager_percent': ['manager_zp'],
+            'sop_percent': ['sop_zp'],
+            'manager_paid': ['manager_balance'],
+            'sop_paid': ['sop_balance']
+        };
+    }
+
+    /* Формулы для расчёта полей ЗП */
+    getSalaryFormulas() {
+        return {
+            'manager_zp': (data) => {
+                const amount = parseFloat(data.contract_amount) || 0;
+                const percent = parseFloat(data.manager_percent) || 0;
+                return Math.round(amount * percent / 100);
+            },
+            'sop_zp': (data) => {
+                const amount = parseFloat(data.contract_amount) || 0;
+                const percent = parseFloat(data.sop_percent) || 0;
+                return Math.round(amount * percent / 100);
+            },
+            'manager_balance': (data) => {
+                const zp = parseFloat(data.manager_zp) || 0;
+                const paid = parseFloat(data.manager_paid) || 0;
+                return Math.round(zp - paid);
+            },
+            'sop_balance': (data) => {
+                const zp = parseFloat(data.sop_zp) || 0;
+                const paid = parseFloat(data.sop_paid) || 0;
+                return Math.round(zp - paid);
+            }
+        };
+    }
+
     getSelectFilters() {
         return {
             is_active: {
@@ -742,33 +786,48 @@ export class ContractsTable extends BaseTable {
                 field: "manager_zp",
                 width: 120,
                 sorter: "number",
-                editor: "number",
-                editable: true,
+                editable: false,
                 visible: false,
                 formatter: "money",
-                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+                formatterParams: { thousand: " ", precision: 0, decimal: "," },
+                cssClass: "cell-calculated"
             },
             {
                 title: "Выплачено менеджеру",
                 field: "manager_paid",
-                width: 140,
+                width: 160,
                 sorter: "number",
-                editor: "number",
-                editable: true,
+                editable: false,
                 visible: false,
-                formatter: "money",
-                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+                formatter: (cell) => {
+                    const value = cell.getValue();
+                    const rowData = cell.getRow().getData();
+                    
+                    let displayValue = '';
+                    if (value !== null && value !== undefined && value !== '') {
+                        displayValue = Number(value).toLocaleString('ru-RU');
+                    }
+                    
+                    return `<span class="cell-content">${displayValue}</span>
+                            <button class="refresh-adesk-btn" 
+                                    data-id="${rowData.id}" 
+                                    data-field="manager_paid" 
+                                    title="Загрузить из Adesk">
+                                <img src="/assets/refresh.svg" alt="Обновить"/>
+                            </button>`;
+                },
+                cssClass: "cell-with-action"
             },
             {
                 title: "Остаток менеджеру",
                 field: "manager_balance",
                 width: 140,
                 sorter: "number",
-                editor: "number",
-                editable: true,
+                editable: false,
                 visible: false,
                 formatter: "money",
-                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+                formatterParams: { thousand: " ", precision: 0, decimal: "," },
+                cssClass: "cell-calculated"
             },
             {
                 title: "% СОП",
@@ -789,34 +848,49 @@ export class ContractsTable extends BaseTable {
                 field: "sop_zp",
                 width: 120,
                 sorter: "number",
-                editor: "number",
-                editable: true,
+                editable: false,
                 visible: false,
                 formatter: "money",
-                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+                formatterParams: { thousand: " ", precision: 0, decimal: "," },
+                cssClass: "cell-calculated"
             },
             {
                 title: "Выплачено СОП",
                 field: "sop_paid",
-                width: 130,
+                width: 150,
                 sorter: "number",
-                editor: "number",
-                editable: true,
+                editable: false,
                 visible: false,
-                formatter: "money",
-                formatterParams: { thousand: " ", precision: 0, decimal: "," }
+                formatter: (cell) => {
+                    const value = cell.getValue();
+                    const rowData = cell.getRow().getData();
+                    
+                    let displayValue = '';
+                    if (value !== null && value !== undefined && value !== '') {
+                        displayValue = Number(value).toLocaleString('ru-RU');
+                    }
+                    
+                    return `<span class="cell-content">${displayValue}</span>
+                            <button class="refresh-adesk-btn" 
+                                    data-id="${rowData.id}" 
+                                    data-field="sop_paid" 
+                                    title="Загрузить из Adesk">
+                                <img src="/assets/refresh.svg" alt="Обновить"/>
+                            </button>`;
+                },
+                cssClass: "cell-with-action"
             },
             {
                 title: "Остаток СОП",
                 field: "sop_balance",
                 width: 130,
                 sorter: "number",
-                editor: "number",
-                editable: true,
+                editable: false,
                 visible: false,
                 formatter: "money",
-                formatterParams: { thousand: " ", precision: 0, decimal: "," }
-            }
+                formatterParams: { thousand: " ", precision: 0, decimal: "," },
+                cssClass: "cell-calculated"
+            },
             ])
         ];
         
@@ -839,6 +913,73 @@ export class ContractsTable extends BaseTable {
                 }
             }, 300);
         });
+    }
+
+    onCellEdited(cell) {
+        const field = cell.getField();
+        const row = cell.getRow();
+        const rowData = row.getData();
+        const rowId = rowData.id;
+        
+        /* 1. Проверяем, влияет ли изменённое поле на расчёт ЗП */
+        const salaryDeps = this.getSalaryDependencies();
+        const fieldsToRecalc = salaryDeps[field];
+        
+        if (fieldsToRecalc) {
+            const formulas = this.getSalaryFormulas();
+            const fieldsToSave = {};
+            
+            /* Обновляем данные в rowData с новым значением */
+            const updatedData = { ...rowData, [field]: cell.getValue() };
+            
+            fieldsToRecalc.forEach(targetField => {
+                const formula = formulas[targetField];
+                if (formula) {
+                    const newValue = formula(updatedData);
+                    fieldsToSave[targetField] = newValue;
+                    updatedData[targetField] = newValue; /* Для каскадных расчётов */
+                }
+            });
+            
+            /* Каскадный пересчёт остатков после изменения ЗП */
+            if (fieldsToSave['manager_zp'] !== undefined) {
+                fieldsToSave['manager_balance'] = formulas['manager_balance'](updatedData);
+            }
+            if (fieldsToSave['sop_zp'] !== undefined) {
+                fieldsToSave['sop_balance'] = formulas['sop_balance'](updatedData);
+            }
+            
+            /* Обновляем UI */
+            row.update(fieldsToSave);
+            
+            /* Сохраняем в БД */
+            this.saveSalaryFields(rowId, fieldsToSave);
+        }
+        
+        /* 2. Стандартная логика BaseTable */
+        this.showNotification(`Изменено поле: ${field}`, 'success');
+        this.saveChanges(cell);
+    }
+
+    async saveSalaryFields(rowId, fields) {
+        try {
+            const url = `${CONFIG.API_BASE_URL}${this.getApiEndpoint()}`;
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: rowId,
+                    ...fields
+                })
+            });
+            
+            const result = await response.json();
+            if (!result.success) {
+                console.error('Ошибка сохранения ЗП полей:', result.error);
+            }
+        } catch (error) {
+            console.error('Ошибка сохранения ЗП полей:', error);
+        }
     }
 
     /**
@@ -953,6 +1094,107 @@ export class ContractsTable extends BaseTable {
         }
     }
 
+    async fetchSalaryFromAdesk(contractId, field, buttonElement) {
+        try {
+            /* Показываем индикатор загрузки */
+            buttonElement.innerHTML = '⏳';
+            buttonElement.disabled = true;
+            
+            /* Получаем данные строки */
+            const row = this.table.getRow(contractId);
+            if (!row) throw new Error('Строка не найдена');
+            
+            const rowData = row.getData();
+            const adeskProjectId = rowData.adesk_project_id;
+            
+            /* Проверяем наличие adesk_project_id */
+            if (!adeskProjectId) {
+                throw new Error('Не указан Adesk Project ID');
+            }
+            
+            /* Определяем чей adesk_id нужен */
+            let managerId, managerField;
+            if (field === 'manager_paid') {
+                managerId = rowData.manager_id;
+                managerField = 'Менеджер';
+            } else {
+                managerId = rowData.sop_id;
+                managerField = 'СОП';
+            }
+            
+            /* Проверяем что менеджер/СОП указан */
+            if (!managerId) {
+                throw new Error(`Поле "${managerField}" не заполнено`);
+            }
+            
+            /* Получаем adesk_id менеджера из lookups или делаем запрос */
+            const adeskId = await this.getManagerAdeskId(managerId);
+            if (!adeskId) {
+                throw new Error(`У ${managerField.toLowerCase()}а не указан Adesk ID`);
+            }
+            
+            /* Запрашиваем расходы из Adesk */
+            const url = `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.ADESK}?action=get_contractor_expenses&project_id=${adeskProjectId}&contractor_id=${adeskId}`;
+            const response = await fetch(url);
+            const result = await response.json();
+            
+            if (result.success) {
+                const paidValue = result.data.total;
+                
+                /* Обновляем поле в таблице */
+                const fieldsToUpdate = { [field]: paidValue };
+                
+                /* Пересчитываем остаток */
+                const formulas = this.getSalaryFormulas();
+                const updatedData = { ...rowData, [field]: paidValue };
+                
+                if (field === 'manager_paid') {
+                    fieldsToUpdate['manager_balance'] = formulas['manager_balance'](updatedData);
+                } else {
+                    fieldsToUpdate['sop_balance'] = formulas['sop_balance'](updatedData);
+                }
+                
+                row.update(fieldsToUpdate);
+                
+                /* Сохраняем в БД */
+                await this.saveSalaryFields(contractId, fieldsToUpdate);
+                
+                this.showNotification(`${managerField}: выплачено ${paidValue.toLocaleString('ru-RU')} ₽`, 'success');
+            } else {
+                throw new Error(result.error || 'Ошибка загрузки данных');
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки из Adesk:', error);
+            this.showNotification('Ошибка: ' + error.message, 'error');
+        } finally {
+            /* Восстанавливаем кнопку */
+            buttonElement.innerHTML = '<img src="/assets/refresh.svg" alt="Обновить"/>';
+            buttonElement.disabled = false;
+        }
+    }
+
+    async getManagerAdeskId(managerId) {
+        /* Сначала проверяем есть ли в lookups расширенные данные */
+        if (this.managersData && this.managersData[managerId]) {
+            return this.managersData[managerId].adesk_id;
+        }
+        
+        /* Если нет, делаем запрос к API */
+        try {
+            const url = `${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.SETTINGS}?table=managers&id=${managerId}`;
+            const response = await fetch(url);
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                return result.data.adesk_id;
+            }
+        } catch (error) {
+            console.error('Ошибка получения adesk_id менеджера:', error);
+        }
+        
+        return null;
+    }
+
     async saveFieldToServer(id, field, value) {
         const url = `${CONFIG.API_BASE_URL}${this.getApiEndpoint()}`;
         await fetch(url, {
@@ -987,11 +1229,17 @@ export class ContractsTable extends BaseTable {
                 e.preventDefault();
                 
                 const contractId = adeskBtn.getAttribute('data-id');
-                const adeskProjectId = adeskBtn.getAttribute('data-adesk-id');
                 const field = adeskBtn.getAttribute('data-field');
                 
-                if (contractId && adeskProjectId && field) {
-                    await this.fetchFromAdesk(contractId, adeskProjectId, field, adeskBtn);
+                /* Для полей выплат используем новый метод */
+                if (field === 'manager_paid' || field === 'sop_paid') {
+                    await this.fetchSalaryFromAdesk(contractId, field, adeskBtn);
+                } else {
+                    /* Для остальных полей (final_amount, profit) - старый метод */
+                    const adeskProjectId = adeskBtn.getAttribute('data-adesk-id');
+                    if (contractId && adeskProjectId && field) {
+                        await this.fetchFromAdesk(contractId, adeskProjectId, field, adeskBtn);
+                    }
                 }
                 return;
             }

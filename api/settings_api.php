@@ -37,6 +37,32 @@ $allowedTables = [
 // GET запрос - получить данные справочников
 if ($method == 'GET') {
     try {
+
+        /* Получение одной записи по table и id */
+        $table = $_GET['table'] ?? null;
+        $recordId = $_GET['id'] ?? null;
+        
+        if ($table && $recordId) {
+            /* Проверяем, что таблица разрешена */
+            if (!in_array($table, $allowedTables)) {
+                http_response_code(400);
+                echo json_encode(["success" => false, "error" => "Table not allowed"]);
+                exit;
+            }
+            
+            $stmt = $pdo->prepare("SELECT * FROM `$table` WHERE id = ?");
+            $stmt->execute([$recordId]);
+            $record = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($record) {
+                echo json_encode(["success" => true, "data" => $record]);
+            } else {
+                http_response_code(404);
+                echo json_encode(["success" => false, "error" => "Record not found"]);
+            }
+            exit;
+        }
+
         $data = [];
         
         // Бригады
