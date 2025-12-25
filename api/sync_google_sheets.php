@@ -11,8 +11,6 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzP7VGTsFd0Ps
 
 function logMessage($message) {
     $date = date('Y-m-d H:i:s');
-    $logFile = __DIR__ . '/sync_google_sheets.log';
-    file_put_contents($logFile, "[$date] $message\n", FILE_APPEND);
     echo "[$date] $message\n";
 }
 
@@ -30,11 +28,6 @@ function getContracts($pdo) {
     $contracts = [];
     
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        // --- НАЧАЛО ОТЛАДКИ ---
-        if ($row['id'] == 623) {
-            logMessage('DEBUG ID 623: ' . json_encode($row, JSON_UNESCAPED_UNICODE));
-        }
-        // --- КОНЕЦ ОТЛАДКИ ---
         
         $contracts[] = [
             'id' => (int)$row['id'],
