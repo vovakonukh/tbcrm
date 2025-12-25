@@ -30,6 +30,12 @@ function getContracts($pdo) {
     $contracts = [];
     
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        // --- НАЧАЛО ОТЛАДКИ ---
+        if ($row['id'] == 623) {
+            logMessage('DEBUG ID 623: ' . json_encode($row, JSON_UNESCAPED_UNICODE));
+        }
+        // --- КОНЕЦ ОТЛАДКИ ---
+        
         $contracts[] = [
             'id' => (int)$row['id'],
             'contract_name' => $row['contract_name'],
