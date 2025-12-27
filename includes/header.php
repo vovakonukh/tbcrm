@@ -16,10 +16,8 @@ if (function_exists('getCurrentUserRole')) {
     <!-- Десктопная навигация -->
     <nav class="desktop-nav">
         <a href="/contracts.php">Договора</a>
-        <!-- <a href="stages.php">Этапы работ</a> -->
         <a href="/planfact.php">Планфакт</a>
-        <!-- <a href="brigades.php">Бригады</a> -->
-        <!-- <a href="adesk.php">Adesk</a> -->
+        <a href="/sales_data.php">Отдел продаж</a>
         <?php if ($userRole === 'admin'): ?><a href="/settings.php">Настройки</a><?php endif; ?>
     </nav>
     
@@ -54,10 +52,8 @@ if (function_exists('getCurrentUserRole')) {
     
     <nav class="mobile-menu-nav">
         <a href="/contracts.php">Договора</a>
-        <!-- <a href="stages.php">Этапы работ</a> -->
         <a href="/planfact.php">Планфакт</a>
-        <!-- <a href="brigades.php">Бригады</a> -->
-        <!-- <a href="adesk.php">Adesk</a> -->
+        <a href="/sales_data.php">Отдел продаж</a>
         <?php if ($userRole === 'admin'): ?><a href="/settings.php">Настройки</a><?php endif; ?>
     </nav>
     
@@ -68,7 +64,7 @@ if (function_exists('getCurrentUserRole')) {
 </div>
 
 <script>
-// Скрипт мобильного меню
+/* Скрипт мобильного меню */
 (function() {
     const toggle = document.getElementById('mobile-menu-toggle');
     const menu = document.getElementById('mobile-menu');
@@ -87,7 +83,7 @@ if (function_exists('getCurrentUserRole')) {
             document.body.style.overflow = '';
         });
         
-        // Закрытие по клику на ссылку
+        /* Закрытие по клику на ссылку */
         menu.querySelectorAll('a').forEach(function(link) {
             link.addEventListener('click', function() {
                 menu.classList.remove('active');

@@ -19,8 +19,12 @@
 //guest
 //classhouse_is_be$t
 
-$username = 'guest';
-$password = 'classhouse_is_be$t';
+//v.shalaginov
+//g67Yr$%dfdehfrt
+
+
+$username = 'v.shalaginov';
+$password = 'g67Yr$%dfdehfrt';
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
 echo "Пароль: " . $password . "<br>";

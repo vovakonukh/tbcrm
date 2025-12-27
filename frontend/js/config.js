@@ -8,6 +8,7 @@ const CONFIG = {
         ADESK: '/adesk_api.php',
         PLANFACT: '/planfact_api.php',
         BITRIX: '/bitrix_api.php',
-        USER_INFO: '/user_info.php'
+        USER_INFO: '/user_info.php',
+        SALES_DATA: '/sales_data_api.php'
     }
 };
