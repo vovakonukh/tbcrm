@@ -12,12 +12,136 @@ if (function_exists('getCurrentUserRole')) {
 }
 ?>
 
+<style>
+/* Dropdown в навигации */
+.nav-dropdown {
+    position: relative;
+}
+
+.nav-dropdown-toggle {
+    display: block;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    transition-duration: var(--transition-slow);
+    text-decoration: none;
+    color: var(--color-text);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-dropdown-toggle:hover {
+    background-color: var(--color-bg-hover);
+}
+
+.nav-dropdown-toggle::after {
+    content: '';
+    border: 4px solid transparent;
+    border-top-color: currentColor;
+    margin-top: 3px;
+}
+
+.nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--color-bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    min-width: 200px;
+    padding: 8px 0;
+    z-index: 1000;
+    border: 1px solid var(--color-border);
+}
+
+.nav-dropdown:hover .nav-dropdown-menu {
+    display: block;
+}
+
+.nav-dropdown-menu a {
+    display: block;
+    padding: 10px 16px !important;
+    border-radius: 0 !important;
+    font-weight: var(--font-weight-medium) !important;
+    color: var(--color-text-secondary) !important;
+}
+
+.nav-dropdown-menu a:hover {
+    background-color: var(--color-bg-light) !important;
+    color: var(--color-text) !important;
+}
+
+/* Мобильный раскрывающийся список */
+.mobile-submenu-toggle {
+    display: block;
+    padding: 16px 20px;
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    text-decoration: none;
+    border-radius: var(--radius-lg);
+    transition: background-color var(--transition-normal);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mobile-submenu-toggle:hover {
+    background-color: var(--color-bg-light);
+}
+
+.mobile-submenu-toggle::after {
+    content: '';
+    border: 5px solid transparent;
+    border-top-color: currentColor;
+    margin-top: 3px;
+    transition: transform var(--transition-normal);
+}
+
+.mobile-submenu-toggle.open::after {
+    transform: rotate(180deg);
+    margin-top: -3px;
+}
+
+.mobile-submenu {
+    display: none;
+    padding-left: 20px;
+}
+
+.mobile-submenu.open {
+    display: block;
+}
+
+.mobile-submenu a {
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+    font-weight: var(--font-weight-medium) !important;
+    color: var(--color-text-secondary) !important;
+}
+
+.mobile-submenu a:hover {
+    color: var(--color-text) !important;
+}
+</style>
+
 <header>
     <!-- Десктопная навигация -->
     <nav class="desktop-nav">
         <a href="/contracts.php">Договора</a>
         <a href="/planfact.php">Планфакт</a>
-        <a href="/sales_data.php">Отдел продаж</a>
+        <?php if ($userRole === 'admin'): ?>
+        <div class="nav-dropdown">
+            <span class="nav-dropdown-toggle">Отдел продаж</span>
+            <div class="nav-dropdown-menu">
+                <a href="/sales_report.php">Отчет по продажам</a>
+                <a href="/sales_data.php">Сырые данные</a>
+            </div>
+        </div>
+        <?php endif; ?>
         <?php if ($userRole === 'admin'): ?><a href="/settings.php">Настройки</a><?php endif; ?>
     </nav>
     
@@ -53,7 +177,15 @@ if (function_exists('getCurrentUserRole')) {
     <nav class="mobile-menu-nav">
         <a href="/contracts.php">Договора</a>
         <a href="/planfact.php">Планфакт</a>
-        <a href="/sales_data.php">Отдел продаж</a>
+        <?php if ($userRole === 'admin'): ?>
+        <div class="mobile-submenu-wrapper">
+            <span class="mobile-submenu-toggle">Отдел продаж</span>
+            <div class="mobile-submenu">
+                <a href="/sales_report.php">Отчет по продажам</a>
+                <a href="/sales_data.php">Сырые данные</a>
+            </div>
+        </div>
+        <?php endif; ?>
         <?php if ($userRole === 'admin'): ?><a href="/settings.php">Настройки</a><?php endif; ?>
     </nav>
     
@@ -92,5 +224,16 @@ if (function_exists('getCurrentUserRole')) {
             });
         });
     }
+    
+    /* Раскрывающийся список в мобильном меню */
+    document.querySelectorAll('.mobile-submenu-toggle').forEach(function(toggle) {
+        toggle.addEventListener('click', function() {
+            this.classList.toggle('open');
+            const submenu = this.nextElementSibling;
+            if (submenu) {
+                submenu.classList.toggle('open');
+            }
+        });
+    });
 })();
 </script>

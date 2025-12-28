@@ -9,6 +9,7 @@ const CONFIG = {
         PLANFACT: '/planfact_api.php',
         BITRIX: '/bitrix_api.php',
         USER_INFO: '/user_info.php',
-        SALES_DATA: '/sales_data_api.php'
+        SALES_DATA: '/sales_data_api.php',
+        SALES_REPORT: '/sales_report_api.php'
     }
 };
