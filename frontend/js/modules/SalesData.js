@@ -27,8 +27,9 @@ export class SalesDataTable extends BaseTable {
 
     getDefaultSort() {
         return [
-            { column: "year", dir: "desc" },
-            { column: "month", dir: "desc" }
+            { column: "month", dir: "desc" },
+            { column: "year", dir: "desc" }
+            
         ];
     }
 

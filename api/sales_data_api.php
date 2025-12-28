@@ -125,13 +125,72 @@ elseif ($method == 'POST') {
             $contractStmt->execute([$managerId, $startDate, $endDate]);
             $contractData = $contractStmt->fetch(PDO::FETCH_ASSOC);
             
-            /* 4. Заглушка для Битрикс24 (здесь будет твой вызов Bitrix API) */
-            /* На данный момент ставим 0 или случайные числа, пока не настроен crest.php */
+            /* 4. Получаем данные из Битрикс24 с фильтрацией по менеджеру */
+            require_once __DIR__ . '/../lib/crest.php';
+            
             $bitrixData = [
-                'target_leads' => rand(50, 100), /* Пример: новые лиды из Битрикс */
-                'qual_leads' => rand(20, 40),
-                'meetings' => rand(10, 20)
+                'target_leads' => 0,
+                'qual_leads' => 0,
+                'meetings' => 0
             ];
+            
+            /* Проверяем наличие bitrix_id у менеджера */
+            if (!empty($bitrixId)) {
+                $filterStart = $startDate . 'T00:00:00';
+                $filterEnd = $endDate . 'T23:59:59';
+                
+                /* 4.1 Целевые лиды - из crm.lead.list по дате взятия в работу */
+                $targetLeadsResult = CRest::call('crm.lead.list', [
+                    'filter' => [
+                        'ASSIGNED_BY_ID' => $bitrixId,
+                        '>=UF_CRM_1687959404' => $filterStart,
+                        '<=UF_CRM_1687959404' => $filterEnd,
+                        '!=ASSIGNED_BY_ID' => '2150' /* Исключаем колл-центр */
+                    ],
+                    'select' => ['ID']
+                ]);
+                
+                if (!isset($targetLeadsResult['error'])) {
+                    $bitrixData['target_leads'] = $targetLeadsResult['total'] ?? 0;
+                }
+                
+                /* 4.2 Квал. лиды - сделки из Основной воронки по дате создания */
+                $qualLeadsResult = CRest::call('crm.deal.list', [
+                    'filter' => [
+                        'ASSIGNED_BY_ID' => $bitrixId,
+                        'CATEGORY_ID' => 0,
+                        '>=DATE_CREATE' => $filterStart,
+                        '<=DATE_CREATE' => $filterEnd
+                    ],
+                    'select' => ['ID']
+                ]);
+                
+                if (!isset($qualLeadsResult['error'])) {
+                    $bitrixData['qual_leads'] = $qualLeadsResult['total'] ?? 0;
+                }
+                
+                /* 4.3 Встречи - сделки с датой встречи из двух воронок */
+                $categories = [0, 10]; /* Основная воронка и Перспектива */
+                $meetingsTotal = 0;
+                
+                foreach ($categories as $categoryId) {
+                    $meetingsResult = CRest::call('crm.deal.list', [
+                        'filter' => [
+                            'ASSIGNED_BY_ID' => $bitrixId,
+                            'CATEGORY_ID' => $categoryId,
+                            '>=UF_CRM_1669280228' => $startDate,
+                            '<=UF_CRM_1669280228' => $endDate
+                        ],
+                        'select' => ['ID']
+                    ]);
+                    
+                    if (!isset($meetingsResult['error'])) {
+                        $meetingsTotal += $meetingsResult['total'] ?? 0;
+                    }
+                }
+                
+                $bitrixData['meetings'] = $meetingsTotal;
+            }
             
             /* 5. Формируем итоговые результаты для обновления */
             $results = [
