@@ -48,6 +48,7 @@ export class SalesDataTable extends BaseTable {
     }
 
     getColumns() {
+        const self = this; /* Сохраняем ссылку на this */
         /* Хелпер для параметров редактора списков */
         const listEditorParams = (activeLookupData, allLookupData) => {
             const values = Object.entries(activeLookupData || {}).map(([id, name]) => ({
@@ -119,16 +120,32 @@ export class SalesDataTable extends BaseTable {
             {
                 title: "Месяц",
                 field: "month",
-                width: 110,
+                width: 130,
                 sorter: "number",
                 formatter: (cell) => {
                     const value = cell.getValue();
-                    return monthNames[value] || value;
+                    const rowData = cell.getRow().getData();
+                    const displayValue = monthNames[value] || value;
+                    
+                    return `<span class="cell-content">${displayValue}</span>
+                            <button class="refresh-cell-btn" data-id="${rowData.id}" title="Пересчитать данные из Битрикс">
+                                <img src="/assets/refresh.svg" alt="Обновить"/>
+                            </button>`;
                 },
                 editor: "list",
                 editorParams: {
                     values: monthOptions,
                     clearable: false
+                },
+                cssClass: "cell-with-action",
+                cellClick: (e, cell) => {
+                    if (e.target.closest('.refresh-cell-btn')) {
+                        e.stopPropagation();
+                        const id = cell.getRow().getData().id;
+                        const btn = e.target.closest('.refresh-cell-btn');
+                        self.recalculateRow(id, btn);
+                        return false;
+                    }
                 }
             },
 
@@ -302,6 +319,9 @@ export class SalesDataTable extends BaseTable {
     /* Переопределяем bindEvents для добавления кнопки */
     bindEvents() {
         super.bindEvents();
+
+        /* Инициализируем обработчики кликов по кнопкам в таблице */
+        this.bindTableEvents();
         
         const addBtn = document.getElementById('add-sales-data-btn');
         if (addBtn) {
@@ -364,6 +384,93 @@ export class SalesDataTable extends BaseTable {
             this.showNotification('Ошибка обновления данных', 'error');
         }
     }
+
+    /* Пересчёт всей строки: данные из Битрикс + contracts + вычисляемые поля */
+    async recalculateRow(id, buttonElement) {
+        try {
+            /* Показываем индикатор загрузки */
+            if (buttonElement) {
+                buttonElement.innerHTML = '⏳';
+                buttonElement.disabled = true;
+            }
+            
+            const url = `${CONFIG.API_BASE_URL}${this.getApiEndpoint()}?action=recalculate`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                /* Обновляем данные в строке */
+                const row = this.table.getRow(id);
+                if (row) {
+                    row.update(result.data);
+                }
+                
+                const bitrixInfo = result.bitrix_id ? ` (Битрикс ID: ${result.bitrix_id})` : ' (без Битрикс)';
+                this.showNotification(`Данные обновлены за ${result.period}${bitrixInfo}`, 'success');
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('Ошибка пересчёта:', error);
+            this.showNotification('Ошибка: ' + error.message, 'error');
+        } finally {
+            /* Восстанавливаем кнопку */
+            if (buttonElement) {
+                buttonElement.innerHTML = '<img src="/assets/refresh.svg" alt="Обновить"/>';
+                buttonElement.disabled = false;
+            }
+        }
+    }
+
+    /* Обработчики событий на элементах таблицы */
+    bindTableEvents() {
+        const tableElement = document.querySelector(this.getTableSelector());
+        if (!tableElement) return;
+
+        /* Остановка всплытия события mousedown, чтобы редактор (list editor) не открывался при клике на кнопку */
+        tableElement.addEventListener('mousedown', (e) => {
+            const refreshBtn = e.target.closest('.refresh-cell-btn');
+            if (refreshBtn) {
+                e.stopPropagation();
+                e.stopImmediatePropagation(); /* Добавлено для Tabulator 6.x */
+            }
+        }, true);
+
+        /* Обработчик для мобильных устройств */
+        tableElement.addEventListener('touchend', (e) => {
+            const refreshBtn = e.target.closest('.refresh-cell-btn');
+            if (refreshBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                const id = refreshBtn.getAttribute('data-id');
+                if (id) {
+                    this.recalculateRow(id, refreshBtn);
+                }
+            }
+        }, true);
+
+        tableElement.addEventListener('click', async (e) => {
+            /* Обработчик для кнопки пересчёта строки */
+            const refreshBtn = e.target.closest('.refresh-cell-btn');
+            if (refreshBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                const id = refreshBtn.getAttribute('data-id');
+                if (id) {
+                    await this.recalculateRow(id, refreshBtn);
+                }
+                return;
+            }
+        }, true);
+    }
+
 }
 
 /* Инициализация при загрузке страницы */
