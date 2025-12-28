@@ -257,62 +257,6 @@ export class SalesDataTable extends BaseTable {
                         headerTooltip: "Выручка / Кол-во договоров"
                     }
                 ]
-            },
-
-            {
-                title: "КОНВЕРСИИ",
-                columns: [
-                    {
-                        title: "Цел→Квал",
-                        field: "target_qual_cr",
-                        width: 85,
-                        sorter: "number",
-                        editable: false,
-                        formatter: percentFormatter,
-                        cssClass: "cell-calculated",
-                        headerTooltip: "Квал. лиды / Цел. лиды × 100"
-                    },
-                    {
-                        title: "Квал→Встр",
-                        field: "qual_meeting_cr",
-                        width: 85,
-                        sorter: "number",
-                        editable: false,
-                        formatter: percentFormatter,
-                        cssClass: "cell-calculated",
-                        headerTooltip: "Встречи / Квал. лиды × 100"
-                    },
-                    {
-                        title: "Встр→Дог",
-                        field: "meeting_contract_cr",
-                        width: 85,
-                        sorter: "number",
-                        editable: false,
-                        formatter: percentFormatter,
-                        cssClass: "cell-calculated",
-                        headerTooltip: "Договоры / Встречи × 100"
-                    },
-                    {
-                        title: "Цел→Дог",
-                        field: "target_contract_cr",
-                        width: 85,
-                        sorter: "number",
-                        editable: false,
-                        formatter: percentFormatter,
-                        cssClass: "cell-calculated",
-                        headerTooltip: "Договоры / Цел. лиды × 100"
-                    },
-                    {
-                        title: "Квал→Дог",
-                        field: "qual_contract_cr",
-                        width: 85,
-                        sorter: "number",
-                        editable: false,
-                        formatter: percentFormatter,
-                        cssClass: "cell-calculated",
-                        headerTooltip: "Договоры / Квал. лиды × 100"
-                    }
-                ]
             }
         ];
     }

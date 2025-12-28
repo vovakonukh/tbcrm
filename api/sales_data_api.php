@@ -206,28 +206,17 @@ elseif ($method == 'POST') {
             $results['margin'] = $results['revenue'] > 0 ? ($results['profit'] / $results['revenue']) * 100 : 0;
             $results['average_revenue'] = $results['contracts_new'] > 0 ? $results['revenue'] / $results['contracts_new'] : 0;
             
-            /* Расчет конверсий */
-            $results['target_qual_cr'] = $results['target_leads_new'] > 0 ? ($results['qual_leads_new'] / $results['target_leads_new']) * 100 : 0;
-            $results['qual_meeting_cr'] = $results['qual_leads_new'] > 0 ? ($results['meetings_new'] / $results['qual_leads_new']) * 100 : 0;
-            $results['meeting_contract_cr'] = $results['meetings_new'] > 0 ? ($results['contracts_new'] / $results['meetings_new']) * 100 : 0;
-            $results['target_contract_cr'] = $results['target_leads_new'] > 0 ? ($results['contracts_new'] / $results['target_leads_new']) * 100 : 0;
-            $results['qual_contract_cr'] = $results['qual_leads_new'] > 0 ? ($results['contracts_new'] / $results['qual_leads_new']) * 100 : 0;
-            
             /* 6. Обновляем запись в базе данных */
             $updateSql = "
                 UPDATE sales_report SET 
                     revenue = ?, profit = ?, margin = ?, average_revenue = ?,
-                    target_leads_new = ?, qual_leads_new = ?, meetings_new = ?, contracts_new = ?,
-                    target_qual_cr = ?, qual_meeting_cr = ?, meeting_contract_cr = ?, 
-                    target_contract_cr = ?, qual_contract_cr = ?
+                    target_leads_new = ?, qual_leads_new = ?, meetings_new = ?, contracts_new = ?
                 WHERE id = ?
             ";
             
             $pdo->prepare($updateSql)->execute([
                 $results['revenue'], $results['profit'], $results['margin'], $results['average_revenue'],
                 $results['target_leads_new'], $results['qual_leads_new'], $results['meetings_new'], $results['contracts_new'],
-                $results['target_qual_cr'], $results['qual_meeting_cr'], $results['meeting_contract_cr'],
-                $results['target_contract_cr'], $results['qual_contract_cr'],
                 $id
             ]);
             
