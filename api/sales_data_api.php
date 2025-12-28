@@ -116,12 +116,11 @@ elseif ($method == 'POST') {
             $contractStmt = $pdo->prepare("
                 SELECT 
                     COUNT(*) as count,
-                    SUM(final_amount) as revenue,
+                    SUM(contract_amount) as revenue,
                     SUM(profit) as profit
                 FROM contracts 
                 WHERE manager_id = ? 
                 AND contract_date BETWEEN ? AND ?
-                AND is_active = 1
             ");
             $contractStmt->execute([$managerId, $startDate, $endDate]);
             $contractData = $contractStmt->fetch(PDO::FETCH_ASSOC);
