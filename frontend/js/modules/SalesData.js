@@ -15,7 +15,12 @@ export class SalesDataTable extends BaseTable {
     }
 
     getNewRowData() {
+        /* Берём первого активного менеджера из справочника */
+        const managers = this.activeLookups.managers || this.lookups.managers || {};
+        const firstManagerId = Object.keys(managers)[0] || null;
+        
         return {
+            manager_id: firstManagerId ? Number(firstManagerId) : null,
             month: new Date().getMonth() + 1,
             year: new Date().getFullYear()
         };
