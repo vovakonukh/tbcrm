@@ -71,7 +71,9 @@ try {
             manager_id,
             SUM(COALESCE(target_leads_new, 0)) as target_leads_new,
             SUM(COALESCE(qual_leads_new, 0)) as qual_leads_new,
-            SUM(COALESCE(meetings_new, 0)) as meetings_new
+            SUM(COALESCE(meetings_new, 0)) as meetings_new,
+            SUM(COALESCE(leads_in_work, 0)) as leads_in_work,
+            SUM(COALESCE(qual_leads_in_work, 0)) as qual_leads_in_work
         FROM sales_report
         WHERE year = ? 
             AND month BETWEEN ? AND ?
@@ -135,11 +137,9 @@ try {
         $avgCheck = $contracts > 0 ? $revenue / $contracts : 0;
         $margin = $revenue > 0 ? ($profit / $revenue) * 100 : 0;
 
-        /* Лиды в работе - рандомные данные привязанные к manager_id */
-        srand($managerId * 1000 + date('Ymd'));
-        $leadsInWork = rand(15, 50);
-        $qualLeadsInWork = rand(5, min(25, $leadsInWork));
-        srand();
+        /* Лиды в работе - из sales_report (последняя синхронизация с Битрикс) */
+        $leadsInWork = (int)($sData['leads_in_work'] ?? 0);
+        $qualLeadsInWork = (int)($sData['qual_leads_in_work'] ?? 0);
 
         $managers[] = [
             'manager_id' => (int)$managerId,

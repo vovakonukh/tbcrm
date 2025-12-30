@@ -91,7 +91,9 @@ try {
             $bitrixData = [
                 'target_leads' => 0,
                 'qual_leads' => 0,
-                'meetings' => 0
+                'meetings' => 0,
+                'leads_in_work' => 0,        // Добавить
+                'qual_leads_in_work' => 0    // Добавить
             ];
 
             if (!empty($bitrixId)) {
@@ -144,6 +146,34 @@ try {
                     }
                 }
                 $bitrixData['meetings'] = $meetingsTotal;
+
+                /* Целевые лиды в работе - STATUS_SEMANTIC_ID = P, UF_CRM_1687959404 заполнено */
+                $leadsInWorkResult = CRest::call('crm.lead.list', [
+                    'filter' => [
+                        'ASSIGNED_BY_ID' => $bitrixId,
+                        'STATUS_SEMANTIC_ID' => 'P',
+                        '!UF_CRM_1687959404' => '',
+                        '!=ASSIGNED_BY_ID' => '2150'
+                    ],
+                    'select' => ['ID']
+                ]);
+                if (!isset($leadsInWorkResult['error'])) {
+                    $bitrixData['leads_in_work'] = $leadsInWorkResult['total'] ?? 0;
+                }
+
+                /* Квал. лиды в работе - сделки из Основной воронки в статусе "В работе" */
+                $qualLeadsInWorkResult = CRest::call('crm.deal.list', [
+                    'filter' => [
+                        'ASSIGNED_BY_ID' => $bitrixId,
+                        'CATEGORY_ID' => 0,
+                        'STAGE_SEMANTIC_ID' => 'P',
+                        '!=ASSIGNED_BY_ID' => '2150'
+                    ],
+                    'select' => ['ID']
+                ]);
+                if (!isset($qualLeadsInWorkResult['error'])) {
+                    $bitrixData['qual_leads_in_work'] = $qualLeadsInWorkResult['total'] ?? 0;
+                }
             }
 
             /* 2.2 Проверяем, есть ли данные для сохранения */
@@ -188,13 +218,17 @@ try {
                 UPDATE sales_report SET 
                     target_leads_new = ?,
                     qual_leads_new = ?,
-                    meetings_new = ?
+                    meetings_new = ?,
+                    leads_in_work = ?,
+                    qual_leads_in_work = ?
                 WHERE id = ?
             ");
             $updateStmt->execute([
                 $bitrixData['target_leads'],
                 $bitrixData['qual_leads'],
                 $bitrixData['meetings'],
+                $bitrixData['leads_in_work'],
+                $bitrixData['qual_leads_in_work'],
                 $rowId
             ]);
 
@@ -252,6 +286,8 @@ if ($isCli) {
             $data['target_leads'] ?? 0,
             $data['qual_leads'] ?? 0,
             $data['meetings'] ?? 0,
+            $data['leads_in_work'] ?? 0,
+            $data['qual_leads_in_work'] ?? 0,
             $status
         );
     }
