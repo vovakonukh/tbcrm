@@ -1,5 +1,7 @@
 <?php
-/* sales_report_api.php - API для дашборда отчёта по продажам */
+/* sales_report_api.php - API для дашборда отчёта по продажам
+   Пункт 2: Прибыль, выручка и кол-во договоров берутся напрямую из contracts
+   Лиды и встречи — из sales_report (данные Битрикс) */
 
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json; charset=UTF-8');
@@ -38,28 +40,69 @@ try {
         $monthEnd = $tmp;
     }
 
-    /* 1. Получаем агрегированные данные только по менеджерам с записями в sales_report */
-    $stmt = $pdo->prepare("
-        SELECT 
-            m.id as manager_id,
-            m.name as manager_name,
-            SUM(sr.revenue) as revenue,
-            SUM(sr.profit) as profit,
-            SUM(sr.contracts_new) as contracts_new,
-            SUM(sr.target_leads_new) as target_leads_new,
-            SUM(sr.qual_leads_new) as qual_leads_new,
-            SUM(sr.meetings_new) as meetings_new
-        FROM sales_report sr
-        INNER JOIN managers m ON m.id = sr.manager_id
-        WHERE sr.year = ? 
-            AND sr.month BETWEEN ? AND ?
-        GROUP BY m.id, m.name
-        ORDER BY contracts_new DESC
-    ");
-    $stmt->execute([$year, $monthStart, $monthEnd]);
-    $managersData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    /* Формируем даты для фильтрации contracts */
+    $startDate = sprintf('%04d-%02d-01', $year, $monthStart);
+    $endDate = date('Y-m-t', strtotime(sprintf('%04d-%02d-01', $year, $monthEnd)));
 
-    /* 2. Формируем данные по менеджерам с расчётом конверсий */
+    /* 1. Получаем данные из contracts (прибыль, выручка, кол-во договоров) напрямую */
+    $contractsStmt = $pdo->prepare("
+        SELECT 
+            manager_id,
+            SUM(COALESCE(final_amount, contract_amount, 0)) as revenue,
+            SUM(COALESCE(profit, 0)) as profit,
+            COUNT(*) as contracts_new
+        FROM contracts
+        WHERE contract_date BETWEEN ? AND ?
+            AND manager_id IS NOT NULL
+        GROUP BY manager_id
+    ");
+    $contractsStmt->execute([$startDate, $endDate]);
+    $contractsData = $contractsStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    /* Индексируем по manager_id для быстрого доступа */
+    $contractsByManager = [];
+    foreach ($contractsData as $row) {
+        $contractsByManager[$row['manager_id']] = $row;
+    }
+
+    /* 2. Получаем данные из sales_report (лиды, встречи из Битрикс) */
+    $salesStmt = $pdo->prepare("
+        SELECT 
+            manager_id,
+            SUM(COALESCE(target_leads_new, 0)) as target_leads_new,
+            SUM(COALESCE(qual_leads_new, 0)) as qual_leads_new,
+            SUM(COALESCE(meetings_new, 0)) as meetings_new
+        FROM sales_report
+        WHERE year = ? 
+            AND month BETWEEN ? AND ?
+        GROUP BY manager_id
+    ");
+    $salesStmt->execute([$year, $monthStart, $monthEnd]);
+    $salesData = $salesStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    /* Индексируем по manager_id */
+    $salesByManager = [];
+    foreach ($salesData as $row) {
+        $salesByManager[$row['manager_id']] = $row;
+    }
+
+    /* 3. Собираем уникальных менеджеров из обоих источников */
+    $allManagerIds = array_unique(array_merge(
+        array_keys($contractsByManager),
+        array_keys($salesByManager)
+    ));
+
+    /* 4. Получаем имена менеджеров */
+    if (!empty($allManagerIds)) {
+        $placeholders = implode(',', array_fill(0, count($allManagerIds), '?'));
+        $managersStmt = $pdo->prepare("SELECT id, name FROM managers WHERE id IN ($placeholders)");
+        $managersStmt->execute(array_values($allManagerIds));
+        $managersNames = $managersStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    } else {
+        $managersNames = [];
+    }
+
+    /* 5. Формируем итоговые данные по менеджерам */
     $managers = [];
     $totals = [
         'revenue' => 0,
@@ -70,13 +113,18 @@ try {
         'meetings_new' => 0
     ];
 
-    foreach ($managersData as $row) {
-        $revenue = (float)($row['revenue'] ?? 0);
-        $profit = (float)($row['profit'] ?? 0);
-        $contracts = (int)($row['contracts_new'] ?? 0);
-        $targetLeads = (int)($row['target_leads_new'] ?? 0);
-        $qualLeads = (int)($row['qual_leads_new'] ?? 0);
-        $meetings = (int)($row['meetings_new'] ?? 0);
+    foreach ($allManagerIds as $managerId) {
+        /* Данные из contracts */
+        $cData = $contractsByManager[$managerId] ?? ['revenue' => 0, 'profit' => 0, 'contracts_new' => 0];
+        /* Данные из sales_report (Битрикс) */
+        $sData = $salesByManager[$managerId] ?? ['target_leads_new' => 0, 'qual_leads_new' => 0, 'meetings_new' => 0];
+
+        $revenue = (float)$cData['revenue'];
+        $profit = (float)$cData['profit'];
+        $contracts = (int)$cData['contracts_new'];
+        $targetLeads = (int)$sData['target_leads_new'];
+        $qualLeads = (int)$sData['qual_leads_new'];
+        $meetings = (int)$sData['meetings_new'];
 
         /* Расчёт конверсий */
         $convTargetToQual = $targetLeads > 0 ? ($qualLeads / $targetLeads) * 100 : 0;
@@ -88,15 +136,14 @@ try {
         $margin = $revenue > 0 ? ($profit / $revenue) * 100 : 0;
 
         /* Лиды в работе - рандомные данные привязанные к manager_id */
-        /* Используем manager_id как seed для стабильности в рамках сессии */
-        srand($row['manager_id'] * 1000 + date('Ymd'));
+        srand($managerId * 1000 + date('Ymd'));
         $leadsInWork = rand(15, 50);
         $qualLeadsInWork = rand(5, min(25, $leadsInWork));
-        srand(); /* Сбрасываем seed */
+        srand();
 
         $managers[] = [
-            'manager_id' => (int)$row['manager_id'],
-            'name' => $row['manager_name'],
+            'manager_id' => (int)$managerId,
+            'name' => $managersNames[$managerId] ?? 'Неизвестный',
             'revenue' => $revenue,
             'profit' => $profit,
             'contracts_new' => $contracts,
@@ -121,7 +168,12 @@ try {
         $totals['meetings_new'] += $meetings;
     }
 
-    /* 3. Расчёт итоговых показателей */
+    /* Сортируем по кол-ву договоров (убывание) */
+    usort($managers, function($a, $b) {
+        return $b['contracts_new'] - $a['contracts_new'];
+    });
+
+    /* 6. Расчёт итоговых показателей */
     $totalLeadsInWork = 0;
     $totalQualLeadsInWork = 0;
     foreach ($managers as $m) {
@@ -150,17 +202,19 @@ try {
         'qual_leads_in_work' => $totalQualLeadsInWork
     ];
 
-    /* 4. Получаем данные для графика (все месяцы выбранного года) */
+    /* 7. Получаем данные для графика (выручка по месяцам из contracts) */
     $chartStmt = $pdo->prepare("
         SELECT 
-            m.id as manager_id,
+            c.manager_id,
             m.name as manager_name,
-            sr.month,
-            sr.revenue
-        FROM sales_report sr
-        INNER JOIN managers m ON m.id = sr.manager_id
-        WHERE sr.year = ?
-        ORDER BY m.name, sr.month
+            MONTH(c.contract_date) as month,
+            SUM(COALESCE(c.final_amount, c.contract_amount, 0)) as revenue
+        FROM contracts c
+        INNER JOIN managers m ON m.id = c.manager_id
+        WHERE YEAR(c.contract_date) = ?
+            AND c.manager_id IS NOT NULL
+        GROUP BY c.manager_id, m.name, MONTH(c.contract_date)
+        ORDER BY m.name, month
     ");
     $chartStmt->execute([$year]);
     $chartRows = $chartStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -172,7 +226,7 @@ try {
         if (!isset($chartData[$managerId])) {
             $chartData[$managerId] = [
                 'name' => $row['manager_name'],
-                'data' => array_fill(0, 12, null) /* 12 месяцев, null по умолчанию */
+                'data' => array_fill(0, 12, null)
             ];
         }
         if ($row['month'] !== null) {
@@ -180,8 +234,13 @@ try {
         }
     }
 
-    /* 5. Получаем доступные годы для фильтра */
-    $yearsStmt = $pdo->query("SELECT DISTINCT year FROM sales_report ORDER BY year DESC");
+    /* 8. Получаем доступные годы для фильтра (из contracts, не из sales_report) */
+    $yearsStmt = $pdo->query("
+        SELECT DISTINCT YEAR(contract_date) as year 
+        FROM contracts 
+        WHERE contract_date IS NOT NULL 
+        ORDER BY year DESC
+    ");
     $years = $yearsStmt->fetchAll(PDO::FETCH_COLUMN);
     
     /* Если нет данных, добавляем текущий год */
