@@ -1,7 +1,6 @@
 <?php 
 require_once __DIR__ . '/../api/check_auth.php'; 
-// Только админы могут заходить в настройки
-requireRole('admin');
+requirePermission('settings');
 ?>
 
 <!DOCTYPE html>

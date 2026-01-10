@@ -1,4 +1,7 @@
-<?php require_once __DIR__ . '/../api/check_auth.php'; ?>
+<?php 
+require_once __DIR__ . '/../api/check_auth.php'; 
+requirePermission('contracts');
+?>
 
 <!DOCTYPE html>
 <html lang="ru">

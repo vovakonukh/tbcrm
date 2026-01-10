@@ -37,6 +37,10 @@ export class SalesDataTable extends BaseTable {
         ];
     }
 
+    getResourceName() {
+        return 'sales_data';
+    }
+
     getSelectFilters() {
         /* Формируем опции для фильтра по году */
         const yearOptions = {};

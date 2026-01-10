@@ -40,6 +40,15 @@ function getCurrentUserRole() {
 }
 
 /**
+ * Получает ID роли текущего пользователя
+ * @return int|null
+ */
+function getCurrentUserRoleId() {
+    startSession();
+    return $_SESSION['user_role_id'] ?? null;
+}
+
+/**
  * Получает имя текущего пользователя
  * @return string|null
  */
@@ -56,7 +65,6 @@ function getCurrentUserName() {
  * @return array ['success' => bool, 'error' => string, 'user' => array]
  */
 function loginUser($username, $password, $conn) {
-    // Очистка входных данных
     $username = trim($username);
     
     if (empty($username) || empty($password)) {
@@ -66,11 +74,13 @@ function loginUser($username, $password, $conn) {
         ];
     }
     
-    // Подготовленный запрос для защиты от SQL инъекций
+    /* Запрос с JOIN на таблицу roles */
     $stmt = $conn->prepare("
-        SELECT id, username, password, full_name, email, role, is_active 
-        FROM users 
-        WHERE username = ? 
+        SELECT u.id, u.username, u.password, u.full_name, u.email, u.role_id, u.is_active,
+               r.code as role_code, r.name as role_name
+        FROM users u
+        JOIN roles r ON u.role_id = r.id
+        WHERE u.username = ?
         LIMIT 1
     ");
     
@@ -86,7 +96,6 @@ function loginUser($username, $password, $conn) {
     $result = $stmt->get_result();
     
     if ($result->num_rows === 0) {
-        // Пользователь не найден
         logLoginAttempt($conn, null, $username, false);
         return [
             'success' => false,
@@ -97,7 +106,6 @@ function loginUser($username, $password, $conn) {
     $user = $result->fetch_assoc();
     $stmt->close();
     
-    // Проверка активности пользователя
     if ($user['is_active'] != 1) {
         logLoginAttempt($conn, $user['id'], $username, false);
         return [
@@ -106,7 +114,6 @@ function loginUser($username, $password, $conn) {
         ];
     }
     
-    // Проверка пароля
     if (!password_verify($password, $user['password'])) {
         logLoginAttempt($conn, $user['id'], $username, false);
         return [
@@ -115,26 +122,22 @@ function loginUser($username, $password, $conn) {
         ];
     }
     
-    // Успешная авторизация - создаём сессию
     startSession();
-    
-    // Регенерируем ID сессии для безопасности
     session_regenerate_id(true);
     
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['user_name'] = $user['full_name'];
-    $_SESSION['user_role'] = $user['role'];
+    $_SESSION['user_role'] = $user['role_code'];
+    $_SESSION['user_role_id'] = $user['role_id'];
     $_SESSION['user_logged_in'] = true;
     $_SESSION['login_time'] = time();
     
-    // Обновляем last_login в БД
     $stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
     $stmt->bind_param("i", $user['id']);
     $stmt->execute();
     $stmt->close();
     
-    // Логируем успешный вход
     logLoginAttempt($conn, $user['id'], $username, true);
     
     return [
@@ -143,7 +146,8 @@ function loginUser($username, $password, $conn) {
             'id' => $user['id'],
             'username' => $user['username'],
             'full_name' => $user['full_name'],
-            'role' => $user['role']
+            'role' => $user['role_code'],
+            'role_name' => $user['role_name']
         ]
     ];
 }
@@ -227,6 +231,41 @@ function requireRole($allowedRoles) {
 }
 
 /**
+ * Проверяет право доступа к ресурсу через таблицу permissions
+ * @param string $resource Имя ресурса (contracts, stages, settings и т.д.)
+ * @param string $permission Тип права (can_view, can_create, can_edit, can_delete)
+ */
+function requirePermission($resource, $permission = 'can_view') {
+    global $pdo;
+    
+    requireAuth();
+    
+    $roleId = getCurrentUserRoleId();
+    if (!$roleId) {
+        header('Location: /login.php');
+        exit;
+    }
+    
+    try {
+        $stmt = $pdo->prepare("
+            SELECT $permission 
+            FROM permissions 
+            WHERE role_id = ? AND resource = ?
+        ");
+        $stmt->execute([$roleId, $resource]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$result || !$result[$permission]) {
+            header('Location: /contracts.php?error=access_denied');
+            exit;
+        }
+    } catch (PDOException $e) {
+        header('Location: /contracts.php?error=db_error');
+        exit;
+    }
+}
+
+/**
  * Генерирует безопасный токен для "Запомнить меня"
  * @return string
  */
@@ -299,11 +338,14 @@ function loginFromRememberToken($conn) {
     
     $token = $_COOKIE['remember_token'];
     
-    /* Ищем валидный токен */
+    /* Запрос с JOIN на таблицу roles */
     $stmt = $conn->prepare("
-        SELECT ut.user_id, ut.expires_at, u.id, u.username, u.full_name, u.role, u.is_active
+        SELECT ut.user_id, ut.expires_at, 
+               u.id, u.username, u.full_name, u.role_id, u.is_active,
+               r.code as role_code
         FROM user_tokens ut
         JOIN users u ON ut.user_id = u.id
+        JOIN roles r ON u.role_id = r.id
         WHERE ut.token = ? AND ut.expires_at > NOW()
         LIMIT 1
     ");
@@ -320,24 +362,22 @@ function loginFromRememberToken($conn) {
     $data = $result->fetch_assoc();
     $stmt->close();
     
-    /* Проверяем активность пользователя */
     if ($data['is_active'] != 1) {
         clearRememberCookie();
         return false;
     }
     
-    /* Авторизуем пользователя через сессию */
     startSession();
     session_regenerate_id(true);
     
     $_SESSION['user_id'] = $data['id'];
     $_SESSION['username'] = $data['username'];
     $_SESSION['user_name'] = $data['full_name'];
-    $_SESSION['user_role'] = $data['role'];
+    $_SESSION['user_role'] = $data['role_code'];
+    $_SESSION['user_role_id'] = $data['role_id'];
     $_SESSION['user_logged_in'] = true;
     $_SESSION['login_time'] = time();
     
-    /* Обновляем last_login */
     $stmtUpdate = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
     $stmtUpdate->bind_param("i", $data['id']);
     $stmtUpdate->execute();

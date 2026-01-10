@@ -17,6 +17,9 @@ const chartColors = [
 let reportData = null;
 let barChart = null;
 let availableYears = [];
+let hiddenFields = []; /* Скрытые поля из прав доступа */
+
+
 
 /* Текущие значения фильтров */
 const filters = {
@@ -414,6 +417,43 @@ function renderBarChart(chartData, year) {
 
 /* Генерация HTML карточки менеджера */
 function createCard(data) {
+    /* Секция "Финансы" — скрываем поля по правам */
+    let financeSection = '';
+    
+    const profitRow = isFieldHidden('profit') ? '' : `
+        <div class="metric-row">
+            <span class="metric-label">Прибыль</span>
+            <span class="metric-value">${formatMoney(data.profit)}</span>
+        </div>
+    `;
+    
+    const avgCheckRow = `
+        <div class="metric-row">
+            <span class="metric-label">Средний чек</span>
+            <span class="metric-value">${formatMoney(data.avg_check)}</span>
+        </div>
+    `;
+    
+    const marginRow = isFieldHidden('margin') ? '' : `
+        <div class="metric-row">
+            <span class="metric-label">Маржинальность</span>
+            <span class="metric-value positive">${formatPercent(data.margin)}</span>
+        </div>
+    `;
+    
+    /* Показываем секцию "Финансы" только если есть хоть одно видимое поле */
+    const hasVisibleFinanceFields = !isFieldHidden('profit') || !isFieldHidden('margin');
+    if (hasVisibleFinanceFields) {
+        financeSection = `
+            <div class="metrics-section">
+                <div class="section-title">Финансы</div>
+                ${profitRow}
+                ${avgCheckRow}
+                ${marginRow}
+            </div>
+        `;
+    }
+
     return `
         <div class="manager-card">
             <div class="card-header">
@@ -475,21 +515,7 @@ function createCard(data) {
                     </div>
                 </div>
 
-                <div class="metrics-section">
-                    <div class="section-title">Финансы</div>
-                    <div class="metric-row">
-                        <span class="metric-label">Прибыль</span>
-                        <span class="metric-value">${formatMoney(data.profit)}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Средний чек</span>
-                        <span class="metric-value">${formatMoney(data.avg_check)}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Маржинальность</span>
-                        <span class="metric-value positive">${formatPercent(data.margin)}</span>
-                    </div>
-                </div>
+                ${financeSection}
             </div>
         </div>
     `;
@@ -506,6 +532,9 @@ async function init() {
     showLoading(true);
     
     try {
+        /* Загружаем права пользователя */
+        await loadUserPermissions();
+        
         /* Первый запрос для получения списка годов */
         const response = await fetch(`${CONFIG.API_BASE_URL}/sales_report_api.php`);
         const result = await response.json();
@@ -524,6 +553,25 @@ async function init() {
     } finally {
         showLoading(false);
     }
+}
+
+/* Загрузка прав пользователя */
+async function loadUserPermissions() {
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/user_info.php`);
+        const result = await response.json();
+        
+        if (result.success && result.permissions && result.permissions.sales_report) {
+            hiddenFields = result.permissions.sales_report.hidden_fields || [];
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки прав:', error);
+    }
+}
+
+/* Проверка, скрыто ли поле */
+function isFieldHidden(field) {
+    return hiddenFields.includes(field);
 }
 
 /* Запуск */

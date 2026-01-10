@@ -69,6 +69,14 @@ export default class BaseTable {
         return [{column: "id", dir: "desc"}];
     }
 
+    /**
+     * Возвращает имя ресурса для проверки прав доступа
+     * Например: 'contracts', 'stages', 'brigades'
+     */
+    getResourceName() {
+        throw new Error("Метод getResourceName() должен быть реализован в дочернем классе");
+    }
+
     /*
          * Возвращает конфигурацию группировки для Tabulator.
          * По умолчанию возвращает null (без группировки).
@@ -215,9 +223,30 @@ export default class BaseTable {
         });
     }
 
+    /* Скрывает колонки на основе прав доступа из БД */
+    applyHiddenFields(columns) {
+        const hiddenFields = userService.getHiddenFields(this.getResourceName());
+        if (!hiddenFields || hiddenFields.length === 0) return columns;
+
+        return columns.filter(column => {
+            /* Если это группа колонок — фильтруем вложенные */
+            if (column.columns) {
+                column.columns = this.applyHiddenFields(column.columns);
+                /* Убираем группу если все колонки скрыты */
+                return column.columns.length > 0;
+            }
+            
+            /* Проверяем, не скрыто ли поле */
+            return !hiddenFields.includes(column.field);
+        });
+    }
+
     /* Отключает редактирование колонок для пользователей без прав */
     applyEditPermissions(columns) {
-        if (userService.canEdit()) return columns;
+        const resource = this.getResourceName();
+        const canEdit = userService.canEdit(resource);
+        
+        if (canEdit) return columns;
         
         return columns.map(column => {
             /* Если это группа колонок */
@@ -290,7 +319,9 @@ export default class BaseTable {
      * Создаёт таблицу без persistence (для сброса к дефолтным настройкам)
      */
     createTableWithoutPersistence(tableData) {
+        /* Получаем колонки и применяем фильтры */
         let tableColumns = this.getColumns();
+        tableColumns = this.applyHiddenFields(tableColumns);
         tableColumns = this.applyResponsiveFrozen(tableColumns);
         tableColumns = this.applyEditPermissions(tableColumns);
 
@@ -341,8 +372,9 @@ export default class BaseTable {
     }
 
     createTable(tableData) {
-        // Получаем колонки и применяем responsive frozen
+        /* Получаем колонки и применяем фильтры */
         let tableColumns = this.getColumns();
+        tableColumns = this.applyHiddenFields(tableColumns);
         tableColumns = this.applyResponsiveFrozen(tableColumns);
         tableColumns = this.applyEditPermissions(tableColumns);
 
@@ -496,6 +528,12 @@ export default class BaseTable {
     }
 
     async addNewRow() {
+        /* Проверяем права на создание */
+        if (!userService.canCreate(this.getResourceName())) {
+            this.showNotification('Нет прав на создание записей', 'error');
+            return;
+        }
+
         try {
             const url = `${CONFIG.API_BASE_URL}${this.getApiEndpoint()}`;
 
@@ -529,6 +567,13 @@ export default class BaseTable {
     }
 
     async deleteRow(id) {
+
+        /* Проверяем права на удаление */
+        if (!userService.canDelete(this.getResourceName())) {
+            this.showNotification('Нет прав на удаление записей', 'error');
+            return;
+        }
+
         try {
             const url = `${CONFIG.API_BASE_URL}${this.getApiEndpoint()}`;
 
@@ -580,32 +625,26 @@ export default class BaseTable {
         const debugBtn = document.getElementById('debug-btn');
         if (debugBtn) debugBtn.addEventListener('click', () => this.debugTable());
 
-        const addContractBtn = document.getElementById('add-contract-btn');
-        if (addContractBtn) {
-            if (userService.canEdit()) {
-                addContractBtn.addEventListener('click', () => this.addNewRow());
-            } else {
-                addContractBtn.style.display = 'none';
+        /* Универсальная обработка кнопок добавления */
+        const resource = this.getResourceName();
+        const canCreate = userService.canCreate(resource);
+        
+        const addButtons = [
+            'add-contract-btn',
+            'add-stage-btn', 
+            'add-brigade-btn'
+        ];
+        
+        addButtons.forEach(btnId => {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                if (canCreate) {
+                    btn.addEventListener('click', () => this.addNewRow());
+                } else {
+                    btn.style.display = 'none';
+                }
             }
-        }
-
-        const addStageBtn = document.getElementById('add-stage-btn');
-        if (addStageBtn) {
-            if (userService.canEdit()) {
-                addStageBtn.addEventListener('click', () => this.addNewRow());
-            } else {
-                addStageBtn.style.display = 'none';
-            }
-        }
-
-        const addBrigadeBtn = document.getElementById('add-brigade-btn');
-        if (addBrigadeBtn) {
-            if (userService.canEdit()) {
-                addBrigadeBtn.addEventListener('click', () => this.addNewRow());
-            } else {
-                addBrigadeBtn.style.display = 'none';
-            }
-        }
+        });
 
         // Обработка кнопок фильтров по датам
         document.querySelectorAll('.filter-btn:not(.filter-btn-select)').forEach(btn => {

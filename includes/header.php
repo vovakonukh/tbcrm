@@ -1,15 +1,39 @@
 <?php
-// header.php - Общий компонент шапки с мобильным меню
+/* header.php - Общий компонент шапки с мобильным меню */
 
-// Получаем имя и роль текущего пользователя (если функции доступны)
+/* Получаем имя и роль текущего пользователя */
 $userName = '';
-$userRole = 'viewer';
+$userRoleId = null;
 if (function_exists('getCurrentUserName')) {
     $userName = getCurrentUserName() ?: getCurrentUserId();
 }
-if (function_exists('getCurrentUserRole')) {
-    $userRole = getCurrentUserRole();
+if (function_exists('getCurrentUserRoleId')) {
+    $userRoleId = getCurrentUserRoleId();
 }
+
+/* Загружаем права доступа для текущей роли */
+$menuPermissions = [];
+if ($userRoleId && isset($pdo)) {
+    try {
+        $stmt = $pdo->prepare("SELECT resource, can_view FROM permissions WHERE role_id = ?");
+        $stmt->execute([$userRoleId]);
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $menuPermissions[$row['resource']] = (bool) $row['can_view'];
+        }
+    } catch (PDOException $e) {
+        /* В случае ошибки — показываем минимальное меню */
+        $menuPermissions = ['contracts' => true];
+    }
+}
+
+/* Хелпер для проверки доступа к пункту меню */
+function canViewMenu($resource) {
+    global $menuPermissions;
+    return !empty($menuPermissions[$resource]);
+}
+
+/* Проверяем доступ к разделу "Отдел продаж" (любой из подпунктов) */
+$canViewSales = canViewMenu('sales_data') || canViewMenu('sales_report');
 ?>
 
 <style>
@@ -131,18 +155,21 @@ if (function_exists('getCurrentUserRole')) {
 <header>
     <!-- Десктопная навигация -->
     <nav class="desktop-nav">
-        <a href="/contracts.php">Договора</a>
-        <a href="/planfact.php">Планфакт</a>
-        <?php if ($userRole === 'admin'): ?>
+        <?php if (canViewMenu('contracts')): ?><a href="/contracts.php">Договора</a><?php endif; ?>
+        <?php if (canViewMenu('stages')): ?><a href="/stages.php">Этапы</a><?php endif; ?>
+        <?php if (canViewMenu('brigades')): ?><a href="/brigades.php">Бригады</a><?php endif; ?>
+        <?php if (canViewMenu('planfact')): ?><a href="/planfact.php">Планфакт</a><?php endif; ?>
+        <?php if (canViewMenu('dashboard')): ?><a href="/dashboard.php">Дашборд</a><?php endif; ?>
+        <?php if ($canViewSales): ?>
         <div class="nav-dropdown">
             <span class="nav-dropdown-toggle">Отдел продаж</span>
             <div class="nav-dropdown-menu">
-                <a href="/sales_report.php">Отчет по продажам</a>
-                <a href="/sales_data.php">Сырые данные</a>
+                <?php if (canViewMenu('sales_report')): ?><a href="/sales_report.php">Отчет по продажам</a><?php endif; ?>
+                <?php if (canViewMenu('sales_data')): ?><a href="/sales_data.php">Сырые данные</a><?php endif; ?>
             </div>
         </div>
         <?php endif; ?>
-        <?php if ($userRole === 'admin'): ?><a href="/settings.php">Настройки</a><?php endif; ?>
+        <?php if (canViewMenu('settings')): ?><a href="/settings.php">Настройки</a><?php endif; ?>
     </nav>
     
     <!-- Десктопный блок пользователя -->
@@ -175,18 +202,21 @@ if (function_exists('getCurrentUserRole')) {
     </div>
     
     <nav class="mobile-menu-nav">
-        <a href="/contracts.php">Договора</a>
-        <a href="/planfact.php">Планфакт</a>
-        <?php if ($userRole === 'admin'): ?>
+        <?php if (canViewMenu('contracts')): ?><a href="/contracts.php">Договора</a><?php endif; ?>
+        <?php if (canViewMenu('stages')): ?><a href="/stages.php">Этапы</a><?php endif; ?>
+        <?php if (canViewMenu('brigades')): ?><a href="/brigades.php">Бригады</a><?php endif; ?>
+        <?php if (canViewMenu('planfact')): ?><a href="/planfact.php">Планфакт</a><?php endif; ?>
+        <?php if (canViewMenu('dashboard')): ?><a href="/dashboard.php">Дашборд</a><?php endif; ?>
+        <?php if ($canViewSales): ?>
         <div class="mobile-submenu-wrapper">
             <span class="mobile-submenu-toggle">Отдел продаж</span>
             <div class="mobile-submenu">
-                <a href="/sales_report.php">Отчет по продажам</a>
-                <a href="/sales_data.php">Сырые данные</a>
+                <?php if (canViewMenu('sales_report')): ?><a href="/sales_report.php">Отчет по продажам</a><?php endif; ?>
+                <?php if (canViewMenu('sales_data')): ?><a href="/sales_data.php">Сырые данные</a><?php endif; ?>
             </div>
         </div>
         <?php endif; ?>
-        <?php if ($userRole === 'admin'): ?><a href="/settings.php">Настройки</a><?php endif; ?>
+        <?php if (canViewMenu('settings')): ?><a href="/settings.php">Настройки</a><?php endif; ?>
     </nav>
     
     <div class="mobile-menu-footer">

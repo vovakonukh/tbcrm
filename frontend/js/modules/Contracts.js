@@ -31,6 +31,10 @@ export class ContractsTable extends BaseTable {
         return [{column: "contract_date", dir: "desc"}];
     }
 
+    getResourceName() {
+        return 'contracts';
+    }
+
     getCalculatedFieldsDependencies() {
         return {
             'profit': true,
@@ -117,10 +121,6 @@ export class ContractsTable extends BaseTable {
     }
 
     getColumns() {
-
-        /* Определяем, нужно ли скрывать поля зарплаты */
-        const userRole = userService.getRole();
-        const hideFinancialFields = (userRole === 'manager');
         
         /* 
             Хелпер для параметров редактора списков
@@ -424,8 +424,7 @@ export class ContractsTable extends BaseTable {
             },
 
             
-            /* Финансовые поля - скрыты для менеджеров */
-            ...(hideFinancialFields ? [] : [
+            
             {
                 title: "Сумма с допками",
                 field: "final_amount",
@@ -513,7 +512,7 @@ export class ContractsTable extends BaseTable {
                     return value + '%';
                 }
             },
-        ]),
+        
 
             {
                 title: "Заказчик",
@@ -765,8 +764,7 @@ export class ContractsTable extends BaseTable {
                 editorParams: listEditorParams(this.lookups.managers),
                 visible: false
             },
-            // Поля зарплат - показываем только админам и конструкторам
-            ...(hideFinancialFields ? [] : [
+            
             {
                 title: "% менеджера",
                 field: "manager_percent",
@@ -890,8 +888,8 @@ export class ContractsTable extends BaseTable {
                 formatter: "money",
                 formatterParams: { thousand: " ", precision: 0, decimal: "," },
                 cssClass: "cell-calculated"
-            },
-            ])
+            }
+            
         ];
         
     }
@@ -986,8 +984,6 @@ export class ContractsTable extends BaseTable {
      * Возвращает конфигурацию групп колонок для селектора
      */
     getColumnGroups() {
-            const userRole = userService.getRole();
-            const hideFinancialFields = (userRole === 'manager');
     
     const groups = [
         // return [
@@ -998,9 +994,7 @@ export class ContractsTable extends BaseTable {
             },
             {
                 title: 'Финансы',
-                fields: hideFinancialFields 
-                    ? ['contract_amount'] 
-                    : ['contract_amount', 'final_amount', 'profit', 'margin_percent']
+                fields: ['contract_amount', 'final_amount', 'profit', 'margin_percent']
             },
             {
                 title: 'Ипотека',
@@ -1022,8 +1016,7 @@ export class ContractsTable extends BaseTable {
                 title: 'Строительство',
                 fields: ['ar_ready', 'kr_ready', 'estimate_ready', 'foundation', 'project_id']
             },
-            // Группы с зарплатами показываем только если не менеджер
-            ...(hideFinancialFields ? [] : [
+            
             {
                 title: 'ЗП менеджер',
                 fields: ['manager_percent', 'manager_zp', 'manager_paid', 'manager_balance']
@@ -1032,7 +1025,7 @@ export class ContractsTable extends BaseTable {
                 title: 'ЗП СОП',
                 fields: ['sop_percent', 'sop_zp', 'sop_paid', 'sop_balance']
             },
-            ]),
+            
             {
                 title: 'Разное',
                 fields: ['custom_field_1', 'custom_field_2', 'custom_field_3', 'created_by', 'updated_by', 'created_at', 'updated_at']

@@ -28,6 +28,10 @@ export class BrigadesTable extends BaseTable {
         return [{column: "name", dir: "asc"}];
     }
 
+    getResourceName() {
+        return 'brigades';
+    }
+
     getSelectFilters() {
         return {
             brigade_type_id: {

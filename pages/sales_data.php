@@ -1,6 +1,6 @@
 <?php 
 require_once __DIR__ . '/../api/check_auth.php'; 
-requireRole('admin');
+requirePermission('sales_data');
 ?>
 <!DOCTYPE html>
 <html lang="ru">

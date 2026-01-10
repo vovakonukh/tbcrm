@@ -21,6 +21,10 @@ export class StagesTable extends BaseTable {
         };
     }
 
+    getResourceName() {
+        return 'stages';
+    }
+
     getNameField() {
         return "comment";
     }

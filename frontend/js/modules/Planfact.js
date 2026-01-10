@@ -29,6 +29,10 @@ export class PlanfactTable extends BaseTable {
         return [{column: "date", dir: "asc"}];
     }
 
+    getResourceName() {
+        return 'planfact';
+    }
+
     getGroupConfig() {
         return {
             groupBy: (data) => {
