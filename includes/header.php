@@ -156,10 +156,10 @@ $canViewSales = canViewMenu('sales_data') || canViewMenu('sales_report');
     <!-- Десктопная навигация -->
     <nav class="desktop-nav">
         <?php if (canViewMenu('contracts')): ?><a href="/contracts.php">Договора</a><?php endif; ?>
-        <?php if (canViewMenu('stages')): ?><a href="/stages.php">Этапы</a><?php endif; ?>
-        <?php if (canViewMenu('brigades')): ?><a href="/brigades.php">Бригады</a><?php endif; ?>
+        <!-- <?php if (canViewMenu('stages')): ?><a href="/stages.php">Этапы</a><?php endif; ?>
+        <?php if (canViewMenu('brigades')): ?><a href="/brigades.php">Бригады</a><?php endif; ?> -->
         <?php if (canViewMenu('planfact')): ?><a href="/planfact.php">Планфакт</a><?php endif; ?>
-        <?php if (canViewMenu('dashboard')): ?><a href="/dashboard.php">Дашборд</a><?php endif; ?>
+        <!-- <?php if (canViewMenu('dashboard')): ?><a href="/dashboard.php">Дашборд</a><?php endif; ?> -->
         <?php if ($canViewSales): ?>
         <div class="nav-dropdown">
             <span class="nav-dropdown-toggle">Отдел продаж</span>
