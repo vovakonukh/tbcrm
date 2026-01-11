@@ -263,18 +263,22 @@ function renderSummarySection(data) {
                 <div class="summary-kpi-value">${formatMoney(data.revenue)}</div>
                 <div class="summary-kpi-label">Сумма продаж</div>
             </div>
+            ${isFieldHidden('profit') ? '' : `
             <div class="summary-kpi-item">
                 <div class="summary-kpi-value">${formatMoney(data.profit)}</div>
                 <div class="summary-kpi-label">Прибыль</div>
             </div>
+            `}
             <div class="summary-kpi-item">
                 <div class="summary-kpi-value">${formatMoney(data.avg_check)}</div>
                 <div class="summary-kpi-label">Средний чек</div>
             </div>
+            ${isFieldHidden('margin') ? '' : `
             <div class="summary-kpi-item">
                 <div class="summary-kpi-value">${formatPercent(data.margin)}</div>
                 <div class="summary-kpi-label">Маржинальность</div>
             </div>
+            `}
         </div>
         
         <div class="summary-metrics">
