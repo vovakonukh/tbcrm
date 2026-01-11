@@ -14,6 +14,96 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 require_once __DIR__ . '/config.php';
 
+/* Функция получения данных "В работе" из кэша или Битрикс */
+function getLeadsInWorkData($pdo) {
+    $cacheKey = 'leads_in_work';
+    $cacheTtlMinutes = 10;
+    $debug = ['source' => null, 'cache_expires' => null];
+    
+    /* Пробуем получить из кэша */
+    $stmt = $pdo->prepare("
+        SELECT cache_data, expires_at FROM bitrix_cache 
+        WHERE cache_key = ? AND expires_at > NOW()
+    ");
+    $stmt->execute([$cacheKey]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($row) {
+        $debug['source'] = 'cache';
+        $debug['cache_expires'] = $row['expires_at'];
+        $data = json_decode($row['cache_data'], true);
+        return ['data' => $data, 'debug' => $debug];
+    }
+    
+    /* Кэш пустой — запрашиваем из Битрикс напрямую */
+    $debug['source'] = 'bitrix';
+    require_once __DIR__ . '/../lib/crest.php';
+    
+    $managersStmt = $pdo->query("
+        SELECT id, bitrix_id FROM managers 
+        WHERE is_active = 1 AND bitrix_id IS NOT NULL
+    ");
+    $managers = $managersStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $data = [];
+    
+    foreach ($managers as $manager) {
+        $managerId = $manager['id'];
+        $bitrixId = $manager['bitrix_id'];
+        
+        $leadsInWork = 0;
+        $qualLeadsInWork = 0;
+        
+        if (!empty($bitrixId)) {
+            /* Лидов в работе */
+            $leadsResult = CRest::call('crm.lead.list', [
+                'filter' => [
+                    'ASSIGNED_BY_ID' => $bitrixId,
+                    'STATUS_SEMANTIC_ID' => 'P',
+                    '!UF_CRM_1687959404' => '',
+                    '!=ASSIGNED_BY_ID' => '2150'
+                ],
+                'select' => ['ID']
+            ]);
+            if (!isset($leadsResult['error'])) {
+                $leadsInWork = $leadsResult['total'] ?? 0;
+            }
+            
+            /* Квал.лидов в работе */
+            $dealsResult = CRest::call('crm.deal.list', [
+                'filter' => [
+                    'ASSIGNED_BY_ID' => $bitrixId,
+                    'CATEGORY_ID' => 0,
+                    'STAGE_SEMANTIC_ID' => 'P'
+                ],
+                'select' => ['ID']
+            ]);
+            if (!isset($dealsResult['error'])) {
+                $qualLeadsInWork = $dealsResult['total'] ?? 0;
+            }
+        }
+        
+        $data[$managerId] = [
+            'leads_in_work' => $leadsInWork,
+            'qual_leads_in_work' => $qualLeadsInWork
+        ];
+    }
+    
+    /* Сохраняем в кэш (используем время MySQL для консистентности) */
+    $stmt = $pdo->prepare("
+        INSERT INTO bitrix_cache (cache_key, cache_data, expires_at) 
+        VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))
+        ON DUPLICATE KEY UPDATE cache_data = VALUES(cache_data), expires_at = DATE_ADD(NOW(), INTERVAL ? MINUTE)
+    ");
+    $stmt->execute([$cacheKey, json_encode($data), $cacheTtlMinutes, $cacheTtlMinutes]);
+    
+    /* Получаем реальное время истечения для debug */
+    $expiresStmt = $pdo->query("SELECT DATE_ADD(NOW(), INTERVAL {$cacheTtlMinutes} MINUTE) as exp");
+    $debug['cache_expires'] = $expiresStmt->fetchColumn();
+    
+    return ['data' => $data, 'debug' => $debug];
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method !== 'GET') {
@@ -88,13 +178,20 @@ try {
         $salesByManager[$row['manager_id']] = $row;
     }
 
-    /* 3. Собираем уникальных менеджеров из обоих источников */
+    /* 3. Получаем актуальные данные "В работе" (из кэша или Битрикс) */
+    $leadsInWorkResult = getLeadsInWorkData($pdo);
+    $leadsInWorkData = $leadsInWorkResult['data'];
+    $leadsInWorkDebug = $leadsInWorkResult['debug'];
+
+    /* 4. Собираем уникальных менеджеров из всех источников (включая кэш "В работе") */
+    $leadsInWorkIds = array_map('intval', array_keys($leadsInWorkData));
     $allManagerIds = array_unique(array_merge(
         array_keys($contractsByManager),
-        array_keys($salesByManager)
+        array_keys($salesByManager),
+        $leadsInWorkIds
     ));
 
-    /* 4. Получаем имена менеджеров */
+    /* 5. Получаем имена менеджеров */
     if (!empty($allManagerIds)) {
         $placeholders = implode(',', array_fill(0, count($allManagerIds), '?'));
         $managersStmt = $pdo->prepare("SELECT id, name FROM managers WHERE id IN ($placeholders)");
@@ -103,6 +200,8 @@ try {
     } else {
         $managersNames = [];
     }
+
+
 
     /* 5. Формируем итоговые данные по менеджерам */
     $managers = [];
@@ -129,6 +228,8 @@ try {
         $meetings = (int)$sData['meetings_new'];
 
         /* Расчёт конверсий */
+        $convTargetToContract = $targetLeads > 0 ? ($contracts / $targetLeads) * 100 : 0;
+        $convQualToContract = $qualLeads > 0 ? ($contracts / $qualLeads) * 100 : 0;
         $convTargetToQual = $targetLeads > 0 ? ($qualLeads / $targetLeads) * 100 : 0;
         $convQualToMeeting = $qualLeads > 0 ? ($meetings / $qualLeads) * 100 : 0;
         $convMeetingToContract = $meetings > 0 ? ($contracts / $meetings) * 100 : 0;
@@ -137,9 +238,9 @@ try {
         $avgCheck = $contracts > 0 ? $revenue / $contracts : 0;
         $margin = $revenue > 0 ? ($profit / $revenue) * 100 : 0;
 
-        /* Лиды в работе - из sales_report (последняя синхронизация с Битрикс) */
-        $leadsInWork = (int)($sData['leads_in_work'] ?? 0);
-        $qualLeadsInWork = (int)($sData['qual_leads_in_work'] ?? 0);
+        /* Лиды в работе - из актуальных данных Битрикс (кэш 10 минут) */
+        $leadsInWork = (int)($leadsInWorkData[$managerId]['leads_in_work'] ?? 0);
+        $qualLeadsInWork = (int)($leadsInWorkData[$managerId]['qual_leads_in_work'] ?? 0);
 
         $managers[] = [
             'manager_id' => (int)$managerId,
@@ -150,6 +251,8 @@ try {
             'target_leads_new' => $targetLeads,
             'qual_leads_new' => $qualLeads,
             'meetings_new' => $meetings,
+            'conv_target_to_contract' => round($convTargetToContract, 1),
+            'conv_qual_to_contract' => round($convQualToContract, 1),
             'conv_target_to_qual' => round($convTargetToQual, 1),
             'conv_qual_to_meeting' => round($convQualToMeeting, 1),
             'conv_meeting_to_contract' => round($convMeetingToContract, 1),
@@ -188,6 +291,10 @@ try {
         'target_leads_new' => $totals['target_leads_new'],
         'qual_leads_new' => $totals['qual_leads_new'],
         'meetings_new' => $totals['meetings_new'],
+        'conv_target_to_contract' => $totals['target_leads_new'] > 0 
+            ? round(($totals['contracts_new'] / $totals['target_leads_new']) * 100, 1) : 0,
+        'conv_qual_to_contract' => $totals['qual_leads_new'] > 0 
+            ? round(($totals['contracts_new'] / $totals['qual_leads_new']) * 100, 1) : 0,
         'conv_target_to_qual' => $totals['target_leads_new'] > 0 
             ? round(($totals['qual_leads_new'] / $totals['target_leads_new']) * 100, 1) : 0,
         'conv_qual_to_meeting' => $totals['qual_leads_new'] > 0 
@@ -234,18 +341,20 @@ try {
         }
     }
 
-    /* 8. Получаем доступные годы для фильтра (из contracts, не из sales_report) */
+   /* 8. Получаем доступные годы для фильтра (из contracts и sales_report) */
     $yearsStmt = $pdo->query("
-        SELECT DISTINCT YEAR(contract_date) as year 
-        FROM contracts 
-        WHERE contract_date IS NOT NULL 
+        SELECT DISTINCT year FROM (
+            SELECT YEAR(contract_date) as year FROM contracts WHERE contract_date IS NOT NULL
+            UNION
+            SELECT DISTINCT year FROM sales_report
+        ) as all_years
         ORDER BY year DESC
     ");
     $years = $yearsStmt->fetchAll(PDO::FETCH_COLUMN);
     
     /* Если нет данных, добавляем текущий год */
     if (empty($years)) {
-        $years = [date('Y')];
+        $years = [(int)date('Y')];
     }
 
     echo json_encode([
@@ -258,6 +367,10 @@ try {
             "year" => $year,
             "month_start" => $monthStart,
             "month_end" => $monthEnd
+        ],
+        "debug" => [
+            "leads_in_work_source" => $leadsInWorkDebug['source'],
+            "cache_expires" => $leadsInWorkDebug['cache_expires']
         ]
     ]);
 

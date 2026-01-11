@@ -22,11 +22,37 @@ let hiddenFields = []; /* Скрытые поля из прав доступа *
 
 
 /* Текущие значения фильтров */
+const STORAGE_KEY = 'salesReportFilters';
+
 const filters = {
     month_start: new Date().getMonth() + 1,
     month_end: new Date().getMonth() + 1,
     year: new Date().getFullYear()
 };
+
+/* Загрузка фильтров из localStorage */
+function loadFiltersFromStorage() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.year !== undefined) filters.year = parsed.year;
+            if (parsed.month_start !== undefined) filters.month_start = parsed.month_start;
+            if (parsed.month_end !== undefined) filters.month_end = parsed.month_end;
+        }
+    } catch (e) {
+        console.warn('Ошибка загрузки фильтров:', e);
+    }
+}
+
+/* Сохранение фильтров в localStorage */
+function saveFiltersToStorage() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+    } catch (e) {
+        console.warn('Ошибка сохранения фильтров:', e);
+    }
+}
 
 /* Форматирование чисел */
 function formatMoney(value) {
@@ -159,12 +185,13 @@ function clearFilter(field) {
 function initFilters(years) {
     availableYears = years;
     
-    /* Устанавливаем текущий год если он есть в списке */
-    const currentYear = new Date().getFullYear();
-    if (years.includes(currentYear)) {
-        filters.year = currentYear;
-    } else if (years.length > 0) {
-        filters.year = years[0];
+    /* Загружаем сохранённые фильтры */
+    loadFiltersFromStorage();
+    
+    /* Проверяем что год валиден */
+    if (!years.includes(filters.year)) {
+        const currentYear = new Date().getFullYear();
+        filters.year = years.includes(currentYear) ? currentYear : years[0];
     }
     
     updateFilterButtons();
@@ -202,6 +229,7 @@ function initFilters(years) {
 
 /* Загрузка данных с API */
 async function loadData() {
+    saveFiltersToStorage();
     showLoading(true);
 
     /* Формируем параметры запроса, пропуская null */
@@ -312,6 +340,14 @@ function renderSummarySection(data) {
             
             <div class="summary-metrics-group">
                 <div class="summary-group-title">Конверсии</div>
+                <div class="summary-metric-row">
+                    <span class="summary-metric-label">Целевой → Договор</span>
+                    <span class="summary-metric-value">${formatPercent(data.conv_target_to_contract)}</span>
+                </div>
+                <div class="summary-metric-row">
+                    <span class="summary-metric-label">Квал → Договор</span>
+                    <span class="summary-metric-value">${formatPercent(data.conv_qual_to_contract)}</span>
+                </div>
                 <div class="summary-metric-row">
                     <span class="summary-metric-label">Целевой → Квал</span>
                     <span class="summary-metric-value">${formatPercent(data.conv_target_to_qual)}</span>
@@ -505,6 +541,14 @@ function createCard(data) {
 
                 <div class="metrics-section">
                     <div class="section-title">Конверсии</div>
+                    <div class="metric-row">
+                        <span class="metric-label">Целевой → Договор</span>
+                        <span class="metric-value">${formatPercent(data.conv_target_to_contract)}</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Квал → Договор</span>
+                        <span class="metric-value">${formatPercent(data.conv_qual_to_contract)}</span>
+                    </div>
                     <div class="metric-row">
                         <span class="metric-label">Целевой → Квал</span>
                         <span class="metric-value">${formatPercent(data.conv_target_to_qual)}</span>
