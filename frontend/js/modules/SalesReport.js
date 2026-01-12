@@ -329,7 +329,7 @@ function renderSummarySection(data) {
             <div class="summary-metrics-group">
                 <div class="summary-group-title">В работе сейчас</div>
                 <div class="summary-metric-row">
-                    <span class="summary-metric-label">Лидов в работе</span>
+                    <span class="summary-metric-label">Цел. лидов в работе</span>
                     <span class="summary-metric-value">${formatNumber(data.leads_in_work)}</span>
                 </div>
                 <div class="summary-metric-row">
@@ -530,7 +530,7 @@ function createCard(data) {
                 <div class="metrics-section">
                     <div class="section-title">В работе сейчас</div>
                     <div class="metric-row">
-                        <span class="metric-label">Лидов в работе</span>
+                        <span class="metric-label">Цел. лидов в работе</span>
                         <span class="metric-value">${formatNumber(data.leads_in_work)}</span>
                     </div>
                     <div class="metric-row">
