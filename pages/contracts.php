@@ -23,6 +23,7 @@ requirePermission('contracts');
             <button id="add-contract-btn"><img src="/assets/plus.svg"/> Добавить</button>
             <button id="refresh-btn"><img src="/assets/refresh.svg"/>Обновить</button>
             <button id="toggle-columns-btn"><img src="/assets/control.svg"/>Настройки</button>
+            <button id="sync-google-btn">Синхр. Google</button>
         </div>
         
         <!-- Фильтры по датам -->
@@ -97,5 +98,25 @@ requirePermission('contracts');
         });
     </script>
     <script src="/frontend/js/pwa.js"></script>
+
+    <script>
+    document.getElementById('sync-google-btn').addEventListener('click', async function() {
+        const btn = this;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Синхронизация...';
+        
+        try {
+            const response = await fetch('/api/sync_google_sheets.php');
+            const result = await response.json();
+            alert(result.success ? '✓ ' + result.message : 'Ошибка: ' + result.message);
+        } catch (error) {
+            alert('Ошибка соединения: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    });
+    </script>
 </body>
 </html>

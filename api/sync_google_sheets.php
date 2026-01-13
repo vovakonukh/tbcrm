@@ -9,9 +9,22 @@ require_once __DIR__ . '/config.php';
 /* URL твоего Google Apps Script — ЗАМЕНИ НА СВОЙ */
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzP7VGTsFd0PsbP0nUpjDUebKzzyljSL6LTTmtP1gmjuWGIVT4nKZcumGgitc2RKkYU/exec';
 
+$isCli = php_sapi_name() === 'cli';
+
 function logMessage($message) {
-    $date = date('Y-m-d H:i:s');
-    echo "[$date] $message\n";
+    global $isCli;
+    if ($isCli) {
+        $date = date('Y-m-d H:i:s');
+        echo "[$date] $message\n";
+    }
+}
+
+function jsonResponse($success, $message, $count = null) {
+    header('Content-Type: application/json; charset=utf-8');
+    $response = ['success' => $success, 'message' => $message];
+    if ($count !== null) $response['count'] = $count;
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
 function getContracts($pdo) {
@@ -70,26 +83,34 @@ function sendToGoogleSheets($contracts) {
     return json_decode($response, true);
 }
 
-/* Основной код */
+//* Основной код */
 try {
     logMessage('Начинаем синхронизацию...');
     
-    /* $pdo уже создан в config.php */
     $contracts = getContracts($pdo);
-    logMessage('Получено договоров из БД: ' . count($contracts));
+    $count = count($contracts);
+    logMessage('Получено договоров из БД: ' . $count);
     
     $result = sendToGoogleSheets($contracts);
     
     if ($result && $result['success']) {
+        $message = 'Синхронизировано договоров: ' . $count;
         logMessage('Успех: ' . $result['message']);
+        logMessage('Синхронизация завершена');
+        
+        if (!$isCli) {
+            jsonResponse(true, $message, $count);
+        }
     } else {
         $errorMsg = $result['message'] ?? 'Неизвестная ошибка';
         throw new Exception('Google Sheets ответил ошибкой: ' . $errorMsg);
     }
     
-    logMessage('Синхронизация завершена');
-    
 } catch (Exception $e) {
     logMessage('ОШИБКА: ' . $e->getMessage());
+    
+    if (!$isCli) {
+        jsonResponse(false, $e->getMessage());
+    }
     exit(1);
 }

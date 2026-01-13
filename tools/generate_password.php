@@ -22,9 +22,18 @@
 //v.shalaginov
 //g67Yr$%dfdehfrt
 
+//a.boiko
+//gt^FG4guy5gd
 
-$username = 'v.shalaginov';
-$password = 'g67Yr$%dfdehfrt';
+//a.boltunova
+//t5rewe5&ygfr
+
+//e.sulaimanov
+//kkUhy7GFGff$5
+
+
+$username = 'e.sulaimanov';
+$password = 'kkUhy7GFGff$5';
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
 echo "Пароль: " . $password . "<br>";
@@ -37,7 +46,7 @@ echo "</pre>";
 
 echo "<b>SQL для добавления:</b><br>";
 echo "<pre>";
-echo "INSERT INTO users (`username`, `password`, `is_active`)
-VALUES ('$username', '" . $hash . "'," . "'1')";
+echo "INSERT INTO users (`username`, `password`, `role_id`, `is_active`)
+VALUES ('$username', '" . $hash . "', '3'," . "'1')";
 echo "</pre>";
 ?>
