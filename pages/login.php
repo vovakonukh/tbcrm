@@ -54,6 +54,17 @@ if (isset($_GET['logout'])) {
 if (isset($_GET['session_expired'])) {
     $error = 'Ваша сессия истекла. Пожалуйста, войдите снова';
 }
+
+if (isset($_GET['error'])) {
+    $errorCode = $_GET['error'];
+    if ($errorCode === 'telegram_not_linked') {
+        $error = 'Ваш Telegram не привязан к учётной записи. Обратитесь к администратору.';
+    } elseif ($errorCode === 'user_inactive') {
+        $error = 'Ваш аккаунт заблокирован';
+    } elseif ($errorCode === 'server_error') {
+        $error = 'Ошибка сервера. Попробуйте позже.';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -212,6 +223,31 @@ if (isset($_GET['session_expired'])) {
                 font-size: 24px;
             }
         }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #dee2e6;
+        }
+
+        .divider span {
+            padding: 0 16px;
+            color: #868e96;
+            font-size: 14px;
+        }
+
+        .telegram-login {
+            display: flex;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -265,6 +301,23 @@ if (isset($_GET['session_expired'])) {
 
             <button type="submit" class="btn-login">Войти</button>
         </form>
+
+        <div class="divider">
+            <span>или</span>
+        </div>
+
+        <div class="telegram-login">
+            <script async src="https://telegram.org/js/telegram-widget.js?22"
+                data-telegram-login="<?php echo TELEGRAM_BOT_USERNAME; ?>"
+                data-size="large"
+                data-radius="8"
+                data-auth-url="https://hub.class-house.ru/api/telegram_auth.php"
+                data-request-access="write">
+            </script>
+            <noscript>
+                <a href="https://t.me/<?php echo TELEGRAM_BOT_USERNAME; ?>">Войти через Telegram</a>
+            </noscript>
+        </div>
     </div>
 </body>
 </html>

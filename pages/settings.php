@@ -88,114 +88,125 @@ requirePermission('settings');
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Отступ для заголовка на мобильных (под гамбургер) */
+        @media (max-width: 768px) {
+            .page-header {
+                padding-top: 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <?php include __DIR__ . '/../includes/header.php'; ?>
-
-    <div class="container">
-        <h1 style="text-align: left; font-size: 24px; margin-bottom: 10px;">Настройки справочников</h1>
+    <div class="app-layout">
+        <?php include __DIR__ . '/../includes/sidebar.php'; ?>
         
-        <div class="settings-container">
-           
+        <main class="app-content">
+            <div class="container">
+                <h1 class="page-header" style="text-align: left; font-size: 26px; margin-bottom: 10px;">Настройки справочников</h1>
 
-            
+                <h2 style="margin-top: 30px;">Договоры</h2>
+                
+                <div class="settings-container">
 
-            <!-- Менеджеры -->
-            <div class="reference-table-wrapper">
-                <h2>Менеджеры</h2>
-                <div class="table-controls">
-                    <button id="add-managers-btn">+ Добавить</button>
+                    <!-- Менеджеры -->
+                    <div class="reference-table-wrapper">
+                        <h2>Менеджеры</h2>
+                        <div class="table-controls">
+                            <button id="add-managers-btn">+ Добавить</button>
+                        </div>
+                        <div id="managers-table" class="reference-table"></div>
+                    </div>
+
+                    <!-- Типы оплаты -->
+                    <div class="reference-table-wrapper">
+                        <h2>Типы оплаты</h2>
+                        <div class="table-controls">
+                            <button id="add-payment_types-btn">+ Добавить</button>
+                        </div>
+                        <div id="payment_types-table" class="reference-table"></div>
+                    </div>
+
+                    <!-- Типы комплектаций -->
+                    <div class="reference-table-wrapper">
+                        <h2>Типы комплектаций</h2>
+                        <div class="table-controls">
+                            <button id="add-complectation-btn">+ Добавить</button>
+                        </div>
+                        <div id="complectation-table" class="reference-table"></div>
+                    </div>
+
+                    <!-- Эскроу агенты -->
+                    <div class="reference-table-wrapper">
+                        <h2>Эскроу агенты</h2>
+                        <div class="table-controls">
+                            <button id="add-escrow_agents-btn">+ Добавить</button>
+                        </div>
+                        <div id="escrow_agents-table" class="reference-table"></div>
+                    </div>
+
+                    <!-- Статусы ипотеки -->
+                    <div class="reference-table-wrapper">
+                        <h2>Статусы ипотеки</h2>
+                        <div class="table-controls">
+                            <button id="add-ipoteka_status-btn">+ Добавить</button>
+                        </div>
+                        <div id="ipoteka_status-table" class="reference-table"></div>
+                    </div>
+
+                    <!-- Источники -->
+                    <div class="reference-table-wrapper">
+                        <h2>Источники</h2>
+                        <div class="table-controls">
+                            <button id="add-sources-btn">+ Добавить</button>
+                        </div>
+                        <div id="sources-table" class="reference-table"></div>
+                    </div>
                 </div>
-                <div id="managers-table" class="reference-table"></div>
-            </div>
 
-            
+                <h2 style="margin-top: 50px;">Этапы</h2>
+                <div class="settings-container">
+                    <!-- Типы этапов -->
+                    <div class="reference-table-wrapper">
+                        <h2>Типы этапов</h2>
+                        <div class="table-controls">
+                            <button id="add-stage_types-btn">+ Добавить</button>
+                        </div>
+                        <div id="stage_types-table" class="reference-table"></div>
+                    </div>
 
-            <!-- Типы оплаты -->
-            <div class="reference-table-wrapper">
-                <h2>Типы оплаты</h2>
-                <div class="table-controls">
-                    <button id="add-payment_types-btn">+ Добавить</button>
+                    <!-- Типы бригад -->
+                    <div class="reference-table-wrapper">
+                        <h2>Типы бригад</h2>
+                        <div class="table-controls">
+                            <button id="add-brigade_types-btn">+ Добавить</button>
+                        </div>
+                        <div id="brigade_types-table" class="reference-table"></div>
+                    </div>
+
+                    <!-- Прорабы -->
+                    <div class="reference-table-wrapper">
+                        <h2>Прорабы</h2>
+                        <div class="table-controls">
+                            <button id="add-prorabs-btn">+ Добавить</button>
+                        </div>
+                        <div id="prorabs-table" class="reference-table"></div>
+                    </div>
+
+                    <!-- Подрядчики -->
+                    <div class="reference-table-wrapper">
+                        <h2>Подрядчики</h2>
+                        <div class="table-controls">
+                            <button id="add-contractors-btn">+ Добавить</button>
+                        </div>
+                        <div id="contractors-table" class="reference-table"></div>
+                    </div>
                 </div>
-                <div id="payment_types-table" class="reference-table"></div>
-            </div>
 
-            <!-- Типы комплектаций -->
-            <div class="reference-table-wrapper">
-                <h2>Типы комплектаций</h2>
-                <div class="table-controls">
-                    <button id="add-complectation-btn">+ Добавить</button>
-                </div>
-                <div id="complectation-table" class="reference-table"></div>
+                <div id="loading" style="display: none;">Загрузка данных...</div>
+                <div id="error" class="error-message" style="display: none;"></div>
             </div>
-
-            <!-- Эскроу агенты -->
-            <div class="reference-table-wrapper">
-                <h2>Эскроу агенты</h2>
-                <div class="table-controls">
-                    <button id="add-escrow_agents-btn">+ Добавить</button>
-                </div>
-                <div id="escrow_agents-table" class="reference-table"></div>
-            </div>
-
-            <!-- Статусы ипотеки -->
-            <div class="reference-table-wrapper">
-                <h2>Статусы ипотеки</h2>
-                <div class="table-controls">
-                    <button id="add-ipoteka_status-btn">+ Добавить</button>
-                </div>
-                <div id="ipoteka_status-table" class="reference-table"></div>
-            </div>
-
-            <!-- Источники -->
-            <div class="reference-table-wrapper">
-                <h2>Источники</h2>
-                <div class="table-controls">
-                    <button id="add-sources-btn">+ Добавить</button>
-                </div>
-                <div id="sources-table" class="reference-table"></div>
-            </div>
-
-            <!-- Типы этапов -->
-            <div class="reference-table-wrapper">
-                <h2>Типы этапов</h2>
-                <div class="table-controls">
-                    <button id="add-stage_types-btn">+ Добавить</button>
-                </div>
-                <div id="stage_types-table" class="reference-table"></div>
-            </div>
-
-            <!-- Типы бригад -->
-            <div class="reference-table-wrapper">
-                <h2>Типы бригад</h2>
-                <div class="table-controls">
-                    <button id="add-brigade_types-btn">+ Добавить</button>
-                </div>
-                <div id="brigade_types-table" class="reference-table"></div>
-            </div>
-
-            <!-- Прорабы -->
-            <div class="reference-table-wrapper">
-                <h2>Прорабы</h2>
-                <div class="table-controls">
-                    <button id="add-prorabs-btn">+ Добавить</button>
-                </div>
-                <div id="prorabs-table" class="reference-table"></div>
-            </div>
-
-            <!-- Подрядчики -->
-            <div class="reference-table-wrapper">
-                <h2>Подрядчики</h2>
-                <div class="table-controls">
-                    <button id="add-contractors-btn">+ Добавить</button>
-                </div>
-                <div id="contractors-table" class="reference-table"></div>
-            </div>
-        </div>
-
-        <div id="loading" style="display: none;">Загрузка данных...</div>
-        <div id="error" class="error-message" style="display: none;"></div>
+        </main>
     </div>
 
     <!-- Модальное окно подтверждения удаления -->

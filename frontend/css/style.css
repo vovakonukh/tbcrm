@@ -1977,7 +1977,7 @@ button {
     color: var(--color-text-secondary);
     font-size: 14px;
     transition: background-color var(--transition-fast);
-    border-left: 3px solid transparent;
+    border-left: 2px solid transparent;
 }
 
 .sidebar-item:hover {
