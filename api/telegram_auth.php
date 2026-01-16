@@ -3,8 +3,6 @@
 
 require_once __DIR__ . '/config.php';
 
-header('Content-Type: application/json; charset=utf-8');
-
 /* Проверяем подпись данных от Telegram */
 function checkTelegramAuth($authData) {
     $checkHash = $authData['hash'];
@@ -39,8 +37,7 @@ $optionalFields = ['first_name', 'last_name', 'username', 'photo_url'];
 
 foreach ($requiredFields as $field) {
     if (!isset($_GET[$field])) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Отсутствует обязательное поле: ' . $field]);
+        header('Location: /login.php?error=invalid_request');
         exit;
     }
     $authData[$field] = $_GET[$field];
@@ -54,14 +51,9 @@ foreach ($optionalFields as $field) {
 
 /* Проверяем подпись */
 if (!checkTelegramAuth($authData)) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Неверная подпись данных']);
+    header('Location: /login.php?error=invalid_signature');
     exit;
 }
-
-$debugLog = fopen(__DIR__ . '/telegram_debug.log', 'a');
-fwrite($debugLog, date('Y-m-d H:i:s') . " - Auth attempt\n");
-fwrite($debugLog, "Telegram ID: " . $authData['id'] . "\n");
 
 /* Ищем пользователя по telegram_id */
 $telegramId = (int)$authData['id'];
@@ -74,16 +66,11 @@ try {
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
     
-    fwrite($debugLog, "DB connected OK\n");
-    
     $stmt = $pdo->prepare("SELECT id, username, full_name, role, role_id, is_active FROM users WHERE telegram_id = ?");
     $stmt->execute([$telegramId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    fwrite($debugLog, "User found: " . ($user ? json_encode($user) : 'NULL') . "\n");
-    
     if (!$user) {
-        /* Пользователь не найден — редирект на логин с ошибкой */
         header('Location: /login.php?error=telegram_not_linked');
         exit;
     }
@@ -93,9 +80,6 @@ try {
         exit;
     }
     
-    // --- ОТЛАДКА ---
-    fwrite($debugLog, "Creating session...\n");
-    
     /* Создаём сессию */
     session_start();
     $_SESSION['user_id'] = $user['id'];
@@ -104,9 +88,6 @@ try {
     $_SESSION['user_role'] = $user['role'];
     $_SESSION['user_role_id'] = $user['role_id'];
     $_SESSION['user_logged_in'] = true;
-    
-    fwrite($debugLog, "Session created, redirecting...\n");
-    fclose($debugLog);
     
     /* Обновляем last_login */
     $stmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
