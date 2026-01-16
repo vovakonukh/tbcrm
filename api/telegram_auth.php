@@ -81,7 +81,6 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     fwrite($debugLog, "User found: " . ($user ? json_encode($user) : 'NULL') . "\n");
-    fclose($debugLog);
     
     if (!$user) {
         /* Пользователь не найден — редирект на логин с ошибкой */
