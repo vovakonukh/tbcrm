@@ -59,20 +59,29 @@ if (!checkTelegramAuth($authData)) {
     exit;
 }
 
+$debugLog = fopen(__DIR__ . '/telegram_debug.log', 'a');
+fwrite($debugLog, date('Y-m-d H:i:s') . " - Auth attempt\n");
+fwrite($debugLog, "Telegram ID: " . $authData['id'] . "\n");
+
 /* Ищем пользователя по telegram_id */
 $telegramId = (int)$authData['id'];
 
 try {
     $pdo = new PDO(
-        "mysql:host=" . $host . ";dbname=" . $dbname . ";charset=utf8mb4",
-        $username,
-        $password,
+        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+        DB_USER,
+        DB_PASS,
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
+    
+    fwrite($debugLog, "DB connected OK\n");
     
     $stmt = $pdo->prepare("SELECT id, username, full_name, role, role_id, is_active FROM users WHERE telegram_id = ?");
     $stmt->execute([$telegramId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    fwrite($debugLog, "User found: " . ($user ? json_encode($user) : 'NULL') . "\n");
+    fclose($debugLog);
     
     if (!$user) {
         /* Пользователь не найден — редирект на логин с ошибкой */
