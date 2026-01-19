@@ -436,6 +436,7 @@ export class ContractsTable extends BaseTable {
                     step: 0.01
                 },
                 editable: true,
+                visible: false,
                 cssClass: "cell-with-action",
                 formatter: (cell) => {
                     const value = cell.getValue();
@@ -468,6 +469,7 @@ export class ContractsTable extends BaseTable {
                     step: 0.01
                 },
                 editable: true,
+                visible: false,
                 cssClass: "cell-with-action",
                 formatter: (cell) => {
                     const value = cell.getValue();
@@ -496,6 +498,7 @@ export class ContractsTable extends BaseTable {
                 width: 120,
                 sorter: "number",
                 editable: false,
+                visible: false,
                 mutator: (value, data) => {
                     const profit = parseFloat(data.profit);
                     const finalAmount = parseFloat(data.final_amount);
@@ -663,7 +666,7 @@ export class ContractsTable extends BaseTable {
                 editor: "textarea",
                 editorParams: textareaParams, // Используем наш новый конфиг
                 formatter: "textarea",
-                visible: false,
+                visible: true,
                 cssClass: "cell-text-left"
             },
 
@@ -1068,6 +1071,18 @@ export class ContractsTable extends BaseTable {
                     'final_amount', 
                     'profit', 
                     'margin_percent'
+                ] 
+            },
+            { 
+                id: 'land_and_client', 
+                label: 'Участок и заказчик', 
+                fields: [
+                    'contract_name',
+                    'customer_name',
+                    'customer_phone',
+                    'cadastral_number', 
+                    'site_coordinates', 
+                    'site_map_link'
                 ] 
             },
             { 
