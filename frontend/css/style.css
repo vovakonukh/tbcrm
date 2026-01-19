@@ -603,6 +603,79 @@ button {
     flex-direction: column;
 }
 
+/* Двухколоночный layout */
+#column-selector-modal .modal-content.column-selector-two-columns {
+    width: 480px;
+}
+
+#column-selector-modal .column-selector-two-columns .modal-body {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    overflow: hidden;
+    flex: 1;
+}
+
+/* Левая колонка — пресеты */
+#column-selector-modal .column-selector-left {
+    width: 140px;
+    min-width: 140px;
+    padding: 12px;
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: var(--color-bg-light);
+}
+
+.presets-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.presets-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.preset-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: var(--font-family);
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-white);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: left;
+}
+
+.preset-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.preset-btn.active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+/* Правая колонка — список колонок */
+#column-selector-modal .column-selector-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
 #column-selector-modal .modal-header {
     display: none;
 }
@@ -615,49 +688,12 @@ button {
     flex: 1;
 }
 
-/* Быстрые действия */
-.columns-quick-actions {
-    display: flex;
-    gap: 8px;
-    padding: 12px 16px;
-    /* border-bottom: 1px solid var(--color-border); */
-    justify-content: flex-start;
-}
-
-.columns-quick-actions span {
-    color: var(--color-text-muted);
-    font-size: 13px;
-    font-weight: var(--font-weight-light);
-    cursor: pointer;
-    border-bottom: 1px solid #ddd;
-    /* text-decoration: underline;
-    text-decoration-style: dashed;
-    text-underline-offset: 3px; */
-    transition: color var(--transition-normal);
-}
-
-.columns-quick-actions span:hover {
-    color: var(--color-primary);
-    border-bottom: 1px solid var(--color-primary);
-}
-
-.columns-quick-actions .separator {
-    border-bottom: none;
-    color: var(--color-border-dark);
-    text-decoration: none;
-    cursor: default;
-}
-
-.columns-quick-actions .separator:hover {
-    color: var(--color-border-dark);
-}
-
 /* Поле поиска */
-.columns-search {
+#column-selector-modal .columns-search {
     padding: 12px 16px 0 16px;
 }
 
-.columns-search-input {
+#column-selector-modal .columns-search-input {
     width: 100%;
     padding: 6px 10px;
     border: 1px solid var(--color-border-dark);
@@ -669,21 +705,22 @@ button {
     transition: border-color var(--transition-normal);
 }
 
-.columns-search-input:focus {
+#column-selector-modal .columns-search-input:focus {
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 2px rgba(51, 154, 240, 0.1);
 }
 
-.columns-search-input::placeholder {
+#column-selector-modal .columns-search-input::placeholder {
     color: var(--color-text-light);
 }
 
 /* Список колонок */
 #column-selector-modal .columns-list {
-    padding: 0 0 8px 0;
-    max-height: 350px;
+    padding: 8px 0;
+    max-height: 400px;
     overflow-y: auto;
+    flex: 1;
 }
 
 #column-selector-modal .checkbox-item {
@@ -756,28 +793,28 @@ button {
 }
 
 /* Группы колонок */
-.columns-group {
+#column-selector-modal .columns-group {
     border-bottom: 1px solid var(--color-border-light);
 }
 
-.columns-group:last-child {
+#column-selector-modal .columns-group:last-child {
     border-bottom: none;
 }
 
-.columns-group-header {
+#column-selector-modal .columns-group-header {
     display: flex;
     align-items: center;
-    padding: 6px 10px;
+    padding: 8px 16px;
     cursor: pointer;
     transition: background-color var(--transition-fast);
     user-select: none;
 }
 
-.columns-group-header:hover {
+#column-selector-modal .columns-group-header:hover {
     background-color: var(--color-bg-light);
 }
 
-.columns-group-checkbox {
+#column-selector-modal .columns-group-checkbox {
     appearance: none;
     -webkit-appearance: none;
     width: 20px;
@@ -792,16 +829,16 @@ button {
     background-color: var(--color-bg-white);
 }
 
-.columns-group-checkbox:hover {
+#column-selector-modal .columns-group-checkbox:hover {
     border-color: var(--color-primary);
 }
 
-.columns-group-checkbox:checked {
+#column-selector-modal .columns-group-checkbox:checked {
     background-color: var(--color-primary);
     border-color: var(--color-primary);
 }
 
-.columns-group-checkbox:checked::after {
+#column-selector-modal .columns-group-checkbox:checked::after {
     content: '';
     position: absolute;
     left: 5px;
@@ -813,12 +850,12 @@ button {
     transform: rotate(45deg);
 }
 
-.columns-group-checkbox:indeterminate {
+#column-selector-modal .columns-group-checkbox:indeterminate {
     background-color: var(--color-primary);
     border-color: var(--color-primary);
 }
 
-.columns-group-checkbox:indeterminate::after {
+#column-selector-modal .columns-group-checkbox:indeterminate::after {
     content: '';
     position: absolute;
     left: 3px;
@@ -828,19 +865,19 @@ button {
     background-color: white;
 }
 
-.columns-group-title {
+#column-selector-modal .columns-group-title {
     font-size: 15px;
     font-weight: 600;
     color: var(--color-text);
     flex: 1;
 }
 
-.columns-group-items {
-    padding-left: 10px;
+#column-selector-modal .columns-group-items {
+    padding-left: 16px;
 }
 
-.columns-group-items .checkbox-item label {
-    padding: 8px 16px 8px 12px;
+#column-selector-modal .columns-group-items .checkbox-item label {
+    padding: 6px 16px 6px 12px;
 }
 
 /* Мобильная адаптация */
@@ -859,8 +896,47 @@ button {
         left: auto !important;
         right: auto !important;
         width: calc(100% - 40px);
-        max-width: 320px;
+        max-width: 400px;
         margin: 20px;
+    }
+    
+    #column-selector-modal .modal-content.column-selector-two-columns {
+        width: calc(100vw - 40px);
+        max-width: 400px;
+    }
+    
+    #column-selector-modal .column-selector-two-columns .modal-body {
+        flex-direction: column;
+    }
+    
+    #column-selector-modal .column-selector-left {
+        width: 100%;
+        min-width: unset;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 10px 12px;
+    }
+    
+    #column-selector-modal .presets-title {
+        width: 100%;
+        margin-bottom: 6px;
+    }
+    
+    #column-selector-modal .presets-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    
+    #column-selector-modal .preset-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    
+    #column-selector-modal .columns-list {
+        max-height: 300px;
     }
 }
 

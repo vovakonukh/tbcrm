@@ -1254,112 +1254,231 @@ export default class BaseTable {
     // --- МОДАЛКА ВЫБОРА КОЛОНОК ---
 
     createColumnSelectorModal() {
-    const existingModal = document.getElementById('column-selector-modal');
-    if (existingModal) existingModal.remove();
+        const existingModal = document.getElementById('column-selector-modal');
+        if (existingModal) existingModal.remove();
 
-    const modalHTML = `
-        <div id="column-selector-modal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="columns-search">
-                        <input type="text" class="columns-search-input" placeholder="Поиск колонок..." autocomplete="off">
+        const presets = this.getColumnPresets();
+        const presetsHTML = presets.map(preset => 
+            `<button type="button" class="preset-btn" data-preset="${preset.id}">${preset.label}</button>`
+        ).join('');
+
+        const modalHTML = `
+            <div id="column-selector-modal" class="modal" style="display: none;">
+                <div class="modal-content column-selector-two-columns">
+                    <div class="modal-body">
+                        <div class="column-selector-left">
+                            <div class="presets-title">Быстрые фильтры</div>
+                            <div class="presets-buttons">
+                                ${presetsHTML}
+                            </div>
+                        </div>
+                        <div class="column-selector-right">
+                            <div class="columns-search">
+                                <input type="text" class="columns-search-input" placeholder="Поиск колонок..." autocomplete="off">
+                            </div>
+                            <div id="columns-list" class="columns-list"></div>
+                        </div>
                     </div>
-                    <div class="columns-quick-actions">
-                        <span id="select-all-columns">Все</span>
-                        <span class="separator">/</span>
-                        <span id="deselect-all-columns">Ничего</span>
-                        <span class="separator">/</span>
-                        <span id="reset-columns-visibility">По умолчанию</span>
-                    </div>
-                    <div id="columns-list" class="columns-list"></div>
                 </div>
             </div>
-        </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    this.bindColumnSelectorEvents();
-}
-    
-    bindColumnSelectorEvents() {
-    const modal = document.getElementById('column-selector-modal');
-    const content = modal.querySelector('.modal-content');
-    
-    /* Закрытие по клику вне контента */
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-    
-    /* Останавливаем всплытие кликов внутри контента */
-    if (content) {
-        content.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        this.bindColumnSelectorEvents();
     }
     
-    /* Быстрые действия */
-    document.getElementById('select-all-columns').onclick = () => {
-        modal.querySelectorAll('.checkbox-item:not(.hidden) input[type="checkbox"]').forEach(cb => {
-            if (!cb.checked) {
-                cb.checked = true;
-                this.toggleColumnVisibility(cb.value, true);
-            }
-        });
-    };
-    
-    document.getElementById('deselect-all-columns').onclick = () => {
-        modal.querySelectorAll('.checkbox-item:not(.hidden) input[type="checkbox"]').forEach(cb => {
-            if (cb.checked) {
-                cb.checked = false;
-                this.toggleColumnVisibility(cb.value, false);
-            }
-        });
-    };
-    
-    document.getElementById('reset-columns-visibility').onclick = () => {
-        this.resetColumnVisibility();
-        this.populateColumnSelector();
-    };
-    
-    /* Поиск по колонкам */
-    const searchInput = modal.querySelector('.columns-search-input');
-    searchInput.addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase().trim();
+    bindColumnSelectorEvents() {
+        const modal = document.getElementById('column-selector-modal');
+        const content = modal.querySelector('.modal-content');
         
-        modal.querySelectorAll('.columns-group').forEach(group => {
-            let hasVisibleItems = false;
+        /* Закрытие по клику вне контента */
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
+        /* Останавливаем всплытие кликов внутри контента */
+        if (content) {
+            content.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+        
+        /* Обработчики пресетов */
+        modal.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const presetId = e.target.dataset.preset;
+                this.applyColumnPreset(presetId);
+                this.updatePresetButtonsState();
+            });
+        });
+        
+        /* Поиск по колонкам */
+        const searchInput = modal.querySelector('.columns-search-input');
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
             
-            group.querySelectorAll('.checkbox-item').forEach(item => {
+            modal.querySelectorAll('.columns-group').forEach(group => {
+                let hasVisibleItems = false;
+                
+                group.querySelectorAll('.checkbox-item').forEach(item => {
+                    const label = item.querySelector('label').textContent.toLowerCase();
+                    if (term === '' || label.includes(term)) {
+                        item.classList.remove('hidden');
+                        hasVisibleItems = true;
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+                
+                if (term !== '' && !hasVisibleItems) {
+                    group.style.display = 'none';
+                } else {
+                    group.style.display = '';
+                }
+            });
+            
+            /* Для простого списка без групп */
+            modal.querySelectorAll('#columns-list > .checkbox-item').forEach(item => {
                 const label = item.querySelector('label').textContent.toLowerCase();
                 if (term === '' || label.includes(term)) {
                     item.classList.remove('hidden');
-                    hasVisibleItems = true;
                 } else {
                     item.classList.add('hidden');
                 }
             });
-            
-            /* Скрываем группу если нет видимых элементов */
-            if (term !== '' && !hasVisibleItems) {
-                group.style.display = 'none';
-            } else {
-                group.style.display = '';
+        });
+    }
 
-            }
+    /**
+     * Применяет пресет колонок
+     */
+    applyColumnPreset(presetId) {
+        const presets = this.getColumnPresets();
+        const preset = presets.find(p => p.id === presetId);
+        if (!preset) return;
+
+        const modal = document.getElementById('column-selector-modal');
+        const requiredFields = this.getRequiredVisibleFields();
+        
+        /* Получаем дефолтные значения visible из getColumns() */
+        const getDefaultVisibility = (columns) => {
+            const defaults = {};
+            columns.forEach(col => {
+                if (col.columns) {
+                    Object.assign(defaults, getDefaultVisibility(col.columns));
+                } else if (col.field) {
+                    defaults[col.field] = col.visible !== false;
+                }
+            });
+            return defaults;
+        };
+        const defaultVisibility = getDefaultVisibility(this.getColumns());
+
+        if (presetId === 'default') {
+            /* Сбрасываем к дефолтным значениям из getColumns() */
+            modal.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => {
+                const field = cb.value;
+                const shouldBeVisible = defaultVisibility[field] !== false;
+                cb.checked = shouldBeVisible;
+                this.toggleColumnVisibility(field, shouldBeVisible);
+            });
+            /* Обновляем состояние групповых чекбоксов */
+            modal.querySelectorAll('.columns-group').forEach(group => {
+                this.updateGroupCheckboxState(group);
+            });
+        } else if (presetId === 'all') {
+            /* Показываем все доступные колонки */
+            modal.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => {
+                if (!cb.checked) {
+                    cb.checked = true;
+                    this.toggleColumnVisibility(cb.value, true);
+                }
+            });
+            /* Обновляем состояние групповых чекбоксов */
+            modal.querySelectorAll('.columns-group').forEach(group => {
+                this.updateGroupCheckboxState(group);
+            });
+        } else if (presetId === 'none') {
+            /* Скрываем все кроме обязательных */
+            modal.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => {
+                const isRequired = requiredFields.includes(cb.value);
+                cb.checked = isRequired;
+                this.toggleColumnVisibility(cb.value, isRequired);
+            });
+            /* Обновляем состояние групповых чекбоксов */
+            modal.querySelectorAll('.columns-group').forEach(group => {
+                this.updateGroupCheckboxState(group);
+            });
+        } else if (preset.fields) {
+            /* Кастомный пресет со списком полей */
+            modal.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => {
+                const shouldBeVisible = preset.fields.includes(cb.value);
+                cb.checked = shouldBeVisible;
+                this.toggleColumnVisibility(cb.value, shouldBeVisible);
+            });
+            /* Обновляем состояние групповых чекбоксов */
+            modal.querySelectorAll('.columns-group').forEach(group => {
+                this.updateGroupCheckboxState(group);
+            });
+        }
+    }
+
+    /**
+     * Обновляет визуальное состояние кнопок пресетов
+     */
+    updatePresetButtonsState() {
+        const modal = document.getElementById('column-selector-modal');
+        if (!modal) return;
+
+        const presets = this.getColumnPresets();
+        const requiredFields = this.getRequiredVisibleFields();
+        
+        /* Получаем текущее состояние чекбоксов */
+        const currentState = {};
+        modal.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => {
+            currentState[cb.value] = cb.checked;
         });
         
-        /* Для простого списка без групп */
-        modal.querySelectorAll('#columns-list > .checkbox-item').forEach(item => {
-            const label = item.querySelector('label').textContent.toLowerCase();
-            if (term === '' || label.includes(term)) {
-                item.classList.remove('hidden');
-            } else {
-                item.classList.add('hidden');
+        /* Получаем дефолтные значения */
+        const getDefaultVisibility = (columns) => {
+            const defaults = {};
+            columns.forEach(col => {
+                if (col.columns) {
+                    Object.assign(defaults, getDefaultVisibility(col.columns));
+                } else if (col.field) {
+                    defaults[col.field] = col.visible !== false;
+                }
+            });
+            return defaults;
+        };
+        const defaultVisibility = getDefaultVisibility(this.getColumns());
+
+        /* Проверяем соответствие каждому пресету */
+        modal.querySelectorAll('.preset-btn').forEach(btn => {
+            const presetId = btn.dataset.preset;
+            const preset = presets.find(p => p.id === presetId);
+            let isActive = false;
+
+            if (presetId === 'default') {
+                isActive = Object.keys(currentState).every(field => 
+                    currentState[field] === (defaultVisibility[field] !== false)
+                );
+            } else if (presetId === 'all') {
+                isActive = Object.values(currentState).every(v => v === true);
+            } else if (presetId === 'none') {
+                isActive = Object.keys(currentState).every(field => 
+                    currentState[field] === requiredFields.includes(field)
+                );
+            } else if (preset && preset.fields) {
+                isActive = Object.keys(currentState).every(field => 
+                    currentState[field] === preset.fields.includes(field)
+                );
             }
+
+            btn.classList.toggle('active', isActive);
         });
-    });
-}
+    }
     
     showColumnSelector() {
     const modal = document.getElementById('column-selector-modal');
@@ -1371,7 +1490,7 @@ export default class BaseTable {
     /* Позиционируем под кнопкой */
     if (toggleBtn && content) {
         const rect = toggleBtn.getBoundingClientRect();
-        const modalWidth = 320;
+        const modalWidth = 480;
         
         /* Проверяем, не выходит ли за правый край экрана */
         let leftPos = rect.left;
@@ -1465,6 +1584,7 @@ export default class BaseTable {
                 input.addEventListener('change', (e) => {
                     this.toggleColumnVisibility(e.target.value, e.target.checked);
                     this.updateGroupCheckboxState(groupEl);
+                    this.updatePresetButtonsState();
                 });
                 
                 itemsEl.appendChild(checkbox);
@@ -1537,6 +1657,7 @@ export default class BaseTable {
                 input.addEventListener('change', (e) => {
                     this.toggleColumnVisibility(e.target.value, e.target.checked);
                     this.updateGroupCheckboxState(groupEl);
+                    this.updatePresetButtonsState();
                 });
                 
                 itemsEl.appendChild(checkbox);
@@ -1580,11 +1701,15 @@ export default class BaseTable {
             const input = checkbox.querySelector('input');
             input.addEventListener('change', (e) => {
                 this.toggleColumnVisibility(e.target.value, e.target.checked);
+                this.updatePresetButtonsState();
             });
             
             columnsContainer.appendChild(checkbox);
         });
     }
+
+    /* Обновляем состояние кнопок пресетов */
+    this.updatePresetButtonsState();
 }
 
     toggleColumnVisibility(field, visible) {
@@ -1735,6 +1860,27 @@ export default class BaseTable {
      */
     getColumnGroups() {
         return null;
+    }
+
+    /**
+     * Возвращает конфигурацию пресетов колонок.
+     * Дочерние классы могут переопределить для добавления своих пресетов.
+     * Формат: [{ id: 'preset_id', label: 'Название', fields: ['field1', 'field2'] или null для спец.действий }]
+     * Специальные id: 'default' — по умолчанию, 'all' — все колонки, 'none' — только обязательные
+     */
+    getColumnPresets() {
+        return [
+            { id: 'default', label: 'По умолчанию' },
+            { id: 'all', label: 'Все' },
+            { id: 'none', label: 'Ничего' }
+        ];
+    }
+
+    /**
+     * Возвращает поля, которые всегда должны быть видимы (для пресета "Ничего")
+     */
+    getRequiredVisibleFields() {
+        return [this.getNameField()];
     }
     
     createCheckbox(column, container) {

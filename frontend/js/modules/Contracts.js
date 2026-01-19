@@ -980,9 +980,7 @@ export class ContractsTable extends BaseTable {
         }
     }
 
-    /**
-     * Возвращает конфигурацию групп колонок для селектора
-     */
+    /* Возвращает конфигурацию групп колонок для селектора */
     getColumnGroups() {
     
     const groups = [
@@ -1037,6 +1035,61 @@ export class ContractsTable extends BaseTable {
         ];
 
         return groups;
+    }
+
+    getColumnPresets() {
+        return [
+            { id: 'default', label: 'По умолчанию' },
+            { id: 'all', label: 'Все' },
+            { id: 'none', label: 'Ничего' },
+            { 
+                id: 'finance', 
+                label: 'Ипотека', 
+                fields: [
+                    'contract_name', 
+                    'payment_type_id', 
+                    'ipoteka_status_id', 
+                    'escrow_agent_id', 
+                    'escrow_number', 
+                    'manager_id'
+                ] 
+            },
+            { 
+                id: 'dates', 
+                label: 'Даты и деньги', 
+                fields: [
+                    'contract_name', 
+                    'contract_amount', 
+                    'lead_date', 
+                    'contract_date', 
+                    'construction_start_date', 
+                    'delivery_date', 
+                    'contract_duration', 
+                    'final_amount', 
+                    'profit', 
+                    'margin_percent'
+                ] 
+            },
+            { 
+                id: 'zp', 
+                label: 'Зарплаты', 
+                fields: [
+                    'contract_name',
+                    'comment',
+                    'contract_amount',
+                    'manager_id', 
+                    'manager_percent', 
+                    'manager_zp', 
+                    'manager_paid', 
+                    'manager_balance',
+                    'sop_id', 
+                    'sop_percent', 
+                    'sop_zp', 
+                    'sop_paid', 
+                    'sop_balance',
+                ] 
+            }
+        ];
     }
 
     async fetchFromAdesk(contractId, adeskProjectId, field, buttonElement) {
