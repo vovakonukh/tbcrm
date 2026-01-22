@@ -714,7 +714,7 @@ export class ContractsTable extends BaseTable {
             },
 
             {
-                title: "Доп поле 3",
+                title: "Накидка",
                 field: "custom_field_3",
                 width: 120,
                 editor: "input",
@@ -1070,7 +1070,8 @@ export class ContractsTable extends BaseTable {
                     'contract_duration', 
                     'final_amount', 
                     'profit', 
-                    'margin_percent'
+                    'margin_percent',
+                    'custom_field_3'
                 ] 
             },
             { 
