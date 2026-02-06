@@ -53,6 +53,7 @@ export class ContractsTable extends BaseTable {
         return {
             /* Поля ЗП, которые зависят от изменения указанных полей */
             'contract_amount': ['manager_zp', 'sop_zp'],
+            'contract_zp_amount': ['manager_zp', 'sop_zp'], 
             'manager_percent': ['manager_zp'],
             'sop_percent': ['sop_zp'],
             'manager_paid': ['manager_balance'],
@@ -64,12 +65,12 @@ export class ContractsTable extends BaseTable {
     getSalaryFormulas() {
         return {
             'manager_zp': (data) => {
-                const amount = parseFloat(data.contract_amount) || 0;
+                const amount = parseFloat(data.contract_zp_amount) || parseFloat(data.contract_amount) || 0;
                 const percent = parseFloat(data.manager_percent) || 0;
                 return Math.round(amount * percent / 100);
             },
             'sop_zp': (data) => {
-                const amount = parseFloat(data.contract_amount) || 0;
+                const amount = parseFloat(data.contract_zp_amount) || parseFloat(data.contract_amount) || 0;
                 const percent = parseFloat(data.sop_percent) || 0;
                 return Math.round(amount * percent / 100);
             },
@@ -215,6 +216,26 @@ export class ContractsTable extends BaseTable {
                 title: "Сумма договора",
                 field: "contract_amount",
                 width: 120,
+                sorter: "number",
+                editor: "number",
+                editorParams: {
+                    min: 0,
+                    step: 0.01
+                },
+                editable: true,
+                formatter: "money",
+                formatterParams: {
+                    thousand: " ",
+                    precision: 0,
+                    decimal: ","
+                },
+                cssClass: "cell-text-left"
+            },
+
+            {
+                title: "Сумма договора для ЗП",
+                field: "contract_zp_amount",
+                width: 140,
                 sorter: "number",
                 editor: "number",
                 editorParams: {
@@ -995,7 +1016,7 @@ export class ContractsTable extends BaseTable {
             },
             {
                 title: 'Финансы',
-                fields: ['contract_amount', 'final_amount', 'profit', 'margin_percent']
+                fields: ['contract_amount', 'contract_zp_amount', 'final_amount', 'profit', 'margin_percent']
             },
             {
                 title: 'Ипотека',
@@ -1093,6 +1114,7 @@ export class ContractsTable extends BaseTable {
                     'contract_name',
                     'comment',
                     'contract_amount',
+                    'contract_zp_amount',
                     'manager_id', 
                     'manager_percent', 
                     'manager_zp', 
