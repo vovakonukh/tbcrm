@@ -97,6 +97,34 @@ export class PlanfactTable extends BaseTable {
         };
     }
 
+    /* Конфигурация конверсий: поле → { numerator, denominator } */
+    getConversionConfig() {
+        return {
+            'cr_target_qual_plan': { numerator: 'qual_lead_plan', denominator: 'target_lead_plan' },
+            'cr_target_qual_fact': { numerator: 'qual_lead_fact', denominator: 'target_lead_fact' },
+            'cr_qual_meet_plan': { numerator: 'meetings_plan', denominator: 'qual_lead_plan' },
+            'cr_qual_meet_fact': { numerator: 'meetings_fact', denominator: 'qual_lead_fact' },
+            'cr_meet_contract_plan': { numerator: 'contracts_plan', denominator: 'meetings_plan' },
+            'cr_meet_contract_fact': { numerator: 'contracts_fact', denominator: 'meetings_fact' },
+            'cr_target_contract_plan': { numerator: 'contracts_plan', denominator: 'target_lead_plan' },
+            'cr_target_contract_fact': { numerator: 'contracts_fact', denominator: 'target_lead_fact' }
+        };
+    }
+
+    /* Какие конверсии пересчитать при изменении поля */
+    getFieldsToConversionRecalc() {
+        return {
+            'target_lead_plan': ['cr_target_qual_plan', 'cr_target_contract_plan'],
+            'qual_lead_plan': ['cr_target_qual_plan', 'cr_qual_meet_plan'],
+            'meetings_plan': ['cr_qual_meet_plan', 'cr_meet_contract_plan'],
+            'contracts_plan': ['cr_meet_contract_plan', 'cr_target_contract_plan'],
+            'target_lead_fact': ['cr_target_qual_fact', 'cr_target_contract_fact'],
+            'qual_lead_fact': ['cr_target_qual_fact', 'cr_qual_meet_fact'],
+            'meetings_fact': ['cr_qual_meet_fact', 'cr_meet_contract_fact'],
+            'contracts_fact': ['cr_meet_contract_fact', 'cr_target_contract_fact']
+        };
+    }
+
     getSelectFilters() {
         return {};
     }
@@ -147,6 +175,71 @@ export class PlanfactTable extends BaseTable {
             {
                 title: 'Рекламный бюджет',
                 fields: ['budget_plan', 'budget_fact', 'budget_percent']
+            },
+
+            {
+                title: 'Конверсия Цел→Квал',
+                fields: ['cr_target_qual_plan', 'cr_target_qual_fact']
+            },
+            {
+                title: 'Конверсия Квал→Встр',
+                fields: ['cr_qual_meet_plan', 'cr_qual_meet_fact']
+            },
+            {
+                title: 'Конверсия Встр→Дог',
+                fields: ['cr_meet_contract_plan', 'cr_meet_contract_fact']
+            },
+            {
+                title: 'Конверсия Цел→Дог',
+                fields: ['cr_target_contract_plan', 'cr_target_contract_fact']
+            }
+        ];
+    }
+
+    getColumnPresets() {
+        return [
+            { id: 'default', label: 'По умолчанию' },
+            { id: 'all', label: 'Все' },
+            { id: 'none', label: 'Ничего' },
+            {
+                id: 'target_leads',
+                label: 'Целевые лиды',
+                fields: [
+                    'date',
+                    'target_lead_plan', 'target_lead_fact', 'target_lead_percent',
+                    'cr_target_qual_plan', 'cr_target_qual_fact',
+                    'target_lead_price_plan', 'target_lead_price_fact', 'target_lead_price_percent'
+                ]
+            },
+            {
+                id: 'qual_leads',
+                label: 'Квал. лиды',
+                fields: [
+                    'date',
+                    'qual_lead_plan', 'qual_lead_fact', 'qual_lead_percent',
+                    'cr_qual_meet_plan', 'cr_qual_meet_fact',
+                    'qual_lead_price_plan', 'qual_lead_price_fact', 'qual_lead_price_percent'
+                ]
+            },
+            {
+                id: 'meetings',
+                label: 'Встречи',
+                fields: [
+                    'date',
+                    'meetings_plan', 'meetings_fact', 'meetings_percent',
+                    'cr_meet_contract_plan', 'cr_meet_contract_fact',
+                    'meeting_price_plan', 'meeting_price_fact', 'meeting_price_percent'
+                ]
+            },
+            {
+                id: 'contracts',
+                label: 'Договоры',
+                fields: [
+                    'date',
+                    'contracts_plan', 'contracts_fact', 'contracts_percent',
+                    'cr_target_contract_plan', 'cr_target_contract_fact',
+                    'contract_price_plan', 'contract_price_fact', 'contract_price_percent'
+                ]
             }
         ];
     }
@@ -191,6 +284,23 @@ export class PlanfactTable extends BaseTable {
             
             if (totalCount === 0) return '';
             return Math.round(totalBudget / totalCount);
+        };
+
+        /* Калькулятор конверсии для итоговой строки: сумма числителя / сумма знаменателя * 100 */
+        const conversionBottomCalc = (values, data, calcParams) => {
+            const numField = calcParams.numerator;
+            const denField = calcParams.denominator;
+            
+            let totalNum = 0;
+            let totalDen = 0;
+            
+            data.forEach(row => {
+                totalNum += parseFloat(row[numField]) || 0;
+                totalDen += parseFloat(row[denField]) || 0;
+            });
+            
+            if (totalDen === 0) return '';
+            return Math.round((totalNum / totalDen) * 100) + '%';
         };
 
         /* Хелпер для форматирования денег */
@@ -500,6 +610,123 @@ export class PlanfactTable extends BaseTable {
             },
 
             {
+                title: "Цел→Квал",
+                columns: [
+                    {
+                        title: "План",
+                        field: "cr_target_qual_plan",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated cell-border-left",
+                        visible: false,
+                        bottomCalc: conversionBottomCalc,
+                        bottomCalcParams: { numerator: "qual_lead_plan", denominator: "target_lead_plan" }
+                    },
+                    {
+                        title: "Факт",
+                        field: "cr_target_qual_fact",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        visible: false,
+                        bottomCalc: conversionBottomCalc,
+                        bottomCalcParams: { numerator: "qual_lead_fact", denominator: "target_lead_fact" }
+                    }
+                ]
+            },
+            {
+                title: "Квал→Встр",
+                columns: [
+                    {
+                        title: "План",
+                        field: "cr_qual_meet_plan",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        visible: false,
+                        bottomCalc: conversionBottomCalc,
+                        bottomCalcParams: { numerator: "meetings_plan", denominator: "qual_lead_plan" }
+                    },
+                    {
+                        title: "Факт",
+                        field: "cr_qual_meet_fact",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        visible: false,
+                        bottomCalc: conversionBottomCalc,
+                        bottomCalcParams: { numerator: "meetings_fact", denominator: "qual_lead_fact" }
+                    }
+                ]
+            },
+            {
+                title: "Встр→Дог",
+                columns: [
+                    {
+                        title: "План",
+                        field: "cr_meet_contract_plan",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        visible: false,
+                        bottomCalc: conversionBottomCalc,
+                        bottomCalcParams: { numerator: "contracts_plan", denominator: "meetings_plan" }
+                    },
+                    {
+                        title: "Факт",
+                        field: "cr_meet_contract_fact",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        visible: false,
+                        bottomCalc: conversionBottomCalc,
+                        bottomCalcParams: { numerator: "contracts_fact", denominator: "meetings_fact" }
+                    }
+                ]
+            },
+            {
+                title: "Цел→Дог",
+                columns: [
+                    {
+                        title: "План",
+                        field: "cr_target_contract_plan",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        visible: false,
+                        bottomCalc: conversionBottomCalc,
+                        bottomCalcParams: { numerator: "contracts_plan", denominator: "target_lead_plan" }
+                    },
+                    {
+                        title: "Факт",
+                        field: "cr_target_contract_fact",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        visible: false,
+                        bottomCalc: conversionBottomCalc,
+                        bottomCalcParams: { numerator: "contracts_fact", denominator: "target_lead_fact" }
+                    }
+                ]
+            },
+
+            {
                 title: "СТОИМОСТЬ ЦЕЛ. ЛИДА",
                 columns: [
                     {
@@ -757,6 +984,12 @@ export class PlanfactTable extends BaseTable {
                 return;
             }
         }, true);
+
+        /* Кнопка "Пересчитать всё" */
+        const recalcAllBtn = document.getElementById('recalc-all-btn');
+        if (recalcAllBtn) {
+            recalcAllBtn.addEventListener('click', () => this.recalcAll());
+        }
     }
 
     onCellEdited(cell) {
@@ -814,7 +1047,25 @@ export class PlanfactTable extends BaseTable {
             this.savePriceFields(rowId, fieldsToSave);
         }
         
-        /* 3. Вызываем сохранение основного поля */
+        /* 3. Пересчёт конверсий */
+        const conversionFields = this.getFieldsToConversionRecalc()[field];
+        if (conversionFields) {
+            const convConfig = this.getConversionConfig();
+            const currentData = row.getData();
+            const convFieldsToSave = {};
+
+            conversionFields.forEach(crField => {
+                const cfg = convConfig[crField];
+                const num = parseFloat(currentData[cfg.numerator]) || 0;
+                const den = parseFloat(currentData[cfg.denominator]) || 0;
+                convFieldsToSave[crField] = den > 0 ? Math.round((num / den) * 100) : null;
+            });
+
+            row.update(convFieldsToSave);
+            this.savePriceFields(rowId, convFieldsToSave);
+        }
+
+        /* 4. Вызываем сохранение основного поля */
         this.showNotification(`Изменено поле: ${field}`, 'success');
         this.saveChanges(cell);
     }
@@ -929,5 +1180,65 @@ export class PlanfactTable extends BaseTable {
         } catch (error) {
             console.error('Ошибка сохранения стоимостных полей:', error);
         }
+    }
+
+
+async recalcAll() {
+        const rows = this.table.getRows();
+        if (!rows.length) return;
+
+        this.showNotification('Пересчёт...', 'info');
+        const convConfig = this.getConversionConfig();
+        const priceDeps = this.getPriceDependencies();
+        let count = 0;
+
+        for (const row of rows) {
+            const d = row.getData();
+            const updates = {};
+
+            /* Проценты выполнения */
+            const percentPairs = [
+                ['revenue', 'revenue'], ['contracts', 'contracts'], ['meetings', 'meetings'],
+                ['target_lead', 'target_lead'], ['qual_lead', 'qual_lead'], ['budget', 'budget'],
+                ['target_lead_price', 'target_lead_price'], ['qual_lead_price', 'qual_lead_price'],
+                ['meeting_price', 'meeting_price'], ['contract_price', 'contract_price']
+            ];
+            percentPairs.forEach(([prefix]) => {
+                const plan = parseFloat(d[prefix + '_plan']) || 0;
+                const fact = parseFloat(d[prefix + '_fact']) || 0;
+                updates[prefix + '_percent'] = plan > 0 ? Math.round((fact / plan) * 100) : null;
+            });
+
+            /* Стоимостные факт-поля */
+            Object.entries(priceDeps).forEach(([field, cfg]) => {
+                const budget = parseFloat(d[cfg.budgetField]) || 0;
+                const cnt = parseFloat(d[cfg.countField]) || 0;
+                updates[field] = cnt > 0 ? Math.round(budget / cnt) : null;
+            });
+
+            /* Конверсии */
+            Object.entries(convConfig).forEach(([field, cfg]) => {
+                const num = parseFloat(d[cfg.numerator]) || 0;
+                const den = parseFloat(d[cfg.denominator]) || 0;
+                updates[field] = den > 0 ? Math.round((num / den) * 100) : null;
+            });
+
+            row.update(updates);
+
+            /* Сохраняем в БД */
+            try {
+                const url = `${CONFIG.API_BASE_URL}${this.getApiEndpoint()}`;
+                await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: d.id, ...updates })
+                });
+                count++;
+            } catch (e) {
+                console.error('Ошибка сохранения строки', d.id, e);
+            }
+        }
+
+        this.showNotification(`Пересчитано: ${count} строк`, 'success');
     }
 }

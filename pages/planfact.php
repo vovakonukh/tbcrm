@@ -22,6 +22,7 @@ requirePermission('planfact');
             <button id="add-contract-btn"><img src="/assets/plus.svg"/> Добавить</button>
             <button id="refresh-btn"><img src="/assets/refresh.svg"/>Обновить</button>
             <button id="toggle-columns-btn"><img src="/assets/control.svg"/>Настройки</button>
+            <button id="recalc-all-btn"><img src="/assets/refresh.svg"/>Пересчитать всё</button>
         </div>
         
         <!-- Фильтры по датам -->
