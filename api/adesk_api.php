@@ -74,35 +74,36 @@ try {
             break;
         
         /* Получить финансовые данные проекта из Adesk */
+        /* Получить финансовые данные проекта из Adesk */
         case 'get_project_income':
-            $projectId = $_GET['project_id'] ?? null;
-            if (!$projectId) throw new Exception('project_id обязателен');
-            
-            $api = getAdeskApi($pdo);
-            $response = $api->get("projects", ['status' => 'all']);
-            
-            $projects = $response['projects'] ?? [];
-            $projectData = null;
-            
-            foreach ($projects as $project) {
-                if ($project['id'] == $projectId) {
-                    $income = floatval($project['income'] ?? 0);
-                    $outcome = floatval($project['outcome'] ?? 0);
-                    $projectData = [
-                        'income' => $income,
-                        'outcome' => $outcome,
-                        'profit' => $income - $outcome
-                    ];
-                    break;
-                }
+        $projectId = $_GET['project_id'] ?? null;
+        if (!$projectId) throw new Exception('project_id обязателен');
+        
+        $api = getAdeskApi($pdo);
+        $response = $api->get("projects", ['status' => 'all', 'with_amounts' => 'true']);
+        
+        $projects = $response['projects'] ?? [];
+        $projectData = null;
+        
+        foreach ($projects as $project) {
+            if ($project['id'] == $projectId) {
+                $income = floatval($project['income'] ?? 0);
+                $outcome = floatval($project['outcome'] ?? 0);
+                $projectData = [
+                    'income' => $income,
+                    'outcome' => $outcome,
+                    'profit' => $income - $outcome
+                ];
+                break;
             }
-            
-            if ($projectData === null) {
-                throw new Exception('Проект не найден в Adesk');
-            }
-            
-            echo json_encode(['success' => true, 'data' => $projectData]);
-            break;
+        }
+        
+        if ($projectData === null) {
+            throw new Exception('Проект не найден в Adesk');
+        }
+        
+        echo json_encode(['success' => true, 'data' => $projectData]);
+        break;
 
             /* Получить сумму расходов по проекту и контрагенту */
             case 'get_contractor_expenses':
