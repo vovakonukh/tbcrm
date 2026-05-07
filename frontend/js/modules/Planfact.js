@@ -72,7 +72,11 @@ export class PlanfactTable extends BaseTable {
             'meeting_price_plan': 'meeting_price_percent',
             'meeting_price_fact': 'meeting_price_percent',
             'contract_price_plan': 'contract_price_percent',
-            'contract_price_fact': 'contract_price_percent'
+            'contract_price_fact': 'contract_price_percent',
+            'contract_price_plan': 'contract_price_percent',
+            'contract_price_fact': 'contract_price_percent',
+            'average_deal_plan': 'average_deal_percent',
+            'average_deal_fact': 'average_deal_percent'
         };
     }
 
@@ -82,7 +86,8 @@ export class PlanfactTable extends BaseTable {
             'target_lead_price_fact': { budgetField: 'budget_fact', countField: 'target_lead_fact' },
             'qual_lead_price_fact': { budgetField: 'budget_fact', countField: 'qual_lead_fact' },
             'meeting_price_fact': { budgetField: 'budget_fact', countField: 'meetings_fact' },
-            'contract_price_fact': { budgetField: 'budget_fact', countField: 'contracts_fact' }
+            'contract_price_fact': { budgetField: 'budget_fact', countField: 'contracts_fact' },
+            'average_deal_fact': { budgetField: 'revenue_fact', countField: 'contracts_fact' }
         };
     }
 
@@ -93,7 +98,8 @@ export class PlanfactTable extends BaseTable {
             'target_lead_fact': ['target_lead_price_fact'],
             'qual_lead_fact': ['qual_lead_price_fact'],
             'meetings_fact': ['meeting_price_fact'],
-            'contracts_fact': ['contract_price_fact']
+            'contracts_fact': ['contract_price_fact', 'average_deal_fact'],
+            'revenue_fact': ['average_deal_fact']
         };
     }
 
@@ -122,6 +128,87 @@ export class PlanfactTable extends BaseTable {
             'qual_lead_fact': ['cr_target_qual_fact', 'cr_qual_meet_fact'],
             'meetings_fact': ['cr_qual_meet_fact', 'cr_meet_contract_fact'],
             'contracts_fact': ['cr_meet_contract_fact', 'cr_target_contract_fact']
+        };
+    }
+
+    /* Поля плана, которые задаются вручную */
+    getManualPlanFields() {
+        return [
+            'budget_plan',
+            'average_deal_plan',
+            'target_lead_price_plan',
+            'cr_target_qual_plan',
+            'cr_qual_meet_plan',
+            'cr_meet_contract_plan'
+        ];
+    }
+
+    /*
+    Расчёт всех производных плановых показателей из 6 ручных параметров.
+    Возвращает объект с полями для row.update() и сохранения в БД.
+    */
+    calculatePlanFields(data) {
+        const budget   = parseFloat(data.budget_plan) || 0;
+        const avgDeal  = parseFloat(data.average_deal_plan) || 0;
+        const tlPrice  = parseFloat(data.target_lead_price_plan) || 0;
+        const crTQ     = parseFloat(data.cr_target_qual_plan) || 0;
+        const crQM     = parseFloat(data.cr_qual_meet_plan) || 0;
+        const crMC     = parseFloat(data.cr_meet_contract_plan) || 0;
+
+        const targetLead = tlPrice > 0 ? budget / tlPrice : 0;
+        const qualLead   = targetLead * crTQ / 100;
+        const meetings   = qualLead * crQM / 100;
+        const contracts  = meetings * crMC / 100;
+
+        const revenue = contracts * avgDeal;
+
+        return {
+            target_lead_plan:        Math.round(targetLead),
+            qual_lead_plan:          Math.round(qualLead),
+            meetings_plan:           Math.round(meetings),
+            contracts_plan:          Math.round(contracts),
+            revenue_plan:            Math.round(revenue),
+            qual_lead_price_plan:    qualLead  > 0 ? Math.round(budget / qualLead)  : null,
+            meeting_price_plan:      meetings  > 0 ? Math.round(budget / meetings)  : null,
+            contract_price_plan:     contracts > 0 ? Math.round(budget / contracts) : null,
+            cr_target_contract_plan: targetLead > 0 ? Math.round(contracts / targetLead * 100) : null
+        };
+    }
+
+    /* Поля факта, которые задаются вручную или тянутся из API */
+    getManualFactFields() {
+        return [
+            'revenue_fact',
+            'contracts_fact',
+            'meetings_fact',
+            'qual_lead_fact',
+            'target_lead_fact',
+            'budget_fact'
+        ];
+    }
+
+    /*
+    Расчёт всех производных фактических показателей из 6 ручных параметров.
+    Возвращает объект с полями для row.update() и сохранения в БД.
+    */
+    calculateFactFields(data) {
+        const revenue    = parseFloat(data.revenue_fact) || 0;
+        const contracts  = parseFloat(data.contracts_fact) || 0;
+        const meetings   = parseFloat(data.meetings_fact) || 0;
+        const qualLead   = parseFloat(data.qual_lead_fact) || 0;
+        const targetLead = parseFloat(data.target_lead_fact) || 0;
+        const budget     = parseFloat(data.budget_fact) || 0;
+
+        return {
+            average_deal_fact:        contracts  > 0 ? Math.round(revenue / contracts)            : null,
+            target_lead_price_fact:   targetLead > 0 ? Math.round(budget / targetLead)            : null,
+            qual_lead_price_fact:     qualLead   > 0 ? Math.round(budget / qualLead)              : null,
+            meeting_price_fact:       meetings   > 0 ? Math.round(budget / meetings)              : null,
+            contract_price_fact:      contracts  > 0 ? Math.round(budget / contracts)             : null,
+            cr_target_qual_fact:      targetLead > 0 ? Math.round(qualLead / targetLead * 100)    : null,
+            cr_qual_meet_fact:        qualLead   > 0 ? Math.round(meetings / qualLead * 100)      : null,
+            cr_meet_contract_fact:    meetings   > 0 ? Math.round(contracts / meetings * 100)     : null,
+            cr_target_contract_fact:  targetLead > 0 ? Math.round(contracts / targetLead * 100)   : null
         };
     }
 
@@ -247,9 +334,9 @@ export class PlanfactTable extends BaseTable {
     getColumns() {
         /* Хелпер для форматирования процентов */
         const percentFormatter = (cell) => {
-        const value = cell.getValue();
-        if (value === null || value === undefined || value === '') return '';
-        return Math.round(parseFloat(value)) + '%';
+            const value = cell.getValue();
+            if (value === null || value === undefined || value === '') return '';
+            return Math.round(parseFloat(value)) + '%';
         };
 
         /* Калькулятор процента для итоговой строки */
@@ -349,11 +436,10 @@ export class PlanfactTable extends BaseTable {
                         field: "revenue_plan",
                         width: 110,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
+                        editable: false,
                         formatter: "money",
                         formatterParams: moneyParams,
-                        editable: true,
+                        cssClass: "cell-calculated",
                         bottomCalc: "sum",
                         bottomCalcFormatter: "money",
                         bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
@@ -368,7 +454,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: true },
                         editable: true,
-                        headerTooltip:"При нажатии кнопки загружаем выручку из Договоров",
+                        headerTooltip: "При нажатии кнопки загружаем выручку из Договоров",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum",
                         bottomCalcFormatter: "money",
@@ -384,9 +470,9 @@ export class PlanfactTable extends BaseTable {
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
                         bottomCalcParams: { planField: "revenue_plan", factField: "revenue_fact" }
-                    },
+                    }
                 ]
-             },
+            },
             {
                 title: "ДОГОВОРЫ",
                 columns: [
@@ -395,11 +481,9 @@ export class PlanfactTable extends BaseTable {
                         field: "contracts_plan",
                         width: 70,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
-                        editable: true,
-                        bottomCalc: "sum",
-                        cssClass: "cell-border-left"
+                        editable: false,
+                        cssClass: "cell-calculated cell-border-left",
+                        bottomCalc: "sum"
                     },
                     {
                         title: "Факт",
@@ -411,7 +495,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: false },
                         editable: true,
-                        headerTooltip:"При нажатии кнопки загружаем количество из Договоров",
+                        headerTooltip: "При нажатии кнопки загружаем количество из Договоров",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
@@ -421,13 +505,11 @@ export class PlanfactTable extends BaseTable {
                         width: 70,
                         headerSort: false,
                         editable: false,
-                        editorParams: { min: 0, max: 1000, step: 0.1 },
                         formatter: percentFormatter,
-                        editable: true,
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
                         bottomCalcParams: { planField: "contracts_plan", factField: "contracts_fact" }
-                    },
+                    }
                 ]
             },
             {
@@ -438,13 +520,11 @@ export class PlanfactTable extends BaseTable {
                         field: "meetings_plan",
                         width: 70,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
-                        editable: true,
-                        bottomCalc: "sum",
-                        cssClass: "cell-border-left"
+                        editable: false,
+                        cssClass: "cell-calculated cell-border-left",
+                        bottomCalc: "sum"
                     },
-                                        {
+                    {
                         title: "Факт",
                         field: "meetings_fact",
                         width: 70,
@@ -454,7 +534,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: false },
                         editable: true,
-                        headerTooltip:"При нажатии кнопки загружаем количество из Битрикса",
+                        headerTooltip: "При нажатии кнопки загружаем количество из Битрикса",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
@@ -464,13 +544,11 @@ export class PlanfactTable extends BaseTable {
                         width: 70,
                         headerSort: false,
                         editable: false,
-                        editorParams: { min: 0, max: 1000, step: 0.1 },
                         formatter: percentFormatter,
-                        editable: true,
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
                         bottomCalcParams: { planField: "meetings_plan", factField: "meetings_fact" }
-                    },
+                    }
                 ]
             },
             {
@@ -481,11 +559,9 @@ export class PlanfactTable extends BaseTable {
                         field: "target_lead_plan",
                         width: 70,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
-                        editable: true,
-                        bottomCalc: "sum",
-                        cssClass: "cell-border-left"
+                        editable: false,
+                        cssClass: "cell-calculated cell-border-left",
+                        bottomCalc: "sum"
                     },
                     {
                         title: "Факт",
@@ -497,7 +573,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: false },
                         editable: true,
-                        headerTooltip:"При нажатии кнопки загружаем количество из Битрикса",
+                        headerTooltip: "При нажатии кнопки загружаем количество из Битрикса",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
@@ -507,13 +583,11 @@ export class PlanfactTable extends BaseTable {
                         width: 70,
                         headerSort: false,
                         editable: false,
-                        editorParams: { min: 0, max: 1000, step: 0.01 },
                         formatter: percentFormatter,
-                        editable: true,
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
                         bottomCalcParams: { planField: "target_lead_plan", factField: "target_lead_fact" }
-                    },
+                    }
                 ]
             },
             {
@@ -524,11 +598,9 @@ export class PlanfactTable extends BaseTable {
                         field: "qual_lead_plan",
                         width: 70,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
-                        editable: true,
-                        bottomCalc: "sum",
-                        cssClass: "cell-border-left"
+                        editable: false,
+                        cssClass: "cell-calculated cell-border-left",
+                        bottomCalc: "sum"
                     },
                     {
                         title: "Факт",
@@ -540,7 +612,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: cellWithRefreshFormatter,
                         formatterParams: { isMoney: false },
                         editable: true,
-                        headerTooltip:"При нажатии кнопки загружаем количество из Битрикса",
+                        headerTooltip: "При нажатии кнопки загружаем количество из Битрикса",
                         cssClass: "cell-with-action",
                         bottomCalc: "sum"
                     },
@@ -550,13 +622,11 @@ export class PlanfactTable extends BaseTable {
                         width: 70,
                         headerSort: false,
                         editable: false,
-                        editorParams: { min: 0, max: 1000, step: 0.01 },
                         formatter: percentFormatter,
-                        editable: true,
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
                         bottomCalcParams: { planField: "qual_lead_plan", factField: "qual_lead_fact" }
-                    },
+                    }
                 ]
             },
             {
@@ -572,7 +642,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: "money",
                         formatterParams: moneyParams,
                         editable: true,
-                        headerTooltip:"Вводим вручную",
+                        headerTooltip: "Вводим вручную",
                         cssClass: "cell-border-left",
                         bottomCalc: "sum",
                         bottomCalcFormatter: "money",
@@ -588,7 +658,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: "money",
                         formatterParams: moneyParams,
                         editable: true,
-                        headerTooltip:"Вводим вручную",
+                        headerTooltip: "Вводим вручную",
                         bottomCalc: "sum",
                         bottomCalcFormatter: "money",
                         bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
@@ -599,13 +669,11 @@ export class PlanfactTable extends BaseTable {
                         width: 70,
                         headerSort: false,
                         editable: false,
-                        editorParams: { min: 0, max: 1000, step: 0.01 },
                         formatter: percentFormatter,
-                        editable: true,
                         cssClass: "cell-calculated",
                         bottomCalc: percentBottomCalc,
                         bottomCalcParams: { planField: "budget_plan", factField: "budget_fact" }
-                    },
+                    }
                 ]
             },
 
@@ -617,9 +685,11 @@ export class PlanfactTable extends BaseTable {
                         field: "cr_target_qual_plan",
                         width: 70,
                         headerSort: false,
-                        editable: false,
+                        editable: true,
+                        editor: "number",
+                        editorParams: { min: 0, max: 100 },
                         formatter: percentFormatter,
-                        cssClass: "cell-calculated cell-border-left",
+                        cssClass: "cell-border-left",
                         visible: false,
                         bottomCalc: conversionBottomCalc,
                         bottomCalcParams: { numerator: "qual_lead_plan", denominator: "target_lead_plan" }
@@ -646,9 +716,10 @@ export class PlanfactTable extends BaseTable {
                         field: "cr_qual_meet_plan",
                         width: 70,
                         headerSort: false,
-                        editable: false,
+                        editable: true,
+                        editor: "number",
+                        editorParams: { min: 0, max: 100 },
                         formatter: percentFormatter,
-                        cssClass: "cell-calculated",
                         visible: false,
                         bottomCalc: conversionBottomCalc,
                         bottomCalcParams: { numerator: "meetings_plan", denominator: "qual_lead_plan" }
@@ -675,9 +746,10 @@ export class PlanfactTable extends BaseTable {
                         field: "cr_meet_contract_plan",
                         width: 70,
                         headerSort: false,
-                        editable: false,
+                        editable: true,
+                        editor: "number",
+                        editorParams: { min: 0, max: 100 },
                         formatter: percentFormatter,
-                        cssClass: "cell-calculated",
                         visible: false,
                         bottomCalc: conversionBottomCalc,
                         bottomCalcParams: { numerator: "contracts_plan", denominator: "meetings_plan" }
@@ -739,6 +811,7 @@ export class PlanfactTable extends BaseTable {
                         formatter: "money",
                         formatterParams: moneyParams,
                         editable: true,
+                        headerTooltip: "Вводим вручную",
                         cssClass: "cell-border-left",
                         bottomCalc: priceBottomCalc,
                         bottomCalcParams: { budgetField: "budget_plan", countField: "target_lead_plan" },
@@ -751,12 +824,10 @@ export class PlanfactTable extends BaseTable {
                         field: "target_lead_price_fact",
                         width: 100,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
+                        editable: false,
                         formatter: "money",
                         formatterParams: moneyParams,
-                        editable: true,
-                        headerTooltip:"Пересчитываем автоматически при изменении показателей",
+                        cssClass: "cell-calculated",
                         bottomCalc: priceBottomCalc,
                         bottomCalcParams: { budgetField: "budget_fact", countField: "target_lead_fact" },
                         bottomCalcFormatter: "money",
@@ -785,12 +856,10 @@ export class PlanfactTable extends BaseTable {
                         field: "qual_lead_price_plan",
                         width: 100,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
+                        editable: false,
                         formatter: "money",
                         formatterParams: moneyParams,
-                        editable: true,
-                        cssClass: "cell-border-left",
+                        cssClass: "cell-calculated cell-border-left",
                         bottomCalc: priceBottomCalc,
                         bottomCalcParams: { budgetField: "budget_plan", countField: "qual_lead_plan" },
                         bottomCalcFormatter: "money",
@@ -802,12 +871,10 @@ export class PlanfactTable extends BaseTable {
                         field: "qual_lead_price_fact",
                         width: 100,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
+                        editable: false,
                         formatter: "money",
                         formatterParams: moneyParams,
-                        editable: true,
-                        headerTooltip:"Пересчитываем автоматически при изменении показателей",
+                        cssClass: "cell-calculated",
                         bottomCalc: priceBottomCalc,
                         bottomCalcParams: { budgetField: "budget_fact", countField: "qual_lead_fact" },
                         bottomCalcFormatter: "money",
@@ -836,12 +903,10 @@ export class PlanfactTable extends BaseTable {
                         field: "meeting_price_plan",
                         width: 100,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
+                        editable: false,
                         formatter: "money",
                         formatterParams: moneyParams,
-                        editable: true,
-                        cssClass: "cell-border-left",
+                        cssClass: "cell-calculated cell-border-left",
                         bottomCalc: priceBottomCalc,
                         bottomCalcParams: { budgetField: "budget_plan", countField: "meetings_plan" },
                         bottomCalcFormatter: "money",
@@ -853,12 +918,10 @@ export class PlanfactTable extends BaseTable {
                         field: "meeting_price_fact",
                         width: 100,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
+                        editable: false,
                         formatter: "money",
                         formatterParams: moneyParams,
-                        editable: true,
-                        headerTooltip:"Пересчитываем автоматически при изменении показателей",
+                        cssClass: "cell-calculated",
                         bottomCalc: priceBottomCalc,
                         bottomCalcParams: { budgetField: "budget_fact", countField: "meetings_fact" },
                         bottomCalcFormatter: "money",
@@ -887,12 +950,10 @@ export class PlanfactTable extends BaseTable {
                         field: "contract_price_plan",
                         width: 100,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
+                        editable: false,
                         formatter: "money",
                         formatterParams: moneyParams,
-                        editable: true,
-                        cssClass: "cell-border-left",
+                        cssClass: "cell-calculated cell-border-left",
                         bottomCalc: priceBottomCalc,
                         bottomCalcParams: { budgetField: "budget_plan", countField: "contracts_plan" },
                         bottomCalcFormatter: "money",
@@ -904,12 +965,10 @@ export class PlanfactTable extends BaseTable {
                         field: "contract_price_fact",
                         width: 100,
                         headerSort: false,
-                        editor: "number",
-                        editorParams: { min: 0 },
+                        editable: false,
                         formatter: "money",
                         formatterParams: moneyParams,
-                        editable: true,
-                        headerTooltip:"Пересчитываем автоматически при изменении показателей",
+                        cssClass: "cell-calculated",
                         bottomCalc: priceBottomCalc,
                         bottomCalcParams: { budgetField: "budget_fact", countField: "contracts_fact" },
                         bottomCalcFormatter: "money",
@@ -927,6 +986,52 @@ export class PlanfactTable extends BaseTable {
                         bottomCalc: percentBottomCalc,
                         bottomCalcParams: { planField: "contract_price_plan", factField: "contract_price_fact" },
                         visible: false
+                    }
+                ]
+            },
+
+            {
+                title: "СРЕДНИЙ ЧЕК",
+                columns: [
+                    {
+                        title: "План",
+                        field: "average_deal_plan",
+                        width: 110,
+                        headerSort: false,
+                        editor: "number",
+                        editorParams: { min: 0 },
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        editable: true,
+                        headerTooltip: "Вводим вручную",
+                        cssClass: "cell-border-left",
+                        bottomCalc: "avg",
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
+                    },
+                    {
+                        title: "Факт",
+                        field: "average_deal_fact",
+                        width: 110,
+                        headerSort: false,
+                        editable: false,
+                        formatter: "money",
+                        formatterParams: moneyParams,
+                        cssClass: "cell-calculated",
+                        bottomCalc: "avg",
+                        bottomCalcFormatter: "money",
+                        bottomCalcFormatterParams: { thousand: " ", precision: 0, decimal: "," }
+                    },
+                    {
+                        title: "% вып",
+                        field: "average_deal_percent",
+                        width: 70,
+                        headerSort: false,
+                        editable: false,
+                        formatter: percentFormatter,
+                        cssClass: "cell-calculated",
+                        bottomCalc: percentBottomCalc,
+                        bottomCalcParams: { planField: "average_deal_plan", factField: "average_deal_fact" }
                     }
                 ]
             },
@@ -997,6 +1102,20 @@ export class PlanfactTable extends BaseTable {
         const row = cell.getRow();
         const rowData = row.getData();
         const rowId = rowData.id;
+
+        /* Пересчёт плановых показателей при изменении одного из ручных полей */
+        if (this.getManualPlanFields().includes(field)) {
+            const planUpdates = this.calculatePlanFields(rowData);
+            row.update(planUpdates);
+            this.savePriceFields(rowId, planUpdates);
+        }
+
+        /* Пересчёт фактических показателей при изменении одного из ручных полей */
+        if (this.getManualFactFields().includes(field)) {
+            const factUpdates = this.calculateFactFields(rowData);
+            row.update(factUpdates);
+            this.savePriceFields(rowId, factUpdates);
+        }
         
         /* 1. Пересчёт процента для изменённого поля */
         const dependencies = this.getCalculatedFieldsDependencies();
@@ -1104,6 +1223,13 @@ export class PlanfactTable extends BaseTable {
                     
                     /* Сохраняем процент в БД */
                     this.updatePercentField(id, percentField, percentValue);
+
+                    /* Пересчёт производных фактических показателей */
+                    if (this.getManualFactFields().includes(field)) {
+                        const factUpdates = this.calculateFactFields(row.getData());
+                        row.update(factUpdates);
+                        this.savePriceFields(id, factUpdates);
+                    }
                 }
                 const fieldNames = {
                     'revenue_fact': 'Выручка',

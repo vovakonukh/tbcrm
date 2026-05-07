@@ -2250,3 +2250,34 @@ button {
     opacity: 1;
     pointer-events: auto;
 }
+
+/* Поля, которые рассчитываются автоматически */
+.tabulator .tabulator-cell.cell-calculated {
+    position: relative;
+}
+
+.tabulator .tabulator-cell.cell-calculated::before {
+    content: "ƒ";
+    position: absolute;
+    top: 75%;
+    left: 85%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    font-style: italic;
+    font-weight: 400;
+    color: #c8c8c8;
+    line-height: 1;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Чтобы текст значения был поверх иконки, но полупрозрачно перекрывал её */
+.tabulator .tabulator-cell.cell-calculated {
+    z-index: 1;
+    font-style: italic;
+}
+
+/* Не показываем иконку в строке итогов */
+.tabulator .tabulator-calcs .tabulator-cell.cell-calculated::before {
+    display: none;
+}

@@ -14,8 +14,8 @@ requirePermission('sales_data');
     <link rel="icon" href="/assets/favicon.ico">
 
     <!-- Tabulator -->
-    <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
+    <link href="/frontend/vendor/tabulator/tabulator.min.css" rel="stylesheet">
+    <script src="/frontend/vendor/tabulator/tabulator.min.js"></script>
     
     <!-- Luxon (для работы с датами) -->
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>

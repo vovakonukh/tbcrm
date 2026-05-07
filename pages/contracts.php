@@ -11,9 +11,10 @@ requirePermission('contracts');
     <title>Договоры</title>
     <?php include __DIR__ . '/../includes/pwa_head.php'; ?>
     <link rel="icon" href="/assets/favicon.ico">
-    <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
+    <link href="/frontend/vendor/tabulator/tabulator.min.css" rel="stylesheet">
     <link href="/frontend/css/style.css?v=1.4" rel="stylesheet">
     <link href="/frontend/css/fonts.css" rel="stylesheet">
+    <script src="/frontend/vendor/tabulator/tabulator.min.js"></script>
 </head>
 <body>
     <?php include __DIR__ . '/../includes/header.php'; ?>
@@ -88,7 +89,6 @@ requirePermission('contracts');
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/luxon/build/global/luxon.min.js"></script>
-    <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
     <script src="/frontend/js/config.js"></script>
     <script src="/frontend/js/core/UserService.js"></script>
     <script type="module">

@@ -28,26 +28,41 @@ function jsonResponse($success, $message, $count = null) {
 }
 
 function getContracts($pdo) {
+    /* JOIN со справочниками, чтобы выгружать названия вместо ID */
     $sql = "SELECT 
                 c.id,
                 c.contract_name,
                 c.contract_amount,
                 c.final_amount,
-                c.profit
+                c.profit,
+                pt.name AS payment_type_name,
+                m.name AS manager_name,
+                c.contract_date,
+                c.construction_start_date,
+                c.delivery_date,
+                comp.name AS complectation_name
             FROM contracts c
+            LEFT JOIN payment_types pt ON c.payment_type_id = pt.id
+            LEFT JOIN managers m ON c.manager_id = m.id
+            LEFT JOIN complectation comp ON c.complectation_id = comp.id
             ORDER BY c.id";
     
     $stmt = $pdo->query($sql);
     $contracts = [];
     
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        
         $contracts[] = [
             'id' => (int)$row['id'],
             'contract_name' => $row['contract_name'],
             'contract_amount' => $row['contract_amount'] ? (float)$row['contract_amount'] : null,
             'final_amount' => $row['final_amount'] ? (float)$row['final_amount'] : null,
-            'profit' => $row['profit'] ? (float)$row['profit'] : null
+            'profit' => $row['profit'] ? (float)$row['profit'] : null,
+            'payment_type_name' => $row['payment_type_name'],
+            'manager_name' => $row['manager_name'],
+            'contract_date' => $row['contract_date'],
+            'construction_start_date' => $row['construction_start_date'],
+            'delivery_date' => $row['delivery_date'],
+            'complectation_name' => $row['complectation_name']
         ];
     }
     
