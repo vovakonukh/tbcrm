@@ -52,11 +52,22 @@ function getContracts($pdo) {
     $contracts = [];
     
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        /* Приоритет для столбца "Сумма без завышений":
+            contract_zp_amount → final_amount → contract_amount */
+        $zpAmount = null;
+        if ($row['contract_zp_amount'] !== null && $row['contract_zp_amount'] !== '') {
+            $zpAmount = (float)$row['contract_zp_amount'];
+        } elseif ($row['final_amount'] !== null && $row['final_amount'] !== '') {
+            $zpAmount = (float)$row['final_amount'];
+        } elseif ($row['contract_amount'] !== null && $row['contract_amount'] !== '') {
+            $zpAmount = (float)$row['contract_amount'];
+        }   
+    
         $contracts[] = [
             'id' => (int)$row['id'],
             'contract_name' => $row['contract_name'],
             'contract_amount' => $row['contract_amount'] ? (float)$row['contract_amount'] : null,
-            'contract_zp_amount' => $row['contract_zp_amount'] ? (float)$row['contract_zp_amount'] : null,
+            'contract_zp_amount' => $zpAmount,
             'final_amount' => $row['final_amount'] ? (float)$row['final_amount'] : null,
             'profit' => $row['profit'] ? (float)$row['profit'] : null,
             'payment_type_name' => $row['payment_type_name'],
